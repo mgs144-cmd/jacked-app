@@ -23,6 +23,17 @@ export default async function ProfilePage() {
     .eq('id', session.user.id)
     .single()
 
+  // Get follower/following counts
+  const { count: followerCount } = await supabase
+    .from('follows')
+    .select('*', { count: 'exact', head: true })
+    .eq('following_id', session.user.id)
+
+  const { count: followingCount } = await supabase
+    .from('follows')
+    .select('*', { count: 'exact', head: true })
+    .eq('follower_id', session.user.id)
+
   const { data: posts } = await supabase
     .from('posts')
     .select(`
@@ -109,6 +120,20 @@ export default async function ProfilePage() {
                   <p className="text-2xl font-black text-white">{postsWithCounts?.length || 0}</p>
                   <p className="text-xs text-gray-500 font-semibold tracking-wide">POSTS</p>
                 </div>
+                {!(profile as any)?.hide_follower_count && (
+                  <>
+                    <div className="h-10 w-px bg-gray-800"></div>
+                    <div>
+                      <p className="text-2xl font-black text-white">{followerCount || 0}</p>
+                      <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWERS</p>
+                    </div>
+                    <div className="h-10 w-px bg-gray-800"></div>
+                    <div>
+                      <p className="text-2xl font-black text-white">{followingCount || 0}</p>
+                      <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWING</p>
+                    </div>
+                  </>
+                )}
                 <div className="h-10 w-px bg-gray-800"></div>
                 <div>
                   <p className="text-2xl font-black text-primary">{totalLikes}</p>

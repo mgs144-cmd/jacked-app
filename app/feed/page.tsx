@@ -23,20 +23,35 @@ export default async function FeedPage() {
 
   const followingIds = following?.map((f: any) => f.following_id) || []
   
-  // Include own posts + posts from followed users
-  const userIdsToShow = [session.user.id, ...followingIds]
-
-  const { data: posts, error } = await supabase
+  // 1. Get posts from followed users (prioritized)
+  const { data: followingPosts } = await supabase
     .from('posts')
     .select(`
       *,
-      profiles:user_id(username, avatar_url, full_name, is_premium),
+      profiles:user_id(username, avatar_url, full_name, is_premium, is_account_private),
       likes(count),
       comments(count)
     `)
-    .in('user_id', userIdsToShow)
+    .in('user_id', [...followingIds, session.user.id])
     .order('created_at', { ascending: false })
-    .limit(50)
+    .limit(30)
+
+  // 2. Get public posts from non-followed users
+  const { data: publicPosts } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      profiles:user_id(username, avatar_url, full_name, is_premium, is_account_private),
+      likes(count),
+      comments(count)
+    `)
+    .not('user_id', 'in', `(${[session.user.id, ...followingIds].join(',')})`)
+    .eq('is_private', false)
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  // Combine: following posts first, then public posts
+  const posts = [...(followingPosts || []), ...(publicPosts || [])]
 
   const postsWithCounts = posts?.map((post: any) => ({
     ...post,
@@ -83,12 +98,6 @@ export default async function FeedPage() {
           </div>
         </div>
 
-        {error && (
-          <div className="bg-red-950/50 border border-primary/50 text-red-400 px-6 py-4 rounded-xl mb-6 backdrop-blur-sm">
-            <p className="font-semibold">Failed to load posts</p>
-            <p className="text-sm mt-1">{error.message}</p>
-          </div>
-        )}
 
         {/* Posts */}
         {!postsWithCounts || postsWithCounts.length === 0 ? (

@@ -2,53 +2,24 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
-import { Crown, UserPlus, UserCheck } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { Crown } from 'lucide-react'
+import { FollowButton } from './FollowButton'
 
 interface UserCardProps {
   user: any
   currentUserId: string
   isFollowing: boolean
+  isPrivateAccount?: boolean
+  requestStatus?: 'none' | 'pending' | 'accepted' | 'rejected'
 }
 
-export function UserCard({ user, currentUserId, isFollowing: initialIsFollowing }: UserCardProps) {
-  const [isFollowing, setIsFollowing] = useState(initialIsFollowing)
-  const [loading, setLoading] = useState(false)
-  const supabase = createClient()
-  const router = useRouter()
-
-  const handleFollow = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    try {
-      if (isFollowing) {
-        // Unfollow
-        await (supabase.from('follows') as any)
-          .delete()
-          .match({
-            follower_id: currentUserId,
-            following_id: user.id,
-          })
-        setIsFollowing(false)
-      } else {
-        // Follow
-        await (supabase.from('follows') as any)
-          .insert({
-            follower_id: currentUserId,
-            following_id: user.id,
-          })
-        setIsFollowing(true)
-      }
-      router.refresh()
-    } catch (error) {
-      console.error('Error toggling follow:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+export function UserCard({ 
+  user, 
+  currentUserId, 
+  isFollowing,
+  isPrivateAccount = false,
+  requestStatus = 'none'
+}: UserCardProps) {
 
   return (
     <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 overflow-hidden card-elevated hover:border-gray-700 transition-all">
@@ -112,27 +83,15 @@ export function UserCard({ user, currentUserId, isFollowing: initialIsFollowing 
             </div>
 
             {/* Follow Button */}
-            <button
-              onClick={handleFollow}
-              disabled={loading}
-              className={`w-full py-2 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center space-x-2 ${
-                isFollowing
-                  ? 'bg-gray-800 text-white hover:bg-gray-700 border border-gray-700'
-                  : 'bg-gradient-primary text-white hover:brightness-110 shadow-lg shadow-primary/20'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              {isFollowing ? (
-                <>
-                  <UserCheck className="w-4 h-4" />
-                  <span>FOLLOWING</span>
-                </>
-              ) : (
-                <>
-                  <UserPlus className="w-4 h-4" />
-                  <span>FOLLOW</span>
-                </>
-              )}
-            </button>
+            <div className="w-full">
+              <FollowButton
+                userId={user.id}
+                currentUserId={currentUserId}
+                initialIsFollowing={isFollowing}
+                isPrivateAccount={isPrivateAccount}
+                initialRequestStatus={requestStatus}
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -60,6 +60,27 @@ export default async function UserProfilePage({
 
   const isFollowing = !!followData
 
+  // Check follow request status
+  const { data: requestData } = await supabase
+    .from('follow_requests')
+    .select('status')
+    .eq('requester_id', session.user.id)
+    .eq('target_id', params.id)
+    .maybeSingle()
+
+  const requestStatus = (requestData as any)?.status || 'none'
+
+  // Get follower/following counts
+  const { count: followerCount } = await supabase
+    .from('follows')
+    .select('*', { count: 'exact', head: true })
+    .eq('following_id', params.id)
+
+  const { count: followingCount } = await supabase
+    .from('follows')
+    .select('*', { count: 'exact', head: true })
+    .eq('follower_id', params.id)
+
   // Get user's posts (only public posts or if following, include private)
   const { data: posts } = await supabase
     .from('posts')
@@ -153,16 +174,20 @@ export default async function UserProfilePage({
                   <p className="text-2xl font-black text-white">{visiblePosts?.length || 0}</p>
                   <p className="text-xs text-gray-500 font-semibold tracking-wide">POSTS</p>
                 </div>
-                <div className="h-10 w-px bg-gray-800"></div>
-                <Link href={`/user/${params.id}/followers`} className="hover:text-primary transition-colors">
-                  <p className="text-2xl font-black text-white">{(profile as any).followers_count || 0}</p>
-                  <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWERS</p>
-                </Link>
-                <div className="h-10 w-px bg-gray-800"></div>
-                <Link href={`/user/${params.id}/following`} className="hover:text-primary transition-colors">
-                  <p className="text-2xl font-black text-white">{(profile as any).following_count || 0}</p>
-                  <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWING</p>
-                </Link>
+                {!(profile as any)?.hide_follower_count && (
+                  <>
+                    <div className="h-10 w-px bg-gray-800"></div>
+                    <div>
+                      <p className="text-2xl font-black text-white">{followerCount || 0}</p>
+                      <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWERS</p>
+                    </div>
+                    <div className="h-10 w-px bg-gray-800"></div>
+                    <div>
+                      <p className="text-2xl font-black text-white">{followingCount || 0}</p>
+                      <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWING</p>
+                    </div>
+                  </>
+                )}
                 <div className="h-10 w-px bg-gray-800"></div>
                 <div>
                   <p className="text-2xl font-black text-primary">{totalLikes}</p>
@@ -175,6 +200,8 @@ export default async function UserProfilePage({
                 userId={params.id}
                 currentUserId={session.user.id}
                 initialIsFollowing={isFollowing}
+                isPrivateAccount={(profile as any)?.is_account_private || false}
+                initialRequestStatus={requestStatus as any}
               />
             </div>
           </div>

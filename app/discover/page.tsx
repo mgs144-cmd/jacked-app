@@ -31,6 +31,16 @@ export default async function DiscoverPage() {
 
   const followingIds = following?.map((f: any) => f.following_id) || []
 
+  // Get follow request statuses
+  const { data: followRequests } = await supabase
+    .from('follow_requests')
+    .select('target_id, status')
+    .eq('requester_id', session.user.id)
+
+  const requestStatusMap = Object.fromEntries(
+    (followRequests || []).map((req: any) => [req.target_id, req.status])
+  )
+
   // Get suggested users (users with most followers that current user doesn't follow)
   const { data: suggested } = await supabase
     .from('profiles')
@@ -82,6 +92,8 @@ export default async function DiscoverPage() {
                   user={user} 
                   currentUserId={session.user.id}
                   isFollowing={false}
+                  isPrivateAccount={user.is_account_private || false}
+                  requestStatus={requestStatusMap[user.id] || 'none'}
                 />
               ))}
             </div>
@@ -102,6 +114,8 @@ export default async function DiscoverPage() {
                   user={user} 
                   currentUserId={session.user.id}
                   isFollowing={followingIds.includes(user.id)}
+                  isPrivateAccount={user.is_account_private || false}
+                  requestStatus={requestStatusMap[user.id] || 'none'}
                 />
               ))}
             </div>

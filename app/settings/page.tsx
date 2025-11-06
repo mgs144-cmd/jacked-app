@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
 import { Navbar } from '@/components/Navbar'
+import Link from 'next/link'
 import { Loader2, Upload, LogOut, User, Shield } from 'lucide-react'
 
 export default function SettingsPage() {
@@ -249,6 +250,17 @@ export default function SettingsPage() {
               )}
             </button>
           </form>
+
+          {/* Privacy Settings Link */}
+          <div className="border-t border-gray-800/60 p-8">
+            <Link
+              href="/settings/privacy"
+              className="w-full px-6 py-4 bg-gray-800/60 border border-gray-700 rounded-xl text-white font-bold hover:bg-gray-700 transition-all flex items-center justify-center space-x-2"
+            >
+              <Shield className="w-5 h-5" />
+              <span>PRIVACY SETTINGS</span>
+            </Link>
+          </div>
 
           {/* Sign Out Section */}
           <div className="border-t border-gray-800/60 p-8">
