@@ -1,10 +1,12 @@
-import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { PostCard } from '@/components/PostCard'
+import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/Navbar'
+import { PostCard } from '@/components/PostCard'
+import { TrendingUp, Flame } from 'lucide-react'
 
 export default async function FeedPage() {
   const supabase = await createClient()
+
   const {
     data: { session },
   } = await supabase.auth.getSession()
@@ -13,49 +15,107 @@ export default async function FeedPage() {
     redirect('/auth/login')
   }
 
-  // Fetch posts with user profiles
+  // Get users the current user is following
+  const { data: following } = await supabase
+    .from('follows')
+    .select('following_id')
+    .eq('follower_id', session.user.id)
+
+  const followingIds = following?.map((f) => f.following_id) || []
+  
+  // Include own posts + posts from followed users
+  const userIdsToShow = [session.user.id, ...followingIds]
+
   const { data: posts, error } = await supabase
     .from('posts')
     .select(`
       *,
-      profiles:user_id(username, avatar_url, full_name)
+      profiles:user_id(username, avatar_url, full_name, is_premium),
+      likes(count),
+      comments(count)
     `)
+    .in('user_id', userIdsToShow)
     .order('created_at', { ascending: false })
     .limit(50)
 
+  const postsWithCounts = posts?.map((post) => ({
+    ...post,
+    like_count: (post as any).likes?.length || 0,
+    comment_count: (post as any).comments?.length || 0,
+  }))
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0 md:pt-20">
+    <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
       <Navbar />
       
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-gray-900">Feed</h1>
+      <div className="max-w-3xl mx-auto px-4 py-6 md:py-8">
+        {/* Page header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
+                Your Feed
+              </h1>
+              <p className="text-gray-400 font-medium">
+                See what the community is lifting
+              </p>
+            </div>
+            <div className="flex items-center space-x-2 px-4 py-2 bg-gradient-primary rounded-xl glow-red-sm">
+              <Flame className="w-5 h-5 text-white" />
+              <span className="text-white font-bold text-sm">LIVE</span>
+            </div>
+          </div>
+
+          {/* Stats bar */}
+          <div className="flex items-center space-x-4 p-4 bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800/60">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="w-5 h-5 text-primary" />
+              <div>
+                <p className="text-xs text-gray-500 font-semibold tracking-wide">TOTAL POSTS</p>
+                <p className="text-xl font-black text-white">{postsWithCounts?.length || 0}</p>
+              </div>
+            </div>
+            <div className="h-10 w-px bg-gray-800"></div>
+            <div>
+              <p className="text-xs text-gray-500 font-semibold tracking-wide">COMMUNITY</p>
+              <p className="text-xl font-black text-white">Growing</p>
+            </div>
+          </div>
+        </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            Error loading posts: {error.message}
+          <div className="bg-red-950/50 border border-primary/50 text-red-400 px-6 py-4 rounded-xl mb-6 backdrop-blur-sm">
+            <p className="font-semibold">Failed to load posts</p>
+            <p className="text-sm mt-1">{error.message}</p>
           </div>
         )}
 
-        {posts && posts.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">No posts yet. Be the first to share!</p>
+        {/* Posts */}
+        {!postsWithCounts || postsWithCounts.length === 0 ? (
+          <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-12 text-center card-elevated">
+            <div className="w-20 h-20 mx-auto mb-4 bg-gray-800 rounded-full flex items-center justify-center">
+              <Flame className="w-10 h-10 text-gray-600" />
+            </div>
+            <p className="text-gray-400 text-lg font-semibold mb-2">No posts yet</p>
+            <p className="text-gray-600 text-sm">Be the first to share your progress!</p>
           </div>
         ) : (
           <div className="space-y-6">
-            {posts?.map((post: any) => (
-              <PostCard
-                key={post.id}
-                post={{
-                  ...post,
-                  profile: post.profiles || null,
-                }}
-                currentUserId={session.user.id}
-              />
+            {postsWithCounts.map((post: any) => (
+              <PostCard key={post.id} post={post} />
             ))}
+          </div>
+        )}
+
+        {/* Load more indicator */}
+        {postsWithCounts && postsWithCounts.length >= 50 && (
+          <div className="mt-8 text-center">
+            <button className="btn-secondary px-8 py-3">
+              <span className="font-bold">LOAD MORE</span>
+            </button>
           </div>
         )}
       </div>
     </div>
   )
 }
-

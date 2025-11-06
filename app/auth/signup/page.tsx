@@ -4,173 +4,209 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { Dumbbell, Loader2 } from 'lucide-react'
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [username, setUsername] = useState('')
   const [fullName, setFullName] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [username, setUsername] = useState('')
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
+    setError('')
     setLoading(true)
 
     try {
-      // Sign up user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName || null,
+            username: username || null,
+          },
+        },
       })
 
-      if (authError) throw authError
+      if (signUpError) throw signUpError
 
-      if (!authData.user) throw new Error('Failed to create user')
+      if (data.user) {
+        setTimeout(async () => {
+          try {
+            const { error: updateError } = await (supabase
+              .from('profiles') as any)
+              .update({
+                username: username || null,
+                full_name: fullName || null,
+              })
+              .eq('id', data.user.id)
 
-      // Update profile (trigger creates it automatically, we just update it)
-      // Wait a moment for trigger to complete
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      const { error: profileError } = await (supabase
-        .from('profiles') as any)
-        .update({
-          username: username || email.split('@')[0],
-          full_name: fullName || null,
-        })
-        .eq('id', authData.user.id)
+            if (updateError) {
+              const { error: insertError } = await (supabase
+                .from('profiles') as any)
+                .insert({
+                  id: data.user.id,
+                  username: username || null,
+                  full_name: fullName || null,
+                })
 
-      // If update fails, profile might not exist yet, try insert as fallback
-      if (profileError) {
-        const { error: insertError } = await (supabase
-          .from('profiles') as any)
-          .insert({
-            id: authData.user.id,
-            username: username || email.split('@')[0],
-            full_name: fullName || null,
-          })
-        if (insertError) throw insertError
+              if (insertError) throw insertError
+            }
+
+            router.push('/feed')
+            router.refresh()
+          } catch (profileError: any) {
+            console.error('Profile creation error:', profileError)
+            setError(profileError.message || 'Failed to create profile')
+            setLoading(false)
+          }
+        }, 1000)
       }
-
-      router.push('/feed')
-      router.refresh()
     } catch (err: any) {
-      setError(err.message || 'Failed to sign up')
-    } finally {
+      setError(err.message || 'Failed to create account')
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold text-center text-primary mb-2">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/3 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="max-w-md w-full space-y-8 relative z-10">
+        {/* Logo and header */}
+        <div className="text-center">
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-primary flex items-center justify-center glow-red-sm">
+              <Dumbbell className="w-10 h-10 text-white" strokeWidth={2.5} />
+            </div>
+          </div>
+          <h1 className="text-5xl md:text-6xl font-logo tracking-[0.2em] text-center text-white mb-4 text-glow">
             JACKED
           </h1>
-          <p className="text-center text-gray-600">
-            Create your account
+          <p className="text-gray-400 text-lg font-medium">
+            Join the community
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
+        {/* Signup form */}
+        <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl p-8 border border-gray-800/60 card-elevated">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="bg-red-950/50 border border-primary/50 text-red-400 px-4 py-3 rounded-xl text-sm font-medium backdrop-blur-sm">
+                {error}
+              </div>
+            )}
 
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name (optional)
-              </label>
-              <input
-                id="fullName"
-                name="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="Your name"
-              />
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="fullName" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+                  FULL NAME (OPTIONAL)
+                </label>
+                <input
+                  id="fullName"
+                  name="fullName"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="input-field w-full"
+                  placeholder="Your name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="username" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+                  USERNAME (OPTIONAL)
+                </label>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="input-field w-full"
+                  placeholder="Choose a username"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+                  EMAIL ADDRESS
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="input-field w-full"
+                  placeholder="your@email.com"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+                  PASSWORD
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={6}
+                  className="input-field w-full"
+                  placeholder="Min. 6 characters"
+                />
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                Username (optional)
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="Choose a username"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="Enter your email"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                minLength={6}
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="Create a password (min. 6 characters)"
-              />
-            </div>
-          </div>
-
-          <div>
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-white font-semibold bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full btn-primary flex items-center justify-center space-x-2 py-4 text-base font-bold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating account...' : 'Sign up'}
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>CREATING ACCOUNT...</span>
+                </>
+              ) : (
+                <span>CREATE ACCOUNT</span>
+              )}
             </button>
-          </div>
+          </form>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-400">
               Already have an account?{' '}
-              <Link href="/auth/login" className="text-primary font-semibold hover:underline">
+              <Link 
+                href="/auth/login" 
+                className="text-primary font-bold hover:text-white transition-colors hover:underline"
+              >
                 Sign in
               </Link>
             </p>
           </div>
-        </form>
+        </div>
+
+        {/* Footer tagline */}
+        <p className="text-center text-gray-600 text-sm font-medium">
+          The social network for lifters
+        </p>
       </div>
     </div>
   )
 }
-

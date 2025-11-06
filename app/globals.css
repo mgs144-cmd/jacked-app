@@ -2,26 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 255, 255, 255;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 10, 10, 10;
+  --red-primary: 149, 6, 6;
+  --red-dark: 122, 5, 5;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-start-rgb));
-  font-family: 'Inter', system-ui, sans-serif;
+  background: linear-gradient(to bottom, #000000, #0a0a0a);
+  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer utilities {
@@ -30,21 +24,131 @@ body {
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar with red accent */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #0a0a0a;
+  border-left: 1px solid #1f1f1f;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
+  background: linear-gradient(180deg, #950606 0%, #7a0505 100%);
+  border-radius: 10px;
+  border: 2px solid #0a0a0a;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: linear-gradient(180deg, #b30808 0%, #950606 100%);
 }
 
+/* Glow effects for emphasis */
+.glow-red {
+  box-shadow: 
+    0 0 20px rgba(var(--red-primary), 0.4),
+    0 0 40px rgba(var(--red-primary), 0.2),
+    0 0 60px rgba(var(--red-primary), 0.1);
+}
+
+.glow-red-sm {
+  box-shadow: 
+    0 0 10px rgba(var(--red-primary), 0.5),
+    0 0 20px rgba(var(--red-primary), 0.25);
+}
+
+/* Text glow for brand elements */
+.text-glow {
+  text-shadow: 
+    0 0 10px rgba(var(--red-primary), 0.6),
+    0 0 20px rgba(var(--red-primary), 0.4),
+    0 0 30px rgba(var(--red-primary), 0.2);
+}
+
+.text-glow-subtle {
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 10px rgba(var(--red-primary), 0.3);
+}
+
+/* Card styling */
+.card-elevated {
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.6),
+    0 2px 4px -1px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+}
+
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 16px -2px rgba(0, 0, 0, 0.7),
+    0 4px 8px -2px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(var(--red-primary), 0.15);
+}
+
+/* Gradient backgrounds */
+.bg-gradient-metal {
+  background: linear-gradient(
+    135deg,
+    rgba(20, 20, 20, 0.95) 0%,
+    rgba(10, 10, 10, 0.98) 50%,
+    rgba(15, 15, 15, 0.95) 100%
+  );
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #950606 0%, #7a0505 100%);
+}
+
+/* Noise texture overlay for gritty gym feel */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.04;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Main content area */
+main {
+  position: relative;
+  z-index: 1;
+}
+
+/* Button styles */
+.btn-primary {
+  @apply bg-gradient-primary text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all duration-300;
+}
+
+.btn-primary:hover {
+  @apply brightness-110 scale-105 glow-red-sm;
+}
+
+.btn-secondary {
+  @apply bg-gray-800 text-white font-semibold px-6 py-3 rounded-lg border border-gray-700 transition-all duration-300;
+}
+
+.btn-secondary:hover {
+  @apply bg-gray-700 border-gray-600;
+}
+
+/* Input styles */
+.input-field {
+  @apply bg-gray-900/50 border border-gray-800 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all;
+}
+
+/* Premium badge */
+.badge-premium {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gradient-primary text-white glow-red-sm;
+}

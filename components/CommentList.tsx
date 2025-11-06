@@ -1,51 +1,39 @@
 'use client'
 
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { formatDistanceToNow } from 'date-fns'
-import { Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-
-interface Comment {
-  id: string
-  content: string
-  created_at: string
-  user_id: string
-  profile?: {
-    username: string
-    avatar_url: string | null
-    full_name: string | null
-  }
-}
+import { formatDistanceToNow } from 'date-fns'
+import { Trash2, MessageCircle } from 'lucide-react'
 
 interface CommentListProps {
-  comments: Comment[]
+  comments: any[]
 }
 
 export function CommentList({ comments }: CommentListProps) {
-  const { user } = useAuth()
+  const [deleting, setDeleting] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
-  const [deleting, setDeleting] = useState<string | null>(null)
+  const { user } = useAuth()
 
   const handleDelete = async (commentId: string) => {
-    if (!user) return
-    if (!confirm('Are you sure you want to delete this comment?')) return
+    if (!user || !confirm('Delete this comment?')) return
 
     setDeleting(commentId)
     try {
-      const { error } = await (supabase
-        .from('comments') as any)
+      const { error } = await (supabase.from('comments') as any)
         .delete()
         .eq('id', commentId)
         .eq('user_id', user.id)
 
       if (error) throw error
+
       router.refresh()
     } catch (error) {
       console.error('Error deleting comment:', error)
+      alert('Failed to delete comment')
     } finally {
       setDeleting(null)
     }
@@ -53,8 +41,12 @@ export function CommentList({ comments }: CommentListProps) {
 
   if (comments.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        <p>No comments yet. Be the first to comment!</p>
+      <div className="text-center py-12">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gray-800/60 rounded-full flex items-center justify-center">
+          <MessageCircle className="w-8 h-8 text-gray-600" />
+        </div>
+        <p className="text-gray-400 font-semibold">No comments yet</p>
+        <p className="text-gray-600 text-sm mt-1">Be the first to comment!</p>
       </div>
     )
   }
@@ -69,42 +61,44 @@ export function CommentList({ comments }: CommentListProps) {
         }
 
         return (
-          <div key={comment.id} className="flex items-start space-x-3">
-            <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+          <div key={comment.id} className="flex items-start space-x-3 group">
+            {/* Avatar */}
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden ring-2 ring-gray-800 flex-shrink-0">
               {profile.avatar_url ? (
                 <Image
                   src={profile.avatar_url}
                   alt={profile.username}
-                  width={32}
-                  height={32}
+                  width={40}
+                  height={40}
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600 text-xs font-semibold">
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-gray-300 text-sm font-bold">
                   {profile.username?.[0]?.toUpperCase() || 'U'}
                 </div>
               )}
             </div>
 
+            {/* Comment Content */}
             <div className="flex-1 min-w-0">
-              <div className="bg-gray-50 rounded-lg px-4 py-2">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-sm text-gray-900">
+              <div className="bg-gray-800/60 backdrop-blur-sm rounded-xl px-4 py-3 border border-gray-800/60">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-sm text-white">
                     {profile.username}
                   </span>
                   {user?.id === comment.user_id && (
                     <button
                       onClick={() => handleDelete(comment.id)}
                       disabled={deleting === comment.id}
-                      className="text-gray-400 hover:text-red-600 transition-colors"
+                      className="text-gray-500 hover:text-red-400 transition-colors p-1"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   )}
                 </div>
-                <p className="text-gray-900 text-sm">{comment.content}</p>
+                <p className="text-gray-200 text-sm leading-relaxed">{comment.content}</p>
               </div>
-              <p className="text-xs text-gray-500 mt-1 ml-4">
+              <p className="text-xs text-gray-600 mt-2 ml-4 font-medium">
                 {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
               </p>
             </div>
@@ -114,4 +108,3 @@ export function CommentList({ comments }: CommentListProps) {
     </div>
   )
 }
-

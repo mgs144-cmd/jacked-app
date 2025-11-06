@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Send } from 'lucide-react'
 
 interface CommentFormProps {
   postId: string
@@ -13,7 +13,7 @@ interface CommentFormProps {
 export function CommentForm({ postId, userId }: CommentFormProps) {
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState('')
   const router = useRouter()
   const supabase = createClient()
 
@@ -21,19 +21,17 @@ export function CommentForm({ postId, userId }: CommentFormProps) {
     e.preventDefault()
     if (!content.trim()) return
 
+    setError('')
     setLoading(true)
-    setError(null)
 
     try {
-      const { error: commentError } = await (supabase
-        .from('comments') as any)
-        .insert({
-          post_id: postId,
-          user_id: userId,
-          content: content.trim(),
-        })
+      const { error: insertError } = await (supabase.from('comments') as any).insert({
+        post_id: postId,
+        user_id: userId,
+        content: content.trim(),
+      })
 
-      if (commentError) throw commentError
+      if (insertError) throw insertError
 
       setContent('')
       router.refresh()
@@ -45,9 +43,9 @@ export function CommentForm({ postId, userId }: CommentFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={handleSubmit} className="space-y-3 mb-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg text-sm">
+        <div className="bg-red-950/50 border border-primary/50 text-red-400 px-4 py-3 rounded-xl text-sm font-medium backdrop-blur-sm">
           {error}
         </div>
       )}
@@ -58,22 +56,24 @@ export function CommentForm({ postId, userId }: CommentFormProps) {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Add a comment..."
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="input-field flex-1 py-3"
           disabled={loading}
         />
         <button
           type="submit"
           disabled={loading || !content.trim()}
-          className="px-6 py-2 border border-transparent rounded-lg text-white font-semibold bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+          className="btn-primary px-6 py-3 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
-            'Post'
+            <>
+              <Send className="w-5 h-5" />
+              <span className="hidden md:inline font-bold">POST</span>
+            </>
           )}
         </button>
       </div>
     </form>
   )
 }
-
