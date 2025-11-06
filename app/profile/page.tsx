@@ -34,10 +34,10 @@ export default async function ProfilePage() {
     .eq('user_id', session.user.id)
     .order('created_at', { ascending: false })
 
-  const postsWithCounts = posts?.map((post) => ({
+  const postsWithCounts = posts?.map((post: any) => ({
     ...post,
-    like_count: (post as any).likes?.length || 0,
-    comment_count: (post as any).comments?.length || 0,
+    like_count: post.likes?.length || 0,
+    comment_count: post.comments?.length || 0,
   }))
 
   const totalLikes = postsWithCounts?.reduce((sum, post) => sum + post.like_count, 0) || 0

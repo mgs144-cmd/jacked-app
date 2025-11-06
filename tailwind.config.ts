@@ -25,7 +25,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        logo: ['var(--font-black-ops-one)', 'cursive'],
+        logo: ['Black Ops One', 'cursive'],
       },
       borderRadius: {
         DEFAULT: '12px',

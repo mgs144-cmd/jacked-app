@@ -1,14 +1,9 @@
 import type { Metadata } from 'next'
-import { Inter, Black_Ops_One } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 
 const inter = Inter({ subsets: ['latin'] })
-const blackOpsOne = Black_Ops_One({ 
-  weight: '400',
-  subsets: ['latin'],
-  variable: '--font-black-ops-one',
-})
 
 export const metadata: Metadata = {
   title: 'Jacked - Social Fitness for Lifters',
@@ -22,7 +17,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} ${blackOpsOne.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap" rel="stylesheet" />
+      </head>
+      <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>
     </html>
