@@ -38,10 +38,10 @@ export default async function FeedPage() {
     .order('created_at', { ascending: false })
     .limit(50)
 
-  const postsWithCounts = posts?.map((post) => ({
+  const postsWithCounts = posts?.map((post: any) => ({
     ...post,
-    like_count: (post as any).likes?.length || 0,
-    comment_count: (post as any).comments?.length || 0,
+    like_count: post.likes?.length || 0,
+    comment_count: post.comments?.length || 0,
   }))
 
   return (
