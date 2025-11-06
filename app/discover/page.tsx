@@ -29,7 +29,7 @@ export default async function DiscoverPage() {
     .select('following_id')
     .eq('follower_id', session.user.id)
 
-  const followingIds = following?.map((f) => f.following_id) || []
+  const followingIds = following?.map((f: any) => f.following_id) || []
 
   // Get suggested users (users with most followers that current user doesn't follow)
   const { data: suggested } = await supabase

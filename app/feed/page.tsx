@@ -21,7 +21,7 @@ export default async function FeedPage() {
     .select('following_id')
     .eq('follower_id', session.user.id)
 
-  const followingIds = following?.map((f) => f.following_id) || []
+  const followingIds = following?.map((f: any) => f.following_id) || []
   
   // Include own posts + posts from followed users
   const userIdsToShow = [session.user.id, ...followingIds]
