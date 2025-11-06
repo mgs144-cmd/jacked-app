@@ -31,16 +31,29 @@ export default function SignUpPage() {
 
       if (!authData.user) throw new Error('Failed to create user')
 
-      // Create profile
+      // Update profile (trigger creates it automatically, we just update it)
+      // Wait a moment for trigger to complete
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
       const { error: profileError } = await (supabase
         .from('profiles') as any)
-        .insert({
-          id: authData.user.id,
+        .update({
           username: username || email.split('@')[0],
           full_name: fullName || null,
         })
+        .eq('id', authData.user.id)
 
-      if (profileError) throw profileError
+      // If update fails, profile might not exist yet, try insert as fallback
+      if (profileError) {
+        const { error: insertError } = await (supabase
+          .from('profiles') as any)
+          .insert({
+            id: authData.user.id,
+            username: username || email.split('@')[0],
+            full_name: fullName || null,
+          })
+        if (insertError) throw insertError
+      }
 
       router.push('/feed')
       router.refresh()

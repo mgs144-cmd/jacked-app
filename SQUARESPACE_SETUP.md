@@ -15,29 +15,29 @@ This is the best approach for a seamless user experience.
 
 2. **Set up custom domain:**
    - In Vercel dashboard, go to Settings > Domains
-   - Add `app.jackedfit.com` (or your preferred subdomain)
+   - Add `app.jackedlifting.com` (or your preferred subdomain)
    - Vercel will provide DNS instructions
 
 3. **Configure DNS:**
-   - Go to your domain registrar (where you bought `jackedfit.com`)
+   - Go to your domain registrar (where you bought `jackedlifting.com`)
    - Add a CNAME record:
-     - **Name**: `app` (or leave blank if using root)
+     - **Name**: `app` (for `app.jackedlifting.com`)
      - **Value**: `cname.vercel-dns.com` (or the value Vercel provides)
      - **TTL**: 3600 (or default)
 
 4. **Wait for DNS propagation:**
    - This can take a few minutes to 48 hours
-   - Check with: `nslookup app.jackedfit.com`
+   - Check with: `nslookup app.jackedlifting.com`
 
 5. **Link from Squarespace:**
    - In Squarespace, add a button or link
-   - Set the URL to: `https://app.jackedfit.com`
+   - Set the URL to: `https://app.jackedlifting.com`
    - Use consistent styling (red accent color #950606)
 
 ### Example Squarespace Button Code:
 
 ```html
-<a href="https://app.jackedfit.com" class="button" style="background-color: #950606; color: white; padding: 12px 24px; border-radius: 12px; text-decoration: none; font-weight: 600;">
+<a href="https://app.jackedlifting.com" class="button" style="background-color: #950606; color: white; padding: 12px 24px; border-radius: 12px; text-decoration: none; font-weight: 600;">
   Get Started
 </a>
 ```
@@ -73,7 +73,7 @@ To make both sites feel connected:
 
 ## Troubleshooting
 
-- **CNAME not working?** Check DNS propagation with `dig app.jackedfit.com`
+- **CNAME not working?** Check DNS propagation with `dig app.jackedlifting.com`
 - **SSL certificate issues?** Vercel handles SSL automatically
 - **404 errors?** Check Vercel deployment logs
 - **Auth redirects failing?** Verify `NEXT_PUBLIC_APP_URL` environment variable

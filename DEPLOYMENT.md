@@ -85,6 +85,8 @@ Complete guide for deploying the Jacked app to production.
    STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
    NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
    ```
+   
+   **Note:** After setting up your custom domain (Step 5), update `NEXT_PUBLIC_APP_URL` to `https://app.jackedlifting.com`
 
 4. **Deploy:**
    - Click "Deploy"
@@ -100,10 +102,24 @@ Complete guide for deploying the Jacked app to production.
 
 ## Step 5: Custom Domain (Optional)
 
+**Important:** Use a subdomain for your app (e.g., `app.jackedlifting.com`), NOT your main domain. Your main domain should stay pointed to Squarespace.
+
 1. In Vercel, go to Settings > Domains
-2. Add your domain (e.g., `app.jackedfit.com`)
-3. Follow DNS instructions
-4. Wait for DNS propagation
+2. Add your subdomain (e.g., `app.jackedlifting.com`)
+   - **DO NOT** use your root domain (e.g., `jackedlifting.com`) - that should stay with Squarespace
+   - Use a subdomain like `app.jackedlifting.com`
+3. Follow DNS instructions from Vercel
+4. Go to your domain registrar (where you bought your domain)
+5. Add a CNAME record:
+   - **Name**: `app` (for `app.jackedlifting.com`)
+   - **Value**: The CNAME target Vercel provides (usually `cname.vercel-dns.com`)
+   - **TTL**: 3600 (or default)
+6. Wait for DNS propagation (can take a few minutes to 48 hours)
+7. Link from Squarespace: Add a button/link on your Squarespace page pointing to `https://app.jackedlifting.com`
+
+**Example:**
+- Main domain: `jackedlifting.com` → Squarespace (marketing site)
+- Subdomain: `app.jackedlifting.com` → Vercel (your app)
 
 ## Step 6: Test Everything
 
