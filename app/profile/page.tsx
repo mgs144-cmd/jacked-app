@@ -41,17 +41,17 @@ export default async function ProfilePage() {
         <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm">
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
             <div className="w-24 h-24 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-              {profile?.avatar_url ? (
+              {(profile as any)?.avatar_url ? (
                 <Image
-                  src={profile.avatar_url}
-                  alt={profile.username || 'Profile'}
+                  src={(profile as any).avatar_url}
+                  alt={(profile as any).username || 'Profile'}
                   width={96}
                   height={96}
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600 text-3xl font-semibold">
-                  {profile?.username?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || 'U'}
+                  {(profile as any)?.username?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || 'U'}
                 </div>
               )}
             </div>
@@ -59,20 +59,20 @@ export default async function ProfilePage() {
             <div className="flex-1">
               <div className="flex items-center space-x-3 mb-2">
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {profile?.username || profile?.full_name || 'User'}
+                  {(profile as any)?.username || (profile as any)?.full_name || 'User'}
                 </h1>
-                {profile?.is_premium && (
+                {(profile as any)?.is_premium && (
                   <span className="flex items-center space-x-1 text-primary">
                     <Crown className="w-5 h-5 fill-current" />
                     <span className="text-sm font-semibold">Jacked+</span>
                   </span>
                 )}
               </div>
-              {profile?.full_name && profile.full_name !== profile.username && (
-                <p className="text-gray-600 mb-2">{profile.full_name}</p>
+              {(profile as any)?.full_name && (profile as any).full_name !== (profile as any).username && (
+                <p className="text-gray-600 mb-2">{(profile as any).full_name}</p>
               )}
-              {profile?.bio && (
-                <p className="text-gray-700 mb-2">{profile.bio}</p>
+              {(profile as any)?.bio && (
+                <p className="text-gray-700 mb-2">{(profile as any).bio}</p>
               )}
               <p className="text-sm text-gray-500">{session.user.email}</p>
             </div>
@@ -84,7 +84,7 @@ export default async function ProfilePage() {
           <h2 className="text-xl font-bold mb-4 text-gray-900">Your Posts</h2>
           {posts && posts.length === 0 ? (
             <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-              <p className="text-gray-500 mb-4">You haven't posted anything yet.</p>
+              <p className="text-gray-500 mb-4">You haven&apos;t posted anything yet.</p>
             </div>
           ) : (
             <div className="space-y-6">

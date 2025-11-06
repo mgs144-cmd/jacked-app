@@ -42,7 +42,7 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
       setLikeCount(likesData?.length || 0)
 
       if (currentUserId) {
-        const userLiked = likesData?.some((like) => like.user_id === currentUserId)
+        const userLiked = likesData?.some((like: any) => like.user_id === currentUserId)
         setLiked(userLiked || false)
       }
 
@@ -64,8 +64,8 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
 
     if (liked) {
       // Unlike
-      await supabase
-        .from('likes')
+      await (supabase
+        .from('likes') as any)
         .delete()
         .eq('post_id', post.id)
         .eq('user_id', currentUserId)
@@ -73,10 +73,12 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
       setLikeCount((prev) => prev - 1)
     } else {
       // Like
-      await supabase.from('likes').insert({
-        post_id: post.id,
-        user_id: currentUserId,
-      })
+      await (supabase
+        .from('likes') as any)
+        .insert({
+          post_id: post.id,
+          user_id: currentUserId,
+        })
       setLiked(true)
       setLikeCount((prev) => prev + 1)
     }

@@ -23,11 +23,12 @@ export default function PremiumPage() {
       return
     }
 
+    const currentUser = user
     async function checkPremiumStatus() {
-      const { data } = await supabase
-        .from('profiles')
+      const { data } = await (supabase
+        .from('profiles') as any)
         .select('is_premium')
-        .eq('id', user.id)
+        .eq('id', currentUser.id)
         .single()
 
       if (data) {
@@ -86,7 +87,7 @@ export default function PremiumPage() {
           <div className="bg-white rounded-lg border-2 border-primary p-8 text-center">
             <Crown className="w-12 h-12 text-primary mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-2 text-gray-900">
-              You're a Jacked+ Member!
+              You&apos;re a Jacked+ Member!
             </h2>
             <p className="text-gray-600 mb-4">
               Thank you for supporting Jacked. Enjoy your premium perks.

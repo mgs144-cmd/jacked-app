@@ -89,25 +89,25 @@ export default async function PostPage({
                   {profile.username || 'Unknown'}
                 </p>
                 <p className="text-sm text-gray-500">
-                  {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                  {formatDistanceToNow(new Date((post as any).created_at), { addSuffix: true })}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Media */}
-          {post.media_url && (
+          {(post as any).media_url && (
             <div className="relative w-full aspect-square bg-gray-100">
-              {post.media_type === 'video' ? (
+              {(post as any).media_type === 'video' ? (
                 <video
-                  src={post.media_url}
+                  src={(post as any).media_url}
                   controls
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <Image
-                  src={post.media_url}
-                  alt={post.content || 'Post image'}
+                  src={(post as any).media_url}
+                  alt={(post as any).content || 'Post image'}
                   fill
                   className="object-cover"
                 />
@@ -116,11 +116,11 @@ export default async function PostPage({
           )}
 
           {/* Content */}
-          {post.content && (
+          {(post as any).content && (
             <div className="p-4">
               <div className="text-gray-900">
                 <span className="font-semibold mr-2">{profile.username}</span>
-                <span>{post.content}</span>
+                <span>{(post as any).content}</span>
               </div>
             </div>
           )}

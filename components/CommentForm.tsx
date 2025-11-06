@@ -25,11 +25,13 @@ export function CommentForm({ postId, userId }: CommentFormProps) {
     setError(null)
 
     try {
-      const { error: commentError } = await supabase.from('comments').insert({
-        post_id: postId,
-        user_id: userId,
-        content: content.trim(),
-      })
+      const { error: commentError } = await (supabase
+        .from('comments') as any)
+        .insert({
+          post_id: postId,
+          user_id: userId,
+          content: content.trim(),
+        })
 
       if (commentError) throw commentError
 

@@ -36,8 +36,8 @@ export function CommentList({ comments }: CommentListProps) {
 
     setDeleting(commentId)
     try {
-      const { error } = await supabase
-        .from('comments')
+      const { error } = await (supabase
+        .from('comments') as any)
         .delete()
         .eq('id', commentId)
         .eq('user_id', user.id)

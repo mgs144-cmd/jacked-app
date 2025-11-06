@@ -28,12 +28,13 @@ export default function SettingsPage() {
       return
     }
 
+    const currentUser = user
     async function loadProfile() {
       setLoading(true)
-      const { data } = await supabase
-        .from('profiles')
+      const { data } = await (supabase
+        .from('profiles') as any)
         .select('*')
-        .eq('id', user.id)
+        .eq('id', currentUser.id)
         .single()
 
       if (data) {
@@ -94,8 +95,8 @@ export default function SettingsPage() {
       }
 
       // Update profile
-      const { error: updateError } = await supabase
-        .from('profiles')
+      const { error: updateError } = await (supabase
+        .from('profiles') as any)
         .update({
           username: username || null,
           full_name: fullName || null,

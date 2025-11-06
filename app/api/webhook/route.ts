@@ -3,9 +3,7 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { headers } from 'next/headers'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-02-20.acacia',
-})
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
@@ -35,10 +33,14 @@ export async function POST(request: Request) {
     const userId = session.client_reference_id
 
     if (userId) {
-      await supabase
-        .from('profiles')
+      const { error } = await (supabase
+        .from('profiles') as any)
         .update({ is_premium: true })
         .eq('id', userId)
+      
+      if (error) {
+        console.error('Error updating premium status:', error)
+      }
     }
   }
 

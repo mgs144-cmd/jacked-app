@@ -81,12 +81,14 @@ export default function CreatePage() {
       }
 
       // Create post
-      const { error: postError } = await supabase.from('posts').insert({
-        user_id: user.id,
-        content: content || null,
-        media_url: mediaUrl,
-        media_type: mediaType,
-      })
+      const { error: postError } = await (supabase
+        .from('posts') as any)
+        .insert({
+          user_id: user.id,
+          content: content || null,
+          media_url: mediaUrl,
+          media_type: mediaType,
+        })
 
       if (postError) throw postError
 

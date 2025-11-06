@@ -32,11 +32,13 @@ export default function SignUpPage() {
       if (!authData.user) throw new Error('Failed to create user')
 
       // Create profile
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: authData.user.id,
-        username: username || email.split('@')[0],
-        full_name: fullName || null,
-      })
+      const { error: profileError } = await (supabase
+        .from('profiles') as any)
+        .insert({
+          id: authData.user.id,
+          username: username || email.split('@')[0],
+          full_name: fullName || null,
+        })
 
       if (profileError) throw profileError
 
