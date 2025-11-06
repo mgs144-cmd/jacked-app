@@ -36,6 +36,7 @@ export default function SignUpPage() {
       if (signUpError) throw signUpError
 
       if (data.user) {
+        const userId = data.user.id
         setTimeout(async () => {
           try {
             const { error: updateError } = await (supabase
@@ -44,13 +45,13 @@ export default function SignUpPage() {
                 username: username || null,
                 full_name: fullName || null,
               })
-              .eq('id', data.user.id)
+              .eq('id', userId)
 
             if (updateError) {
               const { error: insertError } = await (supabase
                 .from('profiles') as any)
                 .insert({
-                  id: data.user.id,
+                  id: userId,
                   username: username || null,
                   full_name: fullName || null,
                 })
