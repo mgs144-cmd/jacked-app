@@ -61,7 +61,7 @@ export function PostCard({ post }: PostCardProps) {
   }
 
   const handleDelete = async () => {
-    if (!isOwner || !confirm('Delete this post? This cannot be undone.')) return
+    if (!isOwner || !user || !confirm('Delete this post? This cannot be undone.')) return
 
     setIsDeleting(true)
     try {
