@@ -23,7 +23,14 @@ export function PostCard({ post }: PostCardProps) {
   const [showMenu, setShowMenu] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const profile = post.profiles || {
+  // Handle profile data - could be object, array, or null
+  // Check both post.profile (normalized) and post.profiles (raw)
+  let profileData = post.profile || post.profiles
+  if (Array.isArray(profileData)) {
+    profileData = profileData[0] || null
+  }
+  
+  const profile = profileData || {
     username: 'unknown',
     avatar_url: null,
     full_name: null,
@@ -31,6 +38,7 @@ export function PostCard({ post }: PostCardProps) {
   }
 
   const isOwner = user?.id === post.user_id
+  const profileLink = isOwner ? '/profile' : `/user/${post.user_id}`
 
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -96,7 +104,7 @@ export function PostCard({ post }: PostCardProps) {
     <article className="bg-gray-900/60 rounded-2xl border border-gray-800/60 overflow-hidden card-elevated card-hover backdrop-blur-sm">
       {/* Header */}
       <div className="flex items-center justify-between p-5 border-b border-gray-800/40">
-        <Link href="/profile" className="flex items-center space-x-3 group">
+        <Link href={profileLink} className="flex items-center space-x-3 group">
           <div className="relative">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden ring-2 ring-gray-800 group-hover:ring-primary transition-all duration-300">
               {profile.avatar_url ? (

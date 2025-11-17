@@ -53,11 +53,20 @@ export default async function FeedPage() {
   // Combine: following posts first, then public posts
   const posts = [...(followingPosts || []), ...(publicPosts || [])]
 
-  const postsWithCounts = posts?.map((post: any) => ({
-    ...post,
-    like_count: post.likes?.length || 0,
-    comment_count: post.comments?.length || 0,
-  }))
+  const postsWithCounts = posts?.map((post: any) => {
+    // Ensure profile data is properly extracted (handle array or object)
+    let profile = post.profiles
+    if (Array.isArray(profile)) {
+      profile = profile[0] || null
+    }
+    
+    return {
+      ...post,
+      profile: profile, // Normalize to single object
+      like_count: post.likes?.length || 0,
+      comment_count: post.comments?.length || 0,
+    }
+  })
 
   return (
     <div className="min-h-screen pb-20 md:pb-0 md:pt-24">

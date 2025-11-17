@@ -53,7 +53,13 @@ export default async function PostPage({
     .eq('post_id', params.id)
     .order('created_at', { ascending: true })
 
-  const profile = (post as any).profiles || {
+  // Handle profile data - could be object, array, or null
+  let profileData = (post as any).profiles
+  if (Array.isArray(profileData)) {
+    profileData = profileData[0] || null
+  }
+  
+  const profile = profileData || {
     username: 'unknown',
     avatar_url: null,
     full_name: null,

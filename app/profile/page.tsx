@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/Navbar'
 import { PostCard } from '@/components/PostCard'
 import { Crown, Settings, TrendingUp, Calendar } from 'lucide-react'
+import { ProfileMusicPlayer } from '@/components/ProfileMusicPlayer'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -103,7 +104,19 @@ export default async function ProfilePage() {
                   {(profile as any)?.bio && (
                     <p className="text-gray-300 leading-relaxed mb-3 max-w-2xl">{(profile as any).bio}</p>
                   )}
-                  <p className="text-sm text-gray-500 font-medium">{session.user.email}</p>
+                  <p className="text-sm text-gray-500 font-medium mb-4">{session.user.email}</p>
+                  
+                  {/* Profile Song */}
+                  {(profile as any)?.profile_song_title && (profile as any)?.profile_song_artist && (
+                    <div className="mb-4">
+                      <ProfileMusicPlayer
+                        songTitle={(profile as any).profile_song_title}
+                        songArtist={(profile as any).profile_song_artist}
+                        songUrl={(profile as any).profile_song_url || undefined}
+                        spotifyId={(profile as any).profile_song_spotify_id || undefined}
+                      />
+                    </div>
+                  )}
                 </div>
                 <Link
                   href="/settings"

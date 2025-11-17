@@ -6,6 +6,7 @@ import { Navbar } from '@/components/Navbar'
 import { PostCard } from '@/components/PostCard'
 import { FollowButton } from '@/components/FollowButton'
 import { Crown, Calendar, ArrowLeft } from 'lucide-react'
+import { ProfileMusicPlayer } from '@/components/ProfileMusicPlayer'
 
 export default async function UserProfilePage({
   params,
@@ -164,6 +165,18 @@ export default async function UserProfilePage({
                   )}
                   {(profile as any)?.bio && (
                     <p className="text-gray-300 leading-relaxed mb-3 max-w-2xl">{(profile as any).bio}</p>
+                  )}
+                  
+                  {/* Profile Song */}
+                  {(profile as any)?.profile_song_title && (profile as any)?.profile_song_artist && (
+                    <div className="mb-4">
+                      <ProfileMusicPlayer
+                        songTitle={(profile as any).profile_song_title}
+                        songArtist={(profile as any).profile_song_artist}
+                        songUrl={(profile as any).profile_song_url || undefined}
+                        spotifyId={(profile as any).profile_song_spotify_id || undefined}
+                      />
+                    </div>
                   )}
                 </div>
               </div>

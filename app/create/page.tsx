@@ -14,7 +14,7 @@ export default function CreatePage() {
   const [mediaFile, setMediaFile] = useState<File | null>(null)
   const [mediaPreview, setMediaPreview] = useState<string | null>(null)
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null)
-  const [selectedSong, setSelectedSong] = useState<{ title: string; artist: string; url?: string } | null>(null)
+  const [selectedSong, setSelectedSong] = useState<{ title: string; artist: string; url?: string; spotifyId?: string } | null>(null)
   const [isPrivate, setIsPrivate] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -81,6 +81,7 @@ export default function CreatePage() {
         song_title: selectedSong?.title || null,
         song_artist: selectedSong?.artist || null,
         song_url: selectedSong?.url || null,
+        song_spotify_id: selectedSong?.spotifyId || null,
         is_private: isPrivate,
       })
 

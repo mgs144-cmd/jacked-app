@@ -8,6 +8,7 @@ import { useAuth } from '@/app/providers'
 import { Navbar } from '@/components/Navbar'
 import Link from 'next/link'
 import { Loader2, Upload, LogOut, User, Shield } from 'lucide-react'
+import { MusicSelector } from '@/components/MusicSelector'
 
 export default function SettingsPage() {
   const [username, setUsername] = useState('')
@@ -15,6 +16,7 @@ export default function SettingsPage() {
   const [bio, setBio] = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [profileSong, setProfileSong] = useState<{ title: string; artist: string; url?: string; spotifyId?: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,6 +45,14 @@ export default function SettingsPage() {
         setFullName(data.full_name || '')
         setBio(data.bio || '')
         setAvatarPreview(data.avatar_url)
+        if (data.profile_song_title && data.profile_song_artist) {
+          setProfileSong({
+            title: data.profile_song_title,
+            artist: data.profile_song_artist,
+            url: data.profile_song_url || undefined,
+            spotifyId: data.profile_song_spotify_id || undefined,
+          })
+        }
       }
       setLoading(false)
     }
@@ -95,6 +105,10 @@ export default function SettingsPage() {
           full_name: fullName || null,
           bio: bio || null,
           avatar_url: avatarUrl,
+          profile_song_title: profileSong?.title || null,
+          profile_song_artist: profileSong?.artist || null,
+          profile_song_url: profileSong?.url || null,
+          profile_song_spotify_id: profileSong?.spotifyId || null,
         })
         .eq('id', user.id)
 
@@ -230,6 +244,19 @@ export default function SettingsPage() {
                   rows={4}
                   className="input-field w-full resize-none"
                   placeholder="Tell us about yourself..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+                  PROFILE SONG
+                </label>
+                <p className="text-xs text-gray-500 mb-3">This song will play when others visit your profile</p>
+                <MusicSelector
+                  onSelect={setProfileSong}
+                  selectedSong={profileSong}
+                  onClear={() => setProfileSong(null)}
+                  uploadMode="profile"
                 />
               </div>
             </div>
