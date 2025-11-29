@@ -9,6 +9,7 @@ import { Navbar } from '@/components/Navbar'
 import Link from 'next/link'
 import { Loader2, Upload, LogOut, User, Shield } from 'lucide-react'
 import { MusicSelector } from '@/components/MusicSelector'
+import { ImageCropper } from '@/components/ImageCropper'
 
 export default function SettingsPage() {
   const [username, setUsername] = useState('')
@@ -16,7 +17,10 @@ export default function SettingsPage() {
   const [bio, setBio] = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [showCropper, setShowCropper] = useState(false)
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null)
   const [profileSong, setProfileSong] = useState<{ title: string; artist: string; url?: string; spotifyId?: string } | null>(null)
+  const [fitnessGoal, setFitnessGoal] = useState<'bulk' | 'cut' | 'maintenance' | null>(null)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -53,6 +57,7 @@ export default function SettingsPage() {
             spotifyId: data.profile_song_spotify_id || undefined,
           })
         }
+        setFitnessGoal(data.fitness_goal || null)
       }
       setLoading(false)
     }
@@ -66,10 +71,26 @@ export default function SettingsPage() {
       setAvatarFile(file)
       const reader = new FileReader()
       reader.onloadend = () => {
-        setAvatarPreview(reader.result as string)
+        const imageUrl = reader.result as string
+        setImageToCrop(imageUrl)
+        setShowCropper(true)
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  const handleCropComplete = (croppedImage: string) => {
+    setAvatarPreview(croppedImage)
+    setShowCropper(false)
+    setImageToCrop(null)
+    
+    // Convert cropped image to File for upload
+    fetch(croppedImage)
+      .then(res => res.blob())
+      .then(blob => {
+        const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
+        setAvatarFile(file)
+      })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -98,18 +119,28 @@ export default function SettingsPage() {
         avatarUrl = publicUrl
       }
 
+      // Build update object conditionally to avoid errors if columns don't exist
+      const updateData: any = {
+        username: username || null,
+        full_name: fullName || null,
+        bio: bio || null,
+        avatar_url: avatarUrl,
+        profile_song_title: profileSong?.title || null,
+        profile_song_artist: profileSong?.artist || null,
+        profile_song_url: profileSong?.url || null,
+      }
+      
+      // Only include spotify_id if it exists
+      if (profileSong?.spotifyId) {
+        updateData.profile_song_spotify_id = profileSong.spotifyId
+      }
+      
+      // Add fitness goal
+      updateData.fitness_goal = fitnessGoal || null
+
       const { error: updateError } = await (supabase
         .from('profiles') as any)
-        .update({
-          username: username || null,
-          full_name: fullName || null,
-          bio: bio || null,
-          avatar_url: avatarUrl,
-          profile_song_title: profileSong?.title || null,
-          profile_song_artist: profileSong?.artist || null,
-          profile_song_url: profileSong?.url || null,
-          profile_song_spotify_id: profileSong?.spotifyId || null,
-        })
+        .update(updateData)
         .eq('id', user.id)
 
       if (updateError) throw updateError
@@ -259,6 +290,55 @@ export default function SettingsPage() {
                   uploadMode="profile"
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+                  FITNESS GOAL
+                </label>
+                <p className="text-xs text-gray-500 mb-3">Display your current fitness phase</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFitnessGoal('bulk')}
+                    className={`py-3 px-4 rounded-xl border-2 transition-all font-bold ${
+                      fitnessGoal === 'bulk'
+                        ? 'border-green-600 bg-green-950/30 text-green-400'
+                        : 'border-gray-700 bg-gray-800/40 text-gray-400 hover:border-gray-600'
+                    }`}
+                  >
+                    BULK
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFitnessGoal('cut')}
+                    className={`py-3 px-4 rounded-xl border-2 transition-all font-bold ${
+                      fitnessGoal === 'cut'
+                        ? 'border-red-600 bg-red-950/30 text-red-400'
+                        : 'border-gray-700 bg-gray-800/40 text-gray-400 hover:border-gray-600'
+                    }`}
+                  >
+                    CUT
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFitnessGoal('maintenance')}
+                    className={`py-3 px-4 rounded-xl border-2 transition-all font-bold ${
+                      fitnessGoal === 'maintenance'
+                        ? 'border-gray-600 bg-gray-800/30 text-gray-400'
+                        : 'border-gray-700 bg-gray-800/40 text-gray-400 hover:border-gray-600'
+                    }`}
+                  >
+                    MAINTENANCE
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFitnessGoal(null)}
+                  className="mt-2 text-xs text-gray-500 hover:text-gray-400"
+                >
+                  Clear selection
+                </button>
+              </div>
             </div>
 
             {/* Save Button */}
@@ -301,6 +381,20 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Image Cropper Modal */}
+      {showCropper && imageToCrop && (
+        <ImageCropper
+          image={imageToCrop}
+          onCropComplete={handleCropComplete}
+          onCancel={() => {
+            setShowCropper(false)
+            setImageToCrop(null)
+            setAvatarFile(null)
+          }}
+          aspectRatio={1}
+        />
+      )}
     </div>
   )
 }

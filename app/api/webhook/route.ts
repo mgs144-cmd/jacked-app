@@ -27,19 +27,36 @@ export async function POST(request: Request) {
 
   const supabase = await createClient()
 
-  // Handle subscription events
+  // Handle checkout session completed
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
     const userId = session.client_reference_id
+    const paymentType = session.metadata?.type
 
     if (userId) {
-      const { error } = await (supabase
-        .from('profiles') as any)
-        .update({ is_premium: true })
-        .eq('id', userId)
-      
-      if (error) {
-        console.error('Error updating premium status:', error)
+      if (paymentType === 'onboarding') {
+        // Mark user as having paid onboarding fee
+        const { error } = await (supabase
+          .from('profiles') as any)
+          .update({ 
+            has_paid_onboarding: true,
+            onboarding_payment_id: session.id,
+          })
+          .eq('id', userId)
+        
+        if (error) {
+          console.error('Error updating onboarding payment status:', error)
+        }
+      } else {
+        // Premium subscription
+        const { error } = await (supabase
+          .from('profiles') as any)
+          .update({ is_premium: true })
+          .eq('id', userId)
+        
+        if (error) {
+          console.error('Error updating premium status:', error)
+        }
       }
     }
   }

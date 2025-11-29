@@ -7,8 +7,8 @@ import { useAuth } from '@/app/providers'
 import { MusicSearch } from './MusicSearch'
 
 interface MusicSelectorProps {
-  onSelect: (song: { title: string; artist: string; url?: string; spotifyId?: string }) => void
-  selectedSong?: { title: string; artist: string; url?: string; spotifyId?: string } | null
+  onSelect: (song: { title: string; artist: string; url?: string; spotifyId?: string; albumArt?: string }) => void
+  selectedSong?: { title: string; artist: string; url?: string; spotifyId?: string; albumArt?: string } | null
   onClear?: () => void
   uploadMode?: 'post' | 'profile' // Different buckets for posts vs profiles
 }

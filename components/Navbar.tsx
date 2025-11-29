@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/app/providers'
-import { Home, PlusCircle, User, Settings, Crown, Users } from 'lucide-react'
+import { Home, PlusCircle, User, Settings, Users } from 'lucide-react'
 
 export function Navbar() {
   const pathname = usePathname()
@@ -15,7 +15,6 @@ export function Navbar() {
     { href: '/feed', icon: Home, label: 'Feed' },
     { href: '/discover', icon: Users, label: 'Discover' },
     { href: '/create', icon: PlusCircle, label: 'Post', isPrimary: true },
-    { href: '/premium', icon: Crown, label: 'Premium', isPremium: true },
     { href: '/profile', icon: User, label: 'Profile' },
     { href: '/settings', icon: Settings, label: 'Settings' },
   ]
@@ -63,12 +62,10 @@ export function Navbar() {
                   className={`flex flex-col md:flex-row items-center justify-center space-y-1 md:space-y-0 md:space-x-2 px-3 py-2 rounded-xl transition-all duration-300 ${
                     isActive
                       ? 'text-white bg-gray-800/60 shadow-lg'
-                      : item.isPremium
-                      ? 'text-primary hover:text-white hover:bg-gray-800/40'
                       : 'text-gray-400 hover:text-white hover:bg-gray-800/40'
                   }`}
                 >
-                  <Icon className={`w-5 h-5 ${item.isPremium ? 'fill-current' : ''}`} strokeWidth={2.5} />
+                  <Icon className="w-5 h-5" strokeWidth={2.5} />
                   <span className="text-[10px] md:text-sm font-semibold hidden md:inline">{item.label}</span>
                 </Link>
               )

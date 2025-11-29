@@ -6,6 +6,9 @@ import { Navbar } from '@/components/Navbar'
 import { PostCard } from '@/components/PostCard'
 import { Crown, Settings, TrendingUp, Calendar } from 'lucide-react'
 import { ProfileMusicPlayer } from '@/components/ProfileMusicPlayer'
+import { PRDisplay } from '@/components/PRDisplay'
+import { BadgeDisplay } from '@/components/BadgeDisplay'
+import { FitnessGoalIndicator } from '@/components/FitnessGoalIndicator'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -41,10 +44,35 @@ export default async function ProfilePage() {
       *,
       profiles:user_id(username, avatar_url, full_name, is_premium),
       likes(count),
-      comments(count)
+      comments(count),
+      workout_exercises(*)
     `)
     .eq('user_id', session.user.id)
     .order('created_at', { ascending: false })
+
+  // Get PRs
+  const { data: prs } = await supabase
+    .from('personal_records')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .order('date', { ascending: false })
+
+  // Get badges
+  const { data: userBadges } = await supabase
+    .from('user_badges')
+    .select(`
+      *,
+      badges(*)
+    `)
+    .eq('user_id', session.user.id)
+
+  const badges = userBadges?.map((ub: any) => ({
+    id: ub.badges.id,
+    name: ub.badges.name,
+    description: ub.badges.description,
+    icon_url: ub.badges.icon_url,
+    earned_at: ub.earned_at,
+  })) || []
 
   const postsWithCounts = posts?.map((post: any) => ({
     ...post,
@@ -52,7 +80,6 @@ export default async function ProfilePage() {
     comment_count: post.comments?.length || 0,
   }))
 
-  const totalLikes = postsWithCounts?.reduce((sum, post) => sum + post.like_count, 0) || 0
 
   return (
     <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
@@ -117,6 +144,13 @@ export default async function ProfilePage() {
                       />
                     </div>
                   )}
+                  
+                  {/* Fitness Goal Indicator */}
+                  {(profile as any)?.fitness_goal && (
+                    <div className="mb-4">
+                      <FitnessGoalIndicator goal={(profile as any).fitness_goal} size="md" />
+                    </div>
+                  )}
                 </div>
                 <Link
                   href="/settings"
@@ -148,11 +182,6 @@ export default async function ProfilePage() {
                   </>
                 )}
                 <div className="h-10 w-px bg-gray-800"></div>
-                <div>
-                  <p className="text-2xl font-black text-primary">{totalLikes}</p>
-                  <p className="text-xs text-gray-500 font-semibold tracking-wide">TOTAL LIKES</p>
-                </div>
-                <div className="h-10 w-px bg-gray-800"></div>
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4 text-gray-500" />
                   <p className="text-sm text-gray-500 font-medium">
@@ -163,6 +192,20 @@ export default async function ProfilePage() {
             </div>
           </div>
         </div>
+
+        {/* PRs Section */}
+        {prs && prs.length > 0 && (
+          <div className="mb-10">
+            <PRDisplay prs={prs} userId={session.user.id} isOwnProfile={true} />
+          </div>
+        )}
+
+        {/* Badges Section */}
+        {badges.length > 0 && (
+          <div className="mb-10">
+            <BadgeDisplay badges={badges} />
+          </div>
+        )}
 
         {/* Posts Section */}
         <div>

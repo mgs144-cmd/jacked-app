@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
 import { Navbar } from '@/components/Navbar'
@@ -9,13 +9,17 @@ import { MusicSelector } from '@/components/MusicSelector'
 import { PrivacyToggle } from '@/components/PrivacyToggle'
 import { WorkoutForm } from '@/components/WorkoutForm'
 import { ExerciseAutocomplete } from '@/components/ExerciseAutocomplete'
-import { Loader2, Upload, X, Image as ImageIcon, Video, Trophy } from 'lucide-react'
+import { Loader2, Upload, X, Image as ImageIcon, Video, Trophy, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 
-export default function CreatePage() {
+export default function EditPostPage() {
+  const params = useParams()
+  const postId = params.id as string
   const [content, setContent] = useState('')
   const [mediaFile, setMediaFile] = useState<File | null>(null)
   const [mediaPreview, setMediaPreview] = useState<string | null>(null)
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null)
+  const [existingMediaUrl, setExistingMediaUrl] = useState<string | null>(null)
   const [selectedSong, setSelectedSong] = useState<{ title: string; artist: string; url?: string; spotifyId?: string; albumArt?: string } | null>(null)
   const [isPrivate, setIsPrivate] = useState(false)
   const [isPRPost, setIsPRPost] = useState(false)
@@ -23,11 +27,83 @@ export default function CreatePage() {
   const [prWeight, setPRWeight] = useState('')
   const [prReps, setPRReps] = useState('')
   const [workoutExercises, setWorkoutExercises] = useState<Array<{ exercise_name: string; sets: number | null; reps: number | null; weight: number | null; order_index: number }>>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
   const supabase = createClient()
   const { user } = useAuth()
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/auth/login')
+      return
+    }
+
+    loadPost()
+  }, [user, postId, router])
+
+  const loadPost = async () => {
+    if (!user || !postId) return
+
+    setLoading(true)
+    try {
+      // Load post data
+      const { data: post, error: postError } = await (supabase.from('posts') as any)
+        .select('*')
+        .eq('id', postId)
+        .eq('user_id', user.id)
+        .single()
+
+      if (postError) throw postError
+      if (!post) {
+        router.push('/feed')
+        return
+      }
+
+      // Set form values
+      setContent(post.content || '')
+      setExistingMediaUrl(post.media_url)
+      setMediaType(post.media_type)
+      setMediaPreview(post.media_url)
+      setIsPrivate(post.is_private || false)
+      setIsPRPost(post.is_pr_post || false)
+      setPRExercise(post.pr_exercise || '')
+      setPRWeight(post.pr_weight ? String(post.pr_weight) : '')
+      setPRReps(post.pr_reps ? String(post.pr_reps) : '')
+
+      // Load song if exists
+      if (post.song_title || post.song_artist) {
+        setSelectedSong({
+          title: post.song_title || '',
+          artist: post.song_artist || '',
+          url: post.song_url || undefined,
+          spotifyId: post.song_spotify_id || undefined,
+          albumArt: post.song_album_art_url || undefined,
+        })
+      }
+
+      // Load workout exercises
+      const { data: exercises } = await (supabase.from('workout_exercises') as any)
+        .select('*')
+        .eq('post_id', postId)
+        .order('order_index')
+
+      if (exercises) {
+        setWorkoutExercises(exercises.map((ex: any) => ({
+          exercise_name: ex.exercise_name,
+          sets: ex.sets,
+          reps: ex.reps,
+          weight: ex.weight,
+          order_index: ex.order_index,
+        })))
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to load post')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -48,25 +124,35 @@ export default function CreatePage() {
     setMediaFile(null)
     setMediaPreview(null)
     setMediaType(null)
+    setExistingMediaUrl(null)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user || (!content.trim() && !mediaFile)) {
+    if (!user || (!content.trim() && !mediaPreview && !mediaFile)) {
       setError('Please add some content or media')
       return
     }
 
     setError('')
-    setLoading(true)
+    setSaving(true)
 
     try {
-      let mediaUrl = null
+      let mediaUrl = existingMediaUrl
 
+      // Upload new media if selected
       if (mediaFile) {
         const fileExt = mediaFile.name.split('.').pop()
         const fileName = `${user.id}-${Date.now()}.${fileExt}`
         const bucket = mediaType === 'video' ? 'videos' : 'images'
+
+        // Delete old media if exists
+        if (existingMediaUrl) {
+          const oldFileName = existingMediaUrl.split('/').pop()
+          if (oldFileName) {
+            await supabase.storage.from(bucket).remove([oldFileName])
+          }
+        }
 
         const { error: uploadError } = await supabase.storage
           .from(bucket)
@@ -80,9 +166,8 @@ export default function CreatePage() {
         mediaUrl = publicUrl
       }
 
-      // Build post data conditionally to avoid errors if columns don't exist
-      const postInsertData: any = {
-        user_id: user.id,
+      // Build post data conditionally
+      const postUpdateData: any = {
         content: content.trim() || null,
         media_url: mediaUrl,
         media_type: mediaType,
@@ -99,31 +184,56 @@ export default function CreatePage() {
 
       // Only include spotify_id if it exists
       if (selectedSong?.spotifyId) {
-        postInsertData.song_spotify_id = selectedSong.spotifyId
+        postUpdateData.song_spotify_id = selectedSong.spotifyId
       }
 
-      const { data: postData, error: insertError } = await (supabase.from('posts') as any).insert(postInsertData).select().single()
+      // Update post
+      const { error: updateError } = await (supabase.from('posts') as any)
+        .update(postUpdateData)
+        .eq('id', postId)
+        .eq('user_id', user.id)
 
-      if (insertError) throw insertError
+      if (updateError) throw updateError
 
-      // Create PR record if this is a PR post
-      if (isPRPost && postData && prExercise.trim()) {
-        await (supabase.from('personal_records') as any).insert({
-          user_id: user.id,
+      // Update PR record if this is a PR post
+      if (isPRPost && prExercise.trim()) {
+        const { data: existingPR } = await (supabase.from('personal_records') as any)
+          .select('id')
+          .eq('post_id', postId)
+          .single()
+
+        const prData = {
           exercise_name: prExercise.trim(),
           weight: prWeight ? parseFloat(prWeight) : null,
           reps: prReps ? parseInt(prReps) : null,
-          video_url: mediaUrl || null, // Video is optional now
-          post_id: postData.id,
-        })
+          video_url: mediaUrl || null,
+        }
+
+        if (existingPR) {
+          await (supabase.from('personal_records') as any)
+            .update(prData)
+            .eq('id', existingPR.id)
+        } else {
+          await (supabase.from('personal_records') as any).insert({
+            ...prData,
+            user_id: user.id,
+            post_id: postId,
+          })
+        }
       }
 
-      // Create workout exercises if any
+      // Update workout exercises
+      // Delete existing exercises
+      await (supabase.from('workout_exercises') as any)
+        .delete()
+        .eq('post_id', postId)
+
+      // Insert new exercises
       if (workoutExercises.length > 0 && workoutExercises.some(ex => ex.exercise_name.trim())) {
         const validExercises = workoutExercises
           .filter(ex => ex.exercise_name.trim())
           .map((ex, index) => ({
-            post_id: postData.id,
+            post_id: postId,
             exercise_name: ex.exercise_name.trim(),
             sets: ex.sets,
             reps: ex.reps,
@@ -136,13 +246,22 @@ export default function CreatePage() {
         }
       }
 
-      router.push('/feed')
+      router.push(`/post/${postId}`)
       router.refresh()
     } catch (err: any) {
-      setError(err.message || 'Failed to create post')
+      setError(err.message || 'Failed to update post')
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pb-20 md:pb-0 md:pt-24 flex items-center justify-center">
+        <Navbar />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
@@ -152,8 +271,15 @@ export default function CreatePage() {
       <div className="max-w-3xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-black text-white tracking-tight mb-3">Create Post</h1>
-          <p className="text-gray-400 font-medium">Share your progress with the community</p>
+          <Link
+            href={`/post/${postId}`}
+            className="inline-flex items-center space-x-2 text-gray-400 hover:text-white mb-4 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm font-medium">Back to Post</span>
+          </Link>
+          <h1 className="text-4xl font-black text-white tracking-tight mb-3">Edit Post</h1>
+          <p className="text-gray-400 font-medium">Update your post</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -239,7 +365,7 @@ export default function CreatePage() {
             <p className="text-xs text-gray-500 mt-2 ml-8">PR posts will be highlighted in the feed</p>
           </div>
 
-          {/* PR Details - Only show if PR post */}
+          {/* PR Details */}
           {isPRPost && (
             <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-primary/30 p-6 space-y-4 glow-red-sm">
               <div className="flex items-center space-x-2 mb-4">
@@ -323,23 +449,23 @@ export default function CreatePage() {
           <div className="flex space-x-4">
             <button
               type="button"
-              onClick={() => router.back()}
+              onClick={() => router.push(`/post/${postId}`)}
               className="flex-1 btn-secondary py-4 text-base font-bold tracking-wide"
             >
               CANCEL
             </button>
             <button
               type="submit"
-              disabled={loading || (!content.trim() && !mediaFile)}
+              disabled={saving || (!content.trim() && !mediaPreview && !mediaFile)}
               className="flex-1 btn-primary py-4 text-base font-bold tracking-wide flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
+              {saving ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>POSTING...</span>
+                  <span>SAVING...</span>
                 </>
               ) : (
-                <span>POST</span>
+                <span>SAVE CHANGES</span>
               )}
             </button>
           </div>
@@ -348,3 +474,4 @@ export default function CreatePage() {
     </div>
   )
 }
+

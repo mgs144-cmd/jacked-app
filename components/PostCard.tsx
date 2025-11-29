@@ -3,7 +3,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import { Heart, MessageCircle, MoreVertical, Crown, Trash2, Music } from 'lucide-react'
+import { Heart, MessageCircle, MoreVertical, Crown, Trash2, Trophy, Globe, Lock, Edit } from 'lucide-react'
+import { PostMusicPlayer } from './PostMusicPlayer'
+import { WorkoutDetails } from './WorkoutDetails'
 import { formatDistanceToNow } from 'date-fns'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
@@ -22,6 +24,8 @@ export function PostCard({ post }: PostCardProps) {
   const [isLiking, setIsLiking] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isPrivate, setIsPrivate] = useState(post.is_private || false)
+  const [isUpdatingPrivacy, setIsUpdatingPrivacy] = useState(false)
 
   // Handle profile data - could be object, array, or null
   // Check both post.profile (normalized) and post.profiles (raw)
@@ -100,8 +104,47 @@ export function PostCard({ post }: PostCardProps) {
     }
   }
 
+  const handleTogglePrivacy = async () => {
+    if (!isOwner || !user || isUpdatingPrivacy) return
+
+    setIsUpdatingPrivacy(true)
+    const newPrivacy = !isPrivate
+
+    try {
+      const { error } = await (supabase.from('posts') as any)
+        .update({ is_private: newPrivacy })
+        .eq('id', post.id)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      setIsPrivate(newPrivacy)
+      setShowMenu(false)
+      router.refresh()
+    } catch (error) {
+      console.error('Error updating privacy:', error)
+      alert('Failed to update privacy setting')
+    } finally {
+      setIsUpdatingPrivacy(false)
+    }
+  }
+
+  const isPRPost = post.is_pr_post
+
   return (
-    <article className="bg-gray-900/60 rounded-2xl border border-gray-800/60 overflow-hidden card-elevated card-hover backdrop-blur-sm">
+    <article className={`bg-gray-900/60 rounded-2xl border overflow-hidden card-elevated card-hover backdrop-blur-sm ${
+      isPRPost 
+        ? 'border-primary/50 glow-red-sm' 
+        : 'border-gray-800/60'
+    }`}>
+      {/* PR Badge */}
+      {isPRPost && (
+        <div className="bg-gradient-primary px-5 py-2 flex items-center space-x-2">
+          <Trophy className="w-4 h-4 text-white" />
+          <span className="text-white font-bold text-sm">PERSONAL RECORD</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between p-5 border-b border-gray-800/40">
         <Link href={profileLink} className="flex items-center space-x-3 group">
@@ -152,7 +195,39 @@ export function PostCard({ post }: PostCardProps) {
             </button>
             
             {showMenu && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl z-10 overflow-hidden">
+              <div className="absolute right-0 top-full mt-2 w-56 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl z-10 overflow-hidden">
+                <Link
+                  href={`/post/${post.id}/edit`}
+                  className="w-full px-4 py-3 text-left text-white hover:bg-gray-800/60 transition-colors flex items-center space-x-2"
+                  onClick={() => setShowMenu(false)}
+                >
+                  <Edit className="w-4 h-4" />
+                  <span className="font-semibold">Edit Post</span>
+                </Link>
+                <div className="h-px bg-gray-800"></div>
+                <button
+                  onClick={handleTogglePrivacy}
+                  disabled={isUpdatingPrivacy}
+                  className="w-full px-4 py-3 text-left text-white hover:bg-gray-800/60 transition-colors flex items-center justify-between disabled:opacity-50"
+                >
+                  <div className="flex items-center space-x-2">
+                    {isPrivate ? (
+                      <>
+                        <Lock className="w-4 h-4" />
+                        <span className="font-semibold">Followers Only</span>
+                      </>
+                    ) : (
+                      <>
+                        <Globe className="w-4 h-4" />
+                        <span className="font-semibold">Public</span>
+                      </>
+                    )}
+                  </div>
+                  <span className="text-xs text-gray-400">
+                    {isUpdatingPrivacy ? 'Updating...' : 'Change'}
+                  </span>
+                </button>
+                <div className="h-px bg-gray-800"></div>
                 <button
                   onClick={handleDelete}
                   disabled={isDeleting}
@@ -167,27 +242,52 @@ export function PostCard({ post }: PostCardProps) {
         )}
       </div>
 
+      {/* PR Stats - Prominent Display */}
+      {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
+        <div className="px-5 py-6 bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 border-b border-primary/30">
+          <div className="text-center space-y-4">
+            {/* Exercise Name */}
+            {post.pr_exercise && (
+              <div>
+                <p className="text-gray-400 text-xs font-bold tracking-wider uppercase mb-1">Exercise</p>
+                <h3 className="text-2xl md:text-3xl font-black text-white">{post.pr_exercise}</h3>
+              </div>
+            )}
+            
+            {/* Weight and Reps - Large Display */}
+            <div className="flex items-center justify-center space-x-8 md:space-x-12">
+              {post.pr_weight && (
+                <div className="text-center">
+                  <p className="text-gray-400 text-xs font-bold tracking-wider uppercase mb-2">Weight</p>
+                  <div className="flex items-baseline justify-center space-x-1">
+                    <span className="text-4xl md:text-5xl font-black text-primary">{post.pr_weight}</span>
+                    <span className="text-xl md:text-2xl font-bold text-gray-400">lbs</span>
+                  </div>
+                </div>
+              )}
+              
+              {post.pr_reps && (
+                <div className="text-center">
+                  <p className="text-gray-400 text-xs font-bold tracking-wider uppercase mb-2">Reps</p>
+                  <div className="flex items-baseline justify-center">
+                    <span className="text-4xl md:text-5xl font-black text-primary">{post.pr_reps}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Song/Music Info */}
       {(post.song_title || post.song_artist) && (
-        <div className="px-5 py-3 bg-gray-800/40 border-b border-gray-800/40 flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center flex-shrink-0">
-            <Music className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white font-bold text-sm truncate">{post.song_title}</p>
-            <p className="text-gray-400 text-xs truncate">{post.song_artist}</p>
-          </div>
-          {post.song_url && (
-            <a
-              href={post.song_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:text-white transition-colors text-xs font-bold"
-            >
-              PLAY
-            </a>
-          )}
-        </div>
+        <PostMusicPlayer
+          songTitle={post.song_title}
+          songArtist={post.song_artist}
+          songUrl={post.song_url}
+          spotifyId={post.song_spotify_id}
+          albumArt={post.song_album_art_url}
+        />
       )}
 
       {/* Media */}
@@ -220,6 +320,11 @@ export function PostCard({ post }: PostCardProps) {
             {post.content}
           </p>
         </div>
+      )}
+
+      {/* Workout Details */}
+      {post.workout_exercises && post.workout_exercises.length > 0 && (
+        <WorkoutDetails exercises={post.workout_exercises} postId={post.id} />
       )}
 
       {/* Engagement Bar */}

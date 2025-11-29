@@ -18,8 +18,8 @@ interface Track {
 }
 
 interface MusicSearchProps {
-  onSelect: (song: { title: string; artist: string; url?: string; spotifyId?: string }) => void
-  selectedSong?: { title: string; artist: string; url?: string; spotifyId?: string } | null
+  onSelect: (song: { title: string; artist: string; url?: string; spotifyId?: string; albumArt?: string }) => void
+  selectedSong?: { title: string; artist: string; url?: string; spotifyId?: string; albumArt?: string } | null
 }
 
 export function MusicSearch({ onSelect, selectedSong }: MusicSearchProps) {
@@ -89,6 +89,7 @@ export function MusicSearch({ onSelect, selectedSong }: MusicSearchProps) {
       artist: track.artist,
       url: track.preview_url || track.external_urls.spotify || track.external_urls.youtube,
       spotifyId: track.source === 'spotify' ? track.id : undefined,
+      albumArt: track.album_image || undefined,
     })
     setTracks([])
     setQuery('')

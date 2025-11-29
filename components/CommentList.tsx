@@ -12,6 +12,11 @@ interface CommentListProps {
   comments: any[]
 }
 
+// Check if content is a GIF URL
+const isGIF = (content: string) => {
+  return content.startsWith('http') && (content.includes('giphy.com') || content.includes('.gif'))
+}
+
 export function CommentList({ comments }: CommentListProps) {
   const [deleting, setDeleting] = useState<string | null>(null)
   const router = useRouter()
@@ -96,7 +101,18 @@ export function CommentList({ comments }: CommentListProps) {
                     </button>
                   )}
                 </div>
-                <p className="text-gray-200 text-sm leading-relaxed">{comment.content}</p>
+                {isGIF(comment.content) ? (
+                  <div className="relative w-full max-w-xs aspect-square rounded-lg overflow-hidden">
+                    <Image
+                      src={comment.content}
+                      alt="GIF comment"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-gray-200 text-sm leading-relaxed">{comment.content}</p>
+                )}
               </div>
               <p className="text-xs text-gray-600 mt-2 ml-4 font-medium">
                 {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}

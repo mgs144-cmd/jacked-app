@@ -4,7 +4,7 @@
 
 -- First, see all accounts with their usernames
 SELECT 
-  au.id,
+  au.id,SI
   au.email,
   pr.username,
   pr.full_name,
@@ -37,4 +37,5 @@ ORDER BY au.created_at DESC;
 -- - Their profile
 -- - All their posts, likes, comments
 -- - All their follows/follow requests
+
 
