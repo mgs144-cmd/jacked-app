@@ -18,8 +18,7 @@ export function GIFPicker({ onSelect, onClose }: GIFPickerProps) {
   useEffect(() => {
     // Load trending GIFs on mount
     loadTrending()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadTrending = async () => {
     setLoading(true)
@@ -67,6 +66,7 @@ export function GIFPicker({ onSelect, onClose }: GIFPickerProps) {
     }, 500)
 
     return () => clearTimeout(debounceTimer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query])
 
   return (

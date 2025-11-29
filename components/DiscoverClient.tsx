@@ -93,7 +93,7 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
                   currentUserId={currentUserId}
                   isFollowing={followingIds.includes(user.id)}
                   isPrivateAccount={user.is_account_private || false}
-                  requestStatus={requestStatusMap[user.id] || 'none'}
+                  requestStatus={(requestStatusMap[user.id] as 'none' | 'pending' | 'accepted' | 'rejected') || 'none'}
                 />
               ))}
             </div>
@@ -143,7 +143,7 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
                   currentUserId={currentUserId}
                   isFollowing={followingIds.includes(user.id)}
                   isPrivateAccount={user.is_account_private || false}
-                  requestStatus={requestStatusMap[user.id] || 'none'}
+                  requestStatus={(requestStatusMap[user.id] as 'none' | 'pending' | 'accepted' | 'rejected') || 'none'}
                 />
               ))}
             </div>
