@@ -9,6 +9,7 @@ import { MusicSelector } from '@/components/MusicSelector'
 import { PrivacyToggle } from '@/components/PrivacyToggle'
 import { WorkoutForm } from '@/components/WorkoutForm'
 import { ExerciseAutocomplete } from '@/components/ExerciseAutocomplete'
+import Image from 'next/image'
 import { Loader2, Upload, X, Image as ImageIcon, Video, Trophy } from 'lucide-react'
 
 export default function CreatePage() {
@@ -174,10 +175,11 @@ export default function CreatePage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <img
+                  <Image
                     src={mediaPreview}
                     alt="Preview"
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 )}
               </div>

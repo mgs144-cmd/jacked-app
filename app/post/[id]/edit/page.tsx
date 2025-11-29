@@ -9,8 +9,9 @@ import { MusicSelector } from '@/components/MusicSelector'
 import { PrivacyToggle } from '@/components/PrivacyToggle'
 import { WorkoutForm } from '@/components/WorkoutForm'
 import { ExerciseAutocomplete } from '@/components/ExerciseAutocomplete'
-import { Loader2, Upload, X, Image as ImageIcon, Video, Trophy, ArrowLeft } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
+import { Loader2, Upload, X, Image as ImageIcon, Video, Trophy, ArrowLeft } from 'lucide-react'
 
 export default function EditPostPage() {
   const params = useParams()
@@ -41,6 +42,7 @@ export default function EditPostPage() {
     }
 
     loadPost()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, postId, router])
 
   const loadPost = async () => {
@@ -300,10 +302,11 @@ export default function EditPostPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <img
+                  <Image
                     src={mediaPreview}
                     alt="Preview"
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 )}
               </div>

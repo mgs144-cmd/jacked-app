@@ -18,6 +18,7 @@ export function GIFPicker({ onSelect, onClose }: GIFPickerProps) {
   useEffect(() => {
     // Load trending GIFs on mount
     loadTrending()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadTrending = async () => {
@@ -132,7 +133,7 @@ export function GIFPicker({ onSelect, onClose }: GIFPickerProps) {
 
           {!loading && !error && gifs.length === 0 && query && (
             <div className="text-center py-12">
-              <p className="text-gray-400">No GIFs found for "{query}"</p>
+              <p className="text-gray-400">No GIFs found for &quot;{query}&quot;</p>
             </div>
           )}
         </div>

@@ -99,7 +99,7 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
             </div>
           ) : (
             <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-12 text-center">
-              <p className="text-gray-400 text-lg font-semibold">No users found for "{query}"</p>
+              <p className="text-gray-400 text-lg font-semibold">No users found for &quot;{query}&quot;</p>
             </div>
           )}
         </div>
