@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, TrendingUp, Users } from 'lucide-react'
+import { Search, TrendingUp } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { UserCard } from '@/components/UserCard'
 
@@ -124,35 +124,6 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
               />
             ))}
           </div>
-        </div>
-      )}
-
-      {/* All Users - Only show when not searching */}
-      {!isSearching && (
-        <div>
-          <div className="flex items-center space-x-3 mb-6">
-            <Users className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-black text-white tracking-tight">All Users</h2>
-          </div>
-          {users.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {users.map((user: any) => (
-                <UserCard 
-                  key={user.id} 
-                  user={user} 
-                  currentUserId={currentUserId}
-                  isFollowing={followingIds.includes(user.id)}
-                  isPrivateAccount={user.is_account_private || false}
-                  requestStatus={(requestStatusMap[user.id] as 'none' | 'pending' | 'accepted' | 'rejected' | undefined) || 'none'}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-12 text-center card-elevated">
-              <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400 text-lg font-semibold">No users found</p>
-            </div>
-          )}
         </div>
       )}
     </>
