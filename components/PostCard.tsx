@@ -345,7 +345,9 @@ export function PostCard({ post }: PostCardProps) {
               }`}
               strokeWidth={2.5}
             />
-            <span className="font-bold text-sm">{likeCount}</span>
+            {likeCount > 0 && (
+              <span className="font-bold text-sm">{likeCount}</span>
+            )}
           </button>
           <Link
             href={`/post/${post.id}`}
@@ -355,7 +357,9 @@ export function PostCard({ post }: PostCardProps) {
               className="w-6 h-6 group-hover:scale-110 transition-all duration-300" 
               strokeWidth={2.5}
             />
-            <span className="font-bold text-sm">{post.comment_count || 0}</span>
+            {post.comment_count > 0 && (
+              <span className="font-bold text-sm">{post.comment_count}</span>
+            )}
           </Link>
         </div>
         {post.comment_count > 0 && (
