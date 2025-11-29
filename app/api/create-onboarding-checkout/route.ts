@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       .eq('id', session.user.id)
       .single()
 
-    if (profile?.has_paid_onboarding) {
+    if ((profile as any)?.has_paid_onboarding) {
       return NextResponse.json({ error: 'Already paid' }, { status: 400 })
     }
 
