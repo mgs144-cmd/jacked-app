@@ -37,69 +37,69 @@ export default function SignUpPage() {
 
       if (data.user) {
         const userId = data.user.id
-        setTimeout(async () => {
-          try {
-            const { error: updateError } = await (supabase
+        
+        // Update/create profile
+        try {
+          const { error: updateError } = await (supabase
+            .from('profiles') as any)
+            .update({
+              username: username || null,
+              full_name: fullName || null,
+            })
+            .eq('id', userId)
+
+          if (updateError) {
+            const { error: insertError } = await (supabase
               .from('profiles') as any)
-              .update({
+              .insert({
+                id: userId,
                 username: username || null,
                 full_name: fullName || null,
               })
-              .eq('id', userId)
 
-            if (updateError) {
-              const { error: insertError } = await (supabase
-                .from('profiles') as any)
-                .insert({
-                  id: userId,
-                  username: username || null,
-                  full_name: fullName || null,
-                })
-
-              if (insertError) throw insertError
+            if (insertError) {
+              console.error('Profile insert error:', insertError)
+              // Continue anyway - profile might already exist
             }
-
-            // Redirect to payment checkout
-            try {
-              const response = await fetch('/api/create-onboarding-checkout', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-              })
-
-              const data = await response.json()
-
-              if (!response.ok) {
-                console.error('Checkout error:', data)
-                // If checkout fails, redirect to payment required page
-                router.push('/payment-required')
-                return
-              }
-
-              if (data.url) {
-                // Redirect to Stripe checkout
-                window.location.href = data.url
-                return
-              } else {
-                // No URL received, redirect to payment required page
-                console.error('No checkout URL received:', data)
-                router.push('/payment-required')
-                return
-              }
-            } catch (checkoutErr: any) {
-              console.error('Checkout fetch error:', checkoutErr)
-              // If checkout fails, redirect to payment required page
-              router.push('/payment-required')
-              return
-            }
-          } catch (profileError: any) {
-            console.error('Profile creation error:', profileError)
-            setError(profileError.message || 'Failed to create profile')
-            setLoading(false)
           }
-        }, 1000)
+
+          // Immediately redirect to payment checkout
+          const response = await fetch('/api/create-onboarding-checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          })
+
+          const checkoutData = await response.json()
+
+          if (!response.ok) {
+            console.error('Checkout API error:', checkoutData)
+            // Redirect to payment required page if checkout fails
+            router.push('/payment-required')
+            return
+          }
+
+          if (checkoutData.url) {
+            // Success - redirect to Stripe checkout
+            window.location.href = checkoutData.url
+            return
+          } else {
+            // No URL - redirect to payment required page
+            console.error('No checkout URL in response:', checkoutData)
+            router.push('/payment-required')
+            return
+          }
+        } catch (err: any) {
+          console.error('Signup flow error:', err)
+          setError(err.message || 'Failed to complete signup. Please try again.')
+          setLoading(false)
+          // Still redirect to payment page as fallback
+          setTimeout(() => {
+            router.push('/payment-required')
+          }, 2000)
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to create account')
