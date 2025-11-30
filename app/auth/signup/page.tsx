@@ -64,31 +64,53 @@ export default function SignUpPage() {
           }
 
           // Immediately redirect to payment checkout
-          const response = await fetch('/api/create-onboarding-checkout', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          })
+          try {
+            const response = await fetch('/api/create-onboarding-checkout', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+            })
 
-          const checkoutData = await response.json()
+            const checkoutData = await response.json()
 
-          if (!response.ok) {
-            console.error('Checkout API error:', checkoutData)
-            // Redirect to payment required page if checkout fails
-            router.push('/payment-required')
-            return
-          }
+            if (!response.ok) {
+              console.error('Checkout API error:', {
+                status: response.status,
+                statusText: response.statusText,
+                data: checkoutData,
+              })
+              setError(checkoutData.error || 'Failed to start payment process. Please try again or contact support.')
+              setLoading(false)
+              // Still redirect to payment required page as fallback
+              setTimeout(() => {
+                router.push('/payment-required')
+              }, 3000)
+              return
+            }
 
-          if (checkoutData.url) {
-            // Success - redirect to Stripe checkout
-            window.location.href = checkoutData.url
-            return
-          } else {
-            // No URL - redirect to payment required page
-            console.error('No checkout URL in response:', checkoutData)
-            router.push('/payment-required')
+            if (checkoutData.url) {
+              // Success - redirect to Stripe checkout
+              window.location.href = checkoutData.url
+              return
+            } else {
+              // No URL - redirect to payment required page
+              console.error('No checkout URL in response:', checkoutData)
+              setError('Payment system error. Please try again or contact support.')
+              setLoading(false)
+              setTimeout(() => {
+                router.push('/payment-required')
+              }, 3000)
+              return
+            }
+          } catch (fetchError: any) {
+            console.error('Network error creating checkout:', fetchError)
+            setError('Network error. Please check your connection and try again.')
+            setLoading(false)
+            setTimeout(() => {
+              router.push('/payment-required')
+            }, 3000)
             return
           }
         } catch (err: any) {

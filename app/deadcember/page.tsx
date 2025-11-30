@@ -65,7 +65,7 @@ export default async function DeadcemberPage() {
     : { data: [] }
 
   const allPosts = [...(publicPosts || []), ...(privatePosts || [])]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   return (
     <div className="min-h-screen pb-20 md:pb-0 md:pt-24">

@@ -8,6 +8,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Stripe key is configured
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error('STRIPE_SECRET_KEY is not configured')
+      return NextResponse.json({ error: 'Payment system not configured' }, { status: 500 })
+    }
+
     const supabase = await createClient()
     const {
       data: { session },
@@ -29,35 +35,57 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Stripe checkout session
-    const checkoutSession = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: 'Jacked App - One-Time Onboarding Fee',
-              description: 'One-time $0.99 charge to create your account',
+    try {
+      const checkoutSession = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: 'Jacked App - One-Time Onboarding Fee',
+                description: 'One-time $0.99 charge to create your account',
+              },
+              unit_amount: 99, // $0.99 in cents
             },
-            unit_amount: 99, // $0.99 in cents
+            quantity: 1,
           },
-          quantity: 1,
+        ],
+        mode: 'payment',
+        success_url: `${request.nextUrl.origin}/feed?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${request.nextUrl.origin}/payment-required?canceled=true`,
+        client_reference_id: session.user.id,
+        metadata: {
+          user_id: session.user.id,
+          type: 'onboarding',
         },
-      ],
-      mode: 'payment',
-      success_url: `${request.nextUrl.origin}/feed?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${request.nextUrl.origin}/payment-required?canceled=true`,
-      client_reference_id: session.user.id,
-      metadata: {
-        user_id: session.user.id,
-        type: 'onboarding',
-      },
-    })
+      })
 
-    return NextResponse.json({ url: checkoutSession.url })
+      if (!checkoutSession.url) {
+        console.error('Stripe checkout session created but no URL returned')
+        return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 })
+      }
+
+      return NextResponse.json({ url: checkoutSession.url })
+    } catch (stripeError: any) {
+      console.error('Stripe API error:', {
+        message: stripeError.message,
+        type: stripeError.type,
+        code: stripeError.code,
+        statusCode: stripeError.statusCode,
+        raw: stripeError.raw,
+      })
+      return NextResponse.json({ 
+        error: stripeError.message || 'Failed to create checkout session',
+        details: process.env.NODE_ENV === 'development' ? stripeError : undefined
+      }, { status: 500 })
+    }
   } catch (error: any) {
-    console.error('Stripe error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('Unexpected error in checkout route:', error)
+    return NextResponse.json({ 
+      error: error.message || 'An unexpected error occurred',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    }, { status: 500 })
   }
 }
 

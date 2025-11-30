@@ -26,18 +26,17 @@ export async function POST(request: NextRequest) {
     const volume = weight * reps * sets
 
     // Get user's current Deadcember total
-    const { data: userTotal } = await supabase.rpc('get_user_deadcember_total', {
+    const { data: userTotal } = await (supabase.rpc as any)('get_user_deadcember_total', {
       p_user_id: session.user.id,
     })
 
     const newPersonalTotal = (userTotal || 0) + volume
 
     // Get global total
-    const { data: globalTotal } = await supabase.rpc('get_global_deadcember_total')
+    const { data: globalTotal } = await (supabase.rpc as any)('get_global_deadcember_total')
 
     // Create Deadcember entry
-    const { data: entry, error: entryError } = await supabase
-      .from('deadcember_entries')
+    const { data: entry, error: entryError } = await (supabase.from('deadcember_entries') as any)
       .insert({
         user_id: session.user.id,
         exercise_type,
@@ -52,8 +51,7 @@ export async function POST(request: NextRequest) {
     if (entryError) throw entryError
 
     // Create Deadcember post
-    const { data: post, error: postError } = await supabase
-      .from('posts')
+    const { data: post, error: postError } = await (supabase.from('posts') as any)
       .insert({
         user_id: session.user.id,
         content: `💀 Deadcember Log: ${exercise_type.toUpperCase()} - ${weight}lbs × ${reps} reps × ${sets} sets = ${volume.toLocaleString()}lbs total volume`,
@@ -68,8 +66,7 @@ export async function POST(request: NextRequest) {
     if (postError) throw postError
 
     // Update entry with post_id
-    await supabase
-      .from('deadcember_entries')
+    await (supabase.from('deadcember_entries') as any)
       .update({ post_id: post.id })
       .eq('id', entry.id)
 

@@ -28,8 +28,7 @@ export function DeadcemberPRTracker() {
     if (!user) return
     setLoading(true)
     try {
-      const { data, error: fetchError } = await supabase
-        .from('deadcember_prs')
+      const { data, error: fetchError } = await (supabase.from('deadcember_prs') as any)
         .select('*')
         .eq('user_id', user.id)
         .eq('year', currentYear)
@@ -63,8 +62,7 @@ export function DeadcemberPRTracker() {
         return
       }
 
-      const { error: upsertError } = await supabase
-        .from('deadcember_prs')
+      const { error: upsertError } = await (supabase.from('deadcember_prs') as any)
         .upsert({
           user_id: user.id,
           year: currentYear,
@@ -95,8 +93,7 @@ export function DeadcemberPRTracker() {
         return
       }
 
-      const { error: upsertError } = await supabase
-        .from('deadcember_prs')
+      const { error: upsertError } = await (supabase.from('deadcember_prs') as any)
         .upsert({
           user_id: user.id,
           year: currentYear,
@@ -157,7 +154,7 @@ export function DeadcemberPRTracker() {
             />
             <button
               onClick={handleSaveStartingPR}
-              disabled={!startingPR || saving || (progress !== null && startingPR)}
+              disabled={!startingPR || saving || (progress !== null && !!startingPR)}
               className="btn-secondary px-6 font-bold disabled:opacity-50"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'SAVE'}
