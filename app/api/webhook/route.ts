@@ -1,53 +1,70 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import Stripe from 'stripe'
 import { headers } from 'next/headers'
+import crypto from 'crypto'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET!
 
 export async function POST(request: Request) {
   const body = await request.text()
   const headersList = headers()
-  const signature = headersList.get('stripe-signature')
+  const signature = headersList.get('paddle-signature')
 
   if (!signature) {
     return NextResponse.json({ error: 'No signature' }, { status: 400 })
   }
 
-  let event: Stripe.Event
-
+  // Verify Paddle webhook signature
   try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+    const expectedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(body)
+      .digest('hex')
+    
+    if (signature !== expectedSignature) {
+      console.error('Paddle webhook signature verification failed')
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+    }
   } catch (err: any) {
     console.error('Webhook signature verification failed:', err.message)
     return NextResponse.json({ error: err.message }, { status: 400 })
   }
 
+  let event: any
+  try {
+    event = JSON.parse(body)
+  } catch (err: any) {
+    console.error('Failed to parse webhook body:', err.message)
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
+
   const supabase = await createClient()
 
-  // Handle checkout session completed
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as Stripe.Checkout.Session
-    const userId = session.client_reference_id
-    const paymentType = session.metadata?.type
+  // Handle transaction completed (payment succeeded)
+  if (event.event_type === 'transaction.completed' || event.event_type === 'transaction.payment_succeeded') {
+    const transaction = event.data
+    const customData = transaction.custom_data || {}
+    const userId = customData.user_id || transaction.customer_id
 
     if (userId) {
+      const paymentType = customData.type || 'onboarding'
+
       if (paymentType === 'onboarding') {
         // Mark user as having paid onboarding fee
         const { error } = await (supabase
           .from('profiles') as any)
           .update({ 
             has_paid_onboarding: true,
-            onboarding_payment_id: session.id,
+            onboarding_payment_id: transaction.id,
           })
           .eq('id', userId)
         
         if (error) {
           console.error('Error updating onboarding payment status:', error)
+        } else {
+          console.log(`User ${userId} marked as paid onboarding fee`)
         }
-      } else {
+      } else if (paymentType === 'premium') {
         // Premium subscription
         const { error } = await (supabase
           .from('profiles') as any)
@@ -58,14 +75,13 @@ export async function POST(request: Request) {
           console.error('Error updating premium status:', error)
         }
       }
+    } else {
+      console.error('No user ID found in transaction:', transaction)
     }
   }
 
-  if (event.type === 'customer.subscription.deleted') {
-    const subscription = event.data.object as Stripe.Subscription
-    // You'd need to store Stripe customer ID in your database to map back to user
-    // For now, this is a placeholder
-  }
+  // Handle other Paddle events if needed
+  // transaction.payment_failed, transaction.refunded, etc.
 
   return NextResponse.json({ received: true })
 }
