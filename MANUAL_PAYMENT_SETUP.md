@@ -32,7 +32,7 @@ Or update `app/admin/page.tsx` to check for your specific email.
 
 In Vercel, add environment variables:
 ```
-NEXT_PUBLIC_PAYPAL_LINK=https://paypal.me/yourusername/0.99
+NEXT_PUBLIC_PAYPAL_LINK=https://paypal.me/jackedapp/0.99
 NEXT_PUBLIC_BMC_LINK=https://buymeacoffee.com/yourusername
 ```
 
