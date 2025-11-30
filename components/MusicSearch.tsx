@@ -70,30 +70,17 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
         return
       }
 
-      // Only show tracks with preview URLs - the API already filters for preview URLs
+      // Spotify deprecated preview_url - show tracks anyway with note
       if (spotifyData.tracks && spotifyData.tracks.length > 0) {
-        // The API already filtered for tracks with preview_url, so just use them
-        // Only do a final check to reject YouTube URLs (shouldn't happen, but safety check)
-        const validTracks = spotifyData.tracks.filter((track: Track) => {
-          if (!track.preview_url) return false
-          // Reject YouTube URLs (shouldn't be in Spotify results, but check anyway)
-          const isYouTube = track.preview_url.includes('youtube.com') || track.preview_url.includes('youtu.be')
-          return !isYouTube
-        })
-        
-        if (validTracks.length > 0) {
-          setSearchSource('spotify')
-          setTracks(validTracks)
-          setError(null)
-          setSearching(false)
-          return
+        setSearchSource('spotify')
+        setTracks(spotifyData.tracks)
+        if (spotifyData.note) {
+          setError(`⚠️ ${spotifyData.note}\n\n💡 Tip: Use the "Upload" tab to upload MP3 files for in-app playback!`)
         } else {
-          // All tracks were filtered out (shouldn't happen)
-          setError(`No valid preview clips found for "${searchQuery}".\n\nTry:\n• A different song or artist\n• Some songs don't have preview clips available`)
-          setTracks([])
-          setSearching(false)
-          return
+          setError(null)
         }
+        setSearching(false)
+        return
       }
 
       // No tracks returned from Spotify
@@ -160,16 +147,13 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
 
   const handleSelect = (track: Track) => {
     console.log('Track selected:', track)
-    // Only use preview_url for in-app playback - no fallback to web URLs
-    if (!track.preview_url) {
-      console.error('Track selected without preview URL - this should not happen')
-      return
-    }
     
+    // Spotify deprecated preview_url - use external Spotify link
+    // User will need to open it externally or upload their own audio
     const selectedSong = {
       title: track.name,
       artist: track.artist,
-      url: track.preview_url, // Only use preview URL for in-app playback
+      url: track.preview_url || track.external_urls?.spotify || undefined, // Use Spotify link if no preview
       spotifyId: track.source === 'spotify' ? track.id : undefined,
       albumArt: track.album_image || undefined,
     }

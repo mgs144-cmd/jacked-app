@@ -65,10 +65,11 @@ export async function GET(request: NextRequest) {
     const tokenData = await tokenResponse.json()
     const accessToken = tokenData.access_token
 
-    // Search for tracks - try US market first, then global if needed
-    // Some tracks have previews in different markets
+    // Search for tracks - try without market restriction first
+    // Market restrictions can prevent preview URLs from being returned
+    // Try global search first to get maximum preview availability
     let searchResponse = await fetch(
-      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=50&market=US`,
+      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=50`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -95,16 +96,17 @@ export async function GET(request: NextRequest) {
 
     let searchData = await searchResponse.json()
     
-    // If US market returns few previews, try without market restriction (global)
-    // This sometimes returns more tracks with previews
+    // Check if we got any previews with global search
     const testTracks = searchData.tracks?.items || []
     const tracksWithPreviews = testTracks.filter((t: any) => t.preview_url && t.preview_url.trim() !== '')
     
-    // If less than 5 tracks have previews, try global search
-    if (tracksWithPreviews.length < 5 && testTracks.length > 0) {
-      console.log(`US market returned ${tracksWithPreviews.length} tracks with previews out of ${testTracks.length} total, trying global search...`)
-      const globalResponse = await fetch(
-        `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=50`,
+    console.log(`Global search returned ${tracksWithPreviews.length} tracks with previews out of ${testTracks.length} total`)
+    
+    // If no previews with global search, try US market as fallback
+    if (tracksWithPreviews.length === 0 && testTracks.length > 0) {
+      console.log('No previews with global search, trying US market...')
+      const usResponse = await fetch(
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=50&market=US`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -112,103 +114,59 @@ export async function GET(request: NextRequest) {
         }
       )
       
-      if (globalResponse.ok) {
-        const globalData = await globalResponse.json()
-        const globalTracks = globalData.tracks?.items || []
-        const globalWithPreviews = globalTracks.filter((t: any) => t.preview_url && t.preview_url.trim() !== '')
+      if (usResponse.ok) {
+        const usData = await usResponse.json()
+        const usTracks = usData.tracks?.items || []
+        const usWithPreviews = usTracks.filter((t: any) => t.preview_url && t.preview_url.trim() !== '')
         
-        console.log(`Global search returned ${globalWithPreviews.length} tracks with previews out of ${globalTracks.length} total`)
+        console.log(`US market returned ${usWithPreviews.length} tracks with previews out of ${usTracks.length} total`)
         
-        // Use global results if they have more previews
-        if (globalWithPreviews.length > tracksWithPreviews.length) {
-          console.log('Using global search results (more previews)')
-          searchData = globalData
-        } else {
-          console.log('Using US market results')
+        // Use US results if they have previews
+        if (usWithPreviews.length > 0) {
+          console.log('Using US market results (has previews)')
+          searchData = usData
         }
       }
     }
 
-    // Format tracks for our app - ONLY return tracks with preview URLs
+    // Format tracks for our app
+    // NOTE: Spotify deprecated preview_url in Nov 2024 - it now returns null for all tracks
+    // We'll return tracks with Spotify links that can be opened externally
     const allTracks = searchData.tracks.items || []
     
     console.log(`Received ${allTracks.length} tracks from Spotify`)
+    console.log('NOTE: Spotify deprecated preview_url - all tracks will have null preview_url')
     
-    // Debug: Log first few tracks to see what we're getting
-    if (allTracks.length > 0) {
-      const sampleTrack = allTracks[0]
-      console.log('=== FIRST TRACK FULL STRUCTURE ===')
-      console.log(JSON.stringify({
-        name: sampleTrack.name,
-        id: sampleTrack.id,
-        preview_url: sampleTrack.preview_url,
-        external_urls: sampleTrack.external_urls,
-        // Show all keys to see what's available
-        availableKeys: Object.keys(sampleTrack).slice(0, 20)
-      }, null, 2))
-      
-      // Check multiple tracks - show raw preview_url values
-      console.log('=== PREVIEW URL STATUS FOR FIRST 10 TRACKS ===')
-      allTracks.slice(0, 10).forEach((t: any, index: number) => {
-        console.log(`Track ${index + 1}: "${t.name}" by ${t.artists?.[0]?.name}`)
-        console.log(`  preview_url: ${JSON.stringify(t.preview_url)}`)
-        console.log(`  type: ${typeof t.preview_url}`)
-        console.log(`  truthy: ${!!t.preview_url}`)
-        console.log(`  length: ${t.preview_url?.length || 'N/A'}`)
-      })
-    } else {
-      console.log('WARNING: No tracks returned from Spotify API')
-    }
-    
-    const tracksWithPreviews = allTracks.filter((track: any) => {
-      // Only include tracks with preview_url (Spotify preview URLs are direct MP3 links)
-      const previewUrl = track.preview_url
-      
-      // Very permissive check - accept anything that's not null/undefined/empty
-      const hasPreview = previewUrl != null && 
-                        previewUrl !== undefined && 
-                        previewUrl !== '' && 
-                        String(previewUrl).trim().length > 0
-      
-      if (!hasPreview && allTracks.indexOf(track) < 5) {
-        console.log(`❌ Filtered out: "${track.name}" - preview_url: ${JSON.stringify(previewUrl)} (${typeof previewUrl})`)
-      } else if (hasPreview && allTracks.indexOf(track) < 3) {
-        console.log(`✅ Accepted: "${track.name}" - preview_url: ${previewUrl?.substring(0, 50)}...`)
-      }
-      
-      return hasPreview
-    })
-    
-    console.log(`Spotify search: Found ${allTracks.length} total tracks, ${tracksWithPreviews.length} with preview URLs`)
-    
-    // Log sample preview URLs for debugging
-    if (tracksWithPreviews.length > 0) {
-      console.log('Sample preview URLs:', tracksWithPreviews.slice(0, 3).map((t: any) => ({
-        name: t.name,
-        preview_url: t.preview_url?.substring(0, 50) + '...'
-      })))
-    } else if (allTracks.length > 0) {
-      // Log why tracks were filtered out
-      console.log('Tracks filtered out - preview URL status:', allTracks.slice(0, 5).map((t: any) => ({
-        name: t.name,
-        preview_url: t.preview_url || 'MISSING',
-        preview_url_length: t.preview_url?.length || 0
-      })))
-    }
-    
-    // Only return tracks with preview URLs - no fallback to web URLs
-    if (tracksWithPreviews.length === 0) {
-      console.log('No tracks with preview URLs found')
-      // Provide more helpful error message
-      const errorMsg = allTracks.length > 0
-        ? `Found ${allTracks.length} songs but none have preview clips available.\n\nThis is common - not all songs on Spotify have preview clips.\n\nTry:\n• A different song or artist\n• More popular songs often have previews`
-        : `No songs found for "${query}".\n\nTry:\n• A different song or artist\n• Check spelling`
-      
+    // Since preview_url is deprecated, we can't filter by it
+    // Return tracks with their Spotify links - users can open them externally
+    // Or they can use the Upload tab to upload their own audio files
+    if (allTracks.length === 0) {
       return NextResponse.json({ 
         tracks: [],
-        error: errorMsg
+        error: `No songs found for "${query}".\n\nTry:\n• A different song or artist\n• Check spelling`
       })
     }
+    
+    // Return tracks with Spotify links (even though preview_url is null)
+    // The client will handle opening Spotify links externally
+    const tracks = allTracks.slice(0, 20).map((track: any) => ({
+      id: track.id,
+      name: track.name,
+      artist: track.artists.map((a: any) => a.name).join(', '),
+      album: track.album.name,
+      preview_url: null, // Spotify deprecated this - always null now
+      external_urls: {
+        spotify: track.external_urls.spotify,
+      },
+      album_image: track.album.images?.[0]?.url,
+      source: 'spotify',
+    }))
+
+    console.log(`Returning ${tracks.length} tracks (preview_url deprecated by Spotify)`)
+    return NextResponse.json({ 
+      tracks,
+      note: 'Spotify deprecated preview_url. Use Upload tab for in-app playback, or tracks will open in Spotify.'
+    })
     
     const tracks = tracksWithPreviews.slice(0, 20).map((track: any) => ({
       id: track.id,
