@@ -65,9 +65,10 @@ export async function GET(request: NextRequest) {
     const tokenData = await tokenResponse.json()
     const accessToken = tokenData.access_token
 
-    // Search for tracks - use market parameter to get more previews
-    // Market=US usually has the most previews available
-    const searchResponse = await fetch(
+    // Search for tracks - try multiple markets to get more previews
+    // Some tracks have previews in different markets
+    // Try US first (most common), then fallback to other markets if needed
+    let searchResponse = await fetch(
       `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=50&market=US`,
       {
         headers: {
@@ -75,6 +76,27 @@ export async function GET(request: NextRequest) {
         },
       }
     )
+    
+    // If US market returns no previews, try without market restriction (global)
+    // This sometimes returns more tracks with previews
+    if (searchResponse.ok) {
+      const testData = await searchResponse.json()
+      const testTracks = testData.tracks?.items || []
+      const tracksWithPreviews = testTracks.filter((t: any) => t.preview_url)
+      
+      // If less than 5 tracks have previews, try global search
+      if (tracksWithPreviews.length < 5 && testTracks.length > 0) {
+        console.log(`US market returned ${tracksWithPreviews.length} tracks with previews, trying global search...`)
+        searchResponse = await fetch(
+          `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=50`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        )
+      }
+    }
 
     if (!searchResponse.ok) {
       const errorData = await searchResponse.json().catch(() => ({}))
