@@ -21,6 +21,7 @@ export function DeadcemberPRTracker() {
   useEffect(() => {
     if (!user) return
     loadPRData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
   const loadPRData = async () => {

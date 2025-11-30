@@ -75,7 +75,7 @@ export default async function ProfilePage() {
   })) || []
 
   // Get Deadcember total (only if they have entries)
-  const { data: deadcemberTotal } = await supabase.rpc('get_user_deadcember_total', {
+  const { data: deadcemberTotal } = await (supabase.rpc as any)('get_user_deadcember_total', {
     p_user_id: session.user.id,
   })
   const hasDeadcemberEntries = deadcemberTotal && deadcemberTotal > 0

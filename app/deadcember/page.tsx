@@ -18,13 +18,13 @@ export default async function DeadcemberPage() {
   }
 
   // Get global Deadcember total
-  const { data: globalTotal } = await supabase.rpc('get_global_deadcember_total')
+  const { data: globalTotal } = await (supabase.rpc as any)('get_global_deadcember_total')
   const globalTotalNum = globalTotal || 0
   const goal = 1000000
   const progress = Math.min((globalTotalNum / goal) * 100, 100)
 
   // Get user's Deadcember total
-  const { data: userTotal } = await supabase.rpc('get_user_deadcember_total', {
+  const { data: userTotal } = await (supabase.rpc as any)('get_user_deadcember_total', {
     p_user_id: session.user.id,
   })
   const userTotalNum = userTotal || 0
