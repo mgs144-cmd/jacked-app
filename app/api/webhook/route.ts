@@ -59,20 +59,22 @@ export async function POST(request: Request) {
   // Handle checkout session completed
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
-    const userId = session.client_reference_id
-    const paymentType = session.metadata?.type
+    const userId = session.client_reference_id || session.metadata?.user_id
+    const paymentType = session.metadata?.type || 'onboarding'
 
-    console.log('Processing checkout.session.completed:', {
+    console.log('🔔 Processing checkout.session.completed:', {
       sessionId: session.id,
       userId,
       paymentType,
       paymentStatus: session.payment_status,
-      customerEmail: session.customer_email
+      customerEmail: session.customer_email,
+      clientReferenceId: session.client_reference_id,
+      metadata: session.metadata
     })
 
     // Only process if payment was actually successful
     if (session.payment_status !== 'paid') {
-      console.log(`Payment not completed yet. Status: ${session.payment_status}`)
+      console.log(`⚠️ Payment not completed yet. Status: ${session.payment_status}`)
       return NextResponse.json({ 
         received: true,
         message: `Payment status: ${session.payment_status}`,
@@ -80,65 +82,108 @@ export async function POST(request: Request) {
       })
     }
 
-    if (userId) {
-      if (paymentType === 'onboarding') {
-        // Mark user as having paid onboarding fee
-        const { error, data } = await (supabase
-          .from('profiles') as any)
-          .update({ 
-            has_paid_onboarding: true,
-            onboarding_payment_id: session.id,
-          })
-          .eq('id', userId)
-          .select()
-        
-        if (error) {
-          console.error('❌ Error updating onboarding payment status:', error)
-          return NextResponse.json({ 
-            error: 'Database update failed',
-            details: error.message 
-          }, { status: 500 })
-        } else {
-          console.log(`✅ User ${userId} automatically activated after payment`)
-          return NextResponse.json({ 
-            success: true,
-            message: `User ${userId} payment processed and account activated`,
-            userId,
-            sessionId: session.id
-          })
-        }
-      } else {
-        // Premium subscription
-        const { error } = await (supabase
-          .from('profiles') as any)
-          .update({ is_premium: true })
-          .eq('id', userId)
-        
-        if (error) {
-          console.error('Error updating premium status:', error)
-          return NextResponse.json({ 
-            error: 'Database update failed',
-            details: error.message 
-          }, { status: 500 })
-        } else {
-          console.log(`✅ User ${userId} premium status updated`)
-          return NextResponse.json({ 
-            success: true,
-            message: `User ${userId} premium activated`,
-            userId
-          })
-        }
-      }
-    } else {
+    if (!userId) {
       console.error('❌ No user ID in checkout session:', {
         sessionId: session.id,
         clientReferenceId: session.client_reference_id,
-        metadata: session.metadata
+        metadata: session.metadata,
+        customerEmail: session.customer_email
       })
+      
+      // Try to find user by email as fallback
+      if (session.customer_email) {
+        console.log('🔍 Attempting to find user by email:', session.customer_email)
+        const { data: profileByEmail } = await (supabase
+          .from('profiles') as any)
+          .select('id')
+          .eq('email', session.customer_email)
+          .single()
+        
+        if (profileByEmail) {
+          console.log('✅ Found user by email:', profileByEmail.id)
+          const foundUserId = profileByEmail.id
+          
+          const { error } = await (supabase
+            .from('profiles') as any)
+            .update({ 
+              has_paid_onboarding: true,
+              onboarding_payment_id: session.id,
+            })
+            .eq('id', foundUserId)
+          
+          if (error) {
+            console.error('❌ Error updating payment status:', error)
+            return NextResponse.json({ 
+              error: 'Database update failed',
+              details: error.message 
+            }, { status: 500 })
+          } else {
+            console.log(`✅ User ${foundUserId} activated via email lookup`)
+            return NextResponse.json({ 
+              success: true,
+              message: `User ${foundUserId} payment processed via email lookup`,
+              userId: foundUserId,
+              sessionId: session.id
+            })
+          }
+        }
+      }
+      
       return NextResponse.json({ 
-        error: 'No user ID in session',
+        error: 'No user ID in session and could not find user by email',
         sessionId: session.id
       }, { status: 400 })
+    }
+
+    if (paymentType === 'onboarding') {
+      // Mark user as having paid onboarding fee
+      console.log(`💳 Updating payment status for user ${userId}...`)
+      const { error, data } = await (supabase
+        .from('profiles') as any)
+        .update({ 
+          has_paid_onboarding: true,
+          onboarding_payment_id: session.id,
+        })
+        .eq('id', userId)
+        .select()
+      
+      if (error) {
+        console.error('❌ Error updating onboarding payment status:', error)
+        return NextResponse.json({ 
+          error: 'Database update failed',
+          details: error.message 
+        }, { status: 500 })
+      } else {
+        console.log(`✅ User ${userId} automatically activated after payment`)
+        console.log('Updated profile:', data)
+        return NextResponse.json({ 
+          success: true,
+          message: `User ${userId} payment processed and account activated`,
+          userId,
+          sessionId: session.id
+        })
+      }
+    } else {
+      // Premium subscription
+      const { error } = await (supabase
+        .from('profiles') as any)
+        .update({ is_premium: true })
+        .eq('id', userId)
+      
+      if (error) {
+        console.error('Error updating premium status:', error)
+        return NextResponse.json({ 
+          error: 'Database update failed',
+          details: error.message 
+        }, { status: 500 })
+      } else {
+        console.log(`✅ User ${userId} premium status updated`)
+        return NextResponse.json({ 
+          success: true,
+          message: `User ${userId} premium activated`,
+          userId
+        })
+      }
     }
   }
 

@@ -18,15 +18,53 @@ export function PaymentRequiredClient({ userId }: PaymentRequiredClientProps) {
   // Check payment status periodically and redirect if paid
   useEffect(() => {
     const checkPaymentStatus = async () => {
-      const { data: profile } = await (supabase
-        .from('profiles') as any)
-        .select('has_paid_onboarding')
-        .eq('id', userId)
-        .single()
+      try {
+        const { data: profile, error } = await (supabase
+          .from('profiles') as any)
+          .select('has_paid_onboarding, onboarding_payment_id')
+          .eq('id', userId)
+          .single()
 
-      if ((profile as any)?.has_paid_onboarding) {
-        // User has paid, redirect to feed
-        window.location.href = '/feed'
+        if (error) {
+          console.error('Error checking payment status:', error)
+          return
+        }
+
+        if ((profile as any)?.has_paid_onboarding) {
+          // User has paid, redirect to feed immediately
+          console.log('✅ Payment confirmed, redirecting to feed')
+          window.location.href = '/feed'
+          return
+        }
+
+        // Also check URL params for payment success
+        const urlParams = new URLSearchParams(window.location.search)
+        const sessionId = urlParams.get('session_id')
+        const paymentSuccess = urlParams.get('payment') === 'success'
+
+        if (paymentSuccess && sessionId) {
+          console.log('Payment success detected in URL, verifying...')
+          // Verify payment directly with Stripe
+          const verifyResponse = await fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ session_id: sessionId }),
+          })
+
+          const verifyData = await verifyResponse.json()
+          
+          if (verifyData.paid) {
+            console.log('✅ Payment verified, redirecting...')
+            // Force redirect
+            window.location.href = '/feed'
+          } else {
+            console.log('Payment not yet verified, will check again...')
+          }
+        }
+      } catch (err) {
+        console.error('Error in payment status check:', err)
       }
     }
 
