@@ -122,18 +122,43 @@ export async function GET(request: NextRequest) {
     
     // Debug: Log first few tracks to see what we're getting
     if (allTracks.length > 0) {
-      console.log('Sample tracks from Spotify:', allTracks.slice(0, 3).map((t: any) => ({
+      const sampleTrack = allTracks[0]
+      console.log('First track sample:', {
+        name: sampleTrack.name,
+        artist: sampleTrack.artists?.[0]?.name,
+        hasPreviewUrl: 'preview_url' in sampleTrack,
+        previewUrl: sampleTrack.preview_url,
+        previewUrlType: typeof sampleTrack.preview_url,
+        previewUrlLength: sampleTrack.preview_url?.length,
+        allKeys: Object.keys(sampleTrack).filter(k => k.includes('preview') || k.includes('Preview'))
+      })
+      
+      // Check multiple tracks
+      console.log('Preview URL status for first 5 tracks:', allTracks.slice(0, 5).map((t: any) => ({
         name: t.name,
-        artist: t.artists[0]?.name,
-        hasPreview: !!t.preview_url,
-        previewUrl: t.preview_url || 'null',
-        previewUrlType: typeof t.preview_url
+        preview_url: t.preview_url,
+        isNull: t.preview_url === null,
+        isUndefined: t.preview_url === undefined,
+        isEmpty: t.preview_url === '',
+        truthy: !!t.preview_url
       })))
     }
     
     const tracksWithPreviews = allTracks.filter((track: any) => {
       // Only include tracks with preview_url (Spotify preview URLs are direct MP3 links)
-      const hasPreview = track.preview_url && track.preview_url.trim() !== '' && track.preview_url !== 'null'
+      // Check for null, undefined, empty string, or just falsy values
+      const previewUrl = track.preview_url
+      const hasPreview = previewUrl != null && 
+                        previewUrl !== undefined && 
+                        previewUrl !== '' && 
+                        previewUrl !== 'null' &&
+                        typeof previewUrl === 'string' &&
+                        previewUrl.trim().length > 0
+      
+      if (!hasPreview && allTracks.length > 0 && allTracks.indexOf(track) < 3) {
+        console.log(`Track "${track.name}" filtered out - preview_url:`, previewUrl, 'type:', typeof previewUrl)
+      }
+      
       return hasPreview
     })
     
