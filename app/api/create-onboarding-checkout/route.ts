@@ -45,8 +45,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'payment',
-      success_url: `${request.nextUrl.origin}/feed?payment=success`,
-      cancel_url: `${request.nextUrl.origin}/auth/signup?canceled=true`,
+      success_url: `${request.nextUrl.origin}/feed?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${request.nextUrl.origin}/payment-required?canceled=true`,
       client_reference_id: session.user.id,
       metadata: {
         user_id: session.user.id,

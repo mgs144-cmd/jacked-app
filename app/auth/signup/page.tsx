@@ -60,25 +60,39 @@ export default function SignUpPage() {
             }
 
             // Redirect to payment checkout
-            const response = await fetch('/api/create-onboarding-checkout', {
-              method: 'POST',
-            })
+            try {
+              const response = await fetch('/api/create-onboarding-checkout', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+              })
 
-            if (!response.ok) {
-              throw new Error('Failed to create checkout session')
-            }
+              const data = await response.json()
 
-            const { url, error: checkoutError } = await response.json()
-            
-            if (checkoutError) {
-              throw new Error(checkoutError)
-            }
-            
-            if (url) {
-              window.location.href = url
-            } else {
-              // If no URL, redirect to payment required page
+              if (!response.ok) {
+                console.error('Checkout error:', data)
+                // If checkout fails, redirect to payment required page
+                router.push('/payment-required')
+                return
+              }
+
+              if (data.url) {
+                // Redirect to Stripe checkout
+                window.location.href = data.url
+                return
+              } else {
+                // No URL received, redirect to payment required page
+                console.error('No checkout URL received:', data)
+                router.push('/payment-required')
+                return
+              }
+            } catch (checkoutErr: any) {
+              console.error('Checkout fetch error:', checkoutErr)
+              // If checkout fails, redirect to payment required page
               router.push('/payment-required')
+              return
             }
           } catch (profileError: any) {
             console.error('Profile creation error:', profileError)
