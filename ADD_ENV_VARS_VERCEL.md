@@ -16,10 +16,7 @@
    ```
    STRIPE_SECRET_KEY
    ```
-3. **Value field:** Paste your key:
-   ```
-   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
-   ```
+3. **Value field:** Paste your key (starts with `sk_live_...` or `sk_test_...`)
 4. **Environment checkboxes:** Check ALL THREE:
    - ☑ Production
    - ☑ Preview  
@@ -33,10 +30,7 @@
    ```
    STRIPE_WEBHOOK_SECRET
    ```
-3. **Value field:** Paste your secret:
-   ```
-   whsec_HRqrEdkFBKQPHGePoUH5SFu0dLQHlAnl
-   ```
+3. **Value field:** Paste your secret (starts with `whsec_...`)
 4. **Environment checkboxes:** Check ALL THREE:
    - ☑ Production
    - ☑ Preview
@@ -69,14 +63,12 @@ Run these commands one at a time:
 # Add STRIPE_SECRET_KEY
 vercel env add STRIPE_SECRET_KEY production preview development
 
-# When prompted, paste your key:
-# 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
+# When prompted, paste your key (starts with sk_live_... or sk_test_...)
 
 # Add STRIPE_WEBHOOK_SECRET
 vercel env add STRIPE_WEBHOOK_SECRET production preview development
 
-# When prompted, paste your secret:
-# whsec_HRqrEdkFBKQPHGePoUH5SFu0dLQHlAnl
+# When prompted, paste your secret (starts with whsec_...)
 ```
 
 ---
@@ -149,23 +141,17 @@ After adding variables and redeploying:
 
 ---
 
-## Your Current Keys (from env.local)
+## Your Keys
 
-Based on your local file, you should add:
+Get your keys from:
+- Your `.env.local` file (local development)
+- Stripe Dashboard → Developers → API keys
 
-**STRIPE_SECRET_KEY:**
-```
-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
-```
+**STRIPE_SECRET_KEY:** Your secret key (starts with `sk_live_...` or `sk_test_...`)
 
-**STRIPE_WEBHOOK_SECRET:**
-```
-whsec_HRqrEdkFBKQPHGePoUH5SFu0dLQHlAnl
-```
+**STRIPE_WEBHOOK_SECRET:** Your webhook secret (starts with `whsec_...`)
 
-**Note:** You're using LIVE keys (`sk_live_...`), which means real payments. Make sure that's what you want!
-
-For testing, you might want to use TEST keys first (`sk_test_...`).
+**Note:** If you're using LIVE keys (`sk_live_...`), that means real payments. For testing, use TEST keys first (`sk_test_...`).
 
 ---
 
