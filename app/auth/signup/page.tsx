@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Dumbbell, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
@@ -68,11 +68,17 @@ export default function SignUpPage() {
               throw new Error('Failed to create checkout session')
             }
 
-            const { url } = await response.json()
+            const { url, error: checkoutError } = await response.json()
+            
+            if (checkoutError) {
+              throw new Error(checkoutError)
+            }
+            
             if (url) {
               window.location.href = url
             } else {
-              throw new Error('No checkout URL received')
+              // If no URL, redirect to payment required page
+              router.push('/payment-required')
             }
           } catch (profileError: any) {
             console.error('Profile creation error:', profileError)
@@ -96,13 +102,8 @@ export default function SignUpPage() {
       </div>
 
       <div className="max-w-md w-full space-y-8 relative z-10">
-        {/* Logo and header */}
+        {/* Header */}
         <div className="text-center">
-          <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-primary flex items-center justify-center glow-red-sm">
-              <Dumbbell className="w-10 h-10 text-white" strokeWidth={2.5} />
-            </div>
-          </div>
           <h1 className="text-5xl md:text-6xl font-logo tracking-[0.2em] text-center text-white mb-4 text-glow">
             JACKED
           </h1>

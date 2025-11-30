@@ -30,7 +30,26 @@ export async function middleware(request: NextRequest) {
   )
 
   // Refresh session if expired
-  await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Check payment requirement for protected routes (except auth pages and API routes)
+  if (user && !request.nextUrl.pathname.startsWith('/auth') && !request.nextUrl.pathname.startsWith('/api')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('has_paid_onboarding')
+      .eq('id', user.id)
+      .single()
+
+    // If user hasn't paid and not already on payment page, redirect to payment
+    if (!(profile as any)?.has_paid_onboarding && request.nextUrl.pathname !== '/payment-required') {
+      return NextResponse.redirect(new URL('/payment-required', request.url))
+    }
+
+    // If user has paid and on payment page, redirect to feed
+    if ((profile as any)?.has_paid_onboarding && request.nextUrl.pathname === '/payment-required') {
+      return NextResponse.redirect(new URL('/feed', request.url))
+    }
+  }
 
   return supabaseResponse
 }

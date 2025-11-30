@@ -18,12 +18,19 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
-    // Determine audio URL
+    // Determine audio URL - prioritize preview URLs
     if (songUrl) {
-      setAudioUrl(songUrl)
-    } else if (spotifyId) {
-      // For Spotify, we'd need to fetch preview URL
-      // For now, use the songUrl if available
+      // Check if it's a preview URL (usually from Spotify)
+      if (songUrl.includes('spotify.com') || songUrl.includes('preview')) {
+        setAudioUrl(songUrl)
+      } else if (songUrl.startsWith('http') && (songUrl.endsWith('.mp3') || songUrl.endsWith('.m4a') || songUrl.includes('audio'))) {
+        // Direct audio file URL
+        setAudioUrl(songUrl)
+      } else {
+        // External link - no preview available
+        setAudioUrl(null)
+      }
+    } else {
       setAudioUrl(null)
     }
 
@@ -35,34 +42,50 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     }
   }, [songUrl, spotifyId])
 
-  const handlePlayPause = () => {
+  const handlePlayPause = async () => {
     if (!audioUrl) {
       // If no preview URL, open external link
       if (songUrl) {
         window.open(songUrl, '_blank')
+      } else if (spotifyId) {
+        window.open(`https://open.spotify.com/track/${spotifyId}`, '_blank')
       }
       return
     }
 
-    if (!audioRef.current) {
-      audioRef.current = new Audio(audioUrl)
-      audioRef.current.volume = 0.7
-      audioRef.current.onended = () => setIsPlaying(false)
-      audioRef.current.onerror = () => {
-        setIsPlaying(false)
-        // Fallback to external link if preview fails
-        if (songUrl) {
-          window.open(songUrl, '_blank')
+    try {
+      if (!audioRef.current) {
+        audioRef.current = new Audio(audioUrl)
+        audioRef.current.volume = 0.7
+        audioRef.current.onended = () => setIsPlaying(false)
+        audioRef.current.onerror = () => {
+          setIsPlaying(false)
+          setAudioUrl(null)
+          // Fallback to external link if preview fails
+          if (songUrl) {
+            window.open(songUrl, '_blank')
+          } else if (spotifyId) {
+            window.open(`https://open.spotify.com/track/${spotifyId}`, '_blank')
+          }
         }
       }
-    }
 
-    if (isPlaying) {
-      audioRef.current.pause()
+      if (isPlaying) {
+        audioRef.current.pause()
+        setIsPlaying(false)
+      } else {
+        await audioRef.current.play()
+        setIsPlaying(true)
+      }
+    } catch (error) {
+      console.error('Audio playback error:', error)
       setIsPlaying(false)
-    } else {
-      audioRef.current.play()
-      setIsPlaying(true)
+      // Fallback to external link
+      if (songUrl) {
+        window.open(songUrl, '_blank')
+      } else if (spotifyId) {
+        window.open(`https://open.spotify.com/track/${spotifyId}`, '_blank')
+      }
     }
   }
 

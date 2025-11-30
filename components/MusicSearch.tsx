@@ -38,39 +38,39 @@ export function MusicSearch({ onSelect, selectedSong }: MusicSearchProps) {
     setError(null)
 
     try {
-      // Try Spotify first, fallback to YouTube if it fails
-      let response = await fetch(`/api/search-music?q=${encodeURIComponent(searchQuery)}`)
-      let data = await response.json()
+      // Try Spotify first
+      const spotifyResponse = await fetch(`/api/search-music?q=${encodeURIComponent(searchQuery)}`)
+      const spotifyData = await spotifyResponse.json()
+
+      // If Spotify has results, use them
+      if (spotifyData.tracks && spotifyData.tracks.length > 0) {
+        setSearchSource('spotify')
+        setTracks(spotifyData.tracks)
+        setSearching(false)
+        return
+      }
 
       // If Spotify fails or no results, try YouTube
-      if (data.error || !data.tracks || data.tracks.length === 0) {
+      if (spotifyData.error || !spotifyData.tracks || spotifyData.tracks.length === 0) {
         setSearchSource('youtube')
-        response = await fetch(`/api/search-youtube?q=${encodeURIComponent(searchQuery)}`)
-        data = await response.json()
-      } else {
-        setSearchSource('spotify')
-      }
-      
-      if (!response.ok) {
-        throw new Error('Failed to search songs')
-      }
+        const youtubeResponse = await fetch(`/api/search-youtube?q=${encodeURIComponent(searchQuery)}`)
+        const youtubeData = await youtubeResponse.json()
+        
+        if (!youtubeResponse.ok) {
+          throw new Error(youtubeData.error || 'Failed to search songs')
+        }
 
-      if (data.error && !data.fallback) {
-        throw new Error(data.error)
-      }
-
-      // If YouTube fallback (no API key), show message
-      if (data.fallback) {
-        setError('YouTube API not configured. Using Spotify only.')
-        // Still try to get Spotify results
-        const spotifyResponse = await fetch(`/api/search-music?q=${encodeURIComponent(searchQuery)}`)
-        const spotifyData = await spotifyResponse.json()
-        setTracks(spotifyData.tracks || [])
-      } else {
-        setTracks(data.tracks || [])
+        if (youtubeData.tracks && youtubeData.tracks.length > 0) {
+          setTracks(youtubeData.tracks)
+        } else {
+          // No results from either source
+          setError('No songs found. Try a different search term.')
+          setTracks([])
+        }
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to search songs')
+      console.error('Search error:', err)
+      setError(err.message || 'Failed to search songs. Make sure Spotify API credentials are configured.')
       setTracks([])
     } finally {
       setSearching(false)
