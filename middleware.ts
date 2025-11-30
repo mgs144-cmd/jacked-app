@@ -61,11 +61,16 @@ export async function middleware(request: NextRequest) {
 
   // Check payment requirement for protected routes (except public pages and admin)
   if (user && !isPublicPage && !request.nextUrl.pathname.startsWith('/admin')) {
-    const { data: profile } = await (supabase
+    const { data: profile, error } = await (supabase
       .from('profiles') as any)
-      .select('has_paid_onboarding, is_admin')
+      .select('has_paid_onboarding, is_admin, onboarding_payment_id')
       .eq('id', user.id)
       .single()
+
+    // Log for debugging if there's an error
+    if (error) {
+      console.error('Middleware: Error fetching profile:', error)
+    }
 
     // Allow admins to bypass payment check
     const adminEmail = process.env.ADMIN_EMAIL
@@ -78,13 +83,20 @@ export async function middleware(request: NextRequest) {
       return supabaseResponse
     }
 
+    // If profile doesn't exist yet, allow through (will be created)
+    if (!profile) {
+      return supabaseResponse
+    }
+
+    const hasPaid = (profile as any)?.has_paid_onboarding === true
+
     // If user has paid and on payment page, redirect to feed immediately
-    if ((profile as any)?.has_paid_onboarding && request.nextUrl.pathname === '/payment-required') {
+    if (hasPaid && request.nextUrl.pathname === '/payment-required') {
       return NextResponse.redirect(new URL('/feed', request.url))
     }
 
     // If user hasn't paid and not already on payment page, redirect to payment
-    if (!(profile as any)?.has_paid_onboarding && request.nextUrl.pathname !== '/payment-required') {
+    if (!hasPaid && request.nextUrl.pathname !== '/payment-required') {
       return NextResponse.redirect(new URL('/payment-required', request.url))
     }
   }
