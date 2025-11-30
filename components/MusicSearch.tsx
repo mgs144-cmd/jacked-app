@@ -70,32 +70,26 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
         return
       }
 
-      // Only show tracks with preview URLs - filter Spotify results
+      // Only show tracks with preview URLs - the API already filters for preview URLs
       if (spotifyData.tracks && spotifyData.tracks.length > 0) {
-        // Filter to only tracks with Spotify preview URLs (p.scdn.co) - not YouTube links
-        const tracksWithPreviews = spotifyData.tracks.filter((track: Track) => {
+        // The API already filtered for tracks with preview_url, so just use them
+        // Only do a final check to reject YouTube URLs (shouldn't happen, but safety check)
+        const validTracks = spotifyData.tracks.filter((track: Track) => {
           if (!track.preview_url) return false
-          // Only accept Spotify preview URLs (p.scdn.co) or direct audio files
-          const isSpotifyPreview = track.preview_url.includes('p.scdn.co') || 
-                                   track.preview_url.includes('preview') ||
-                                   (track.preview_url.includes('spotify') && track.preview_url.endsWith('.mp3'))
-          const isDirectAudio = ['.mp3', '.m4a', '.wav', '.ogg', '.aac'].some(ext => 
-            track.preview_url?.toLowerCase().endsWith(ext)
-          )
-          // Reject YouTube URLs
+          // Reject YouTube URLs (shouldn't be in Spotify results, but check anyway)
           const isYouTube = track.preview_url.includes('youtube.com') || track.preview_url.includes('youtu.be')
-          return (isSpotifyPreview || isDirectAudio) && !isYouTube
+          return !isYouTube
         })
         
-        if (tracksWithPreviews.length > 0) {
+        if (validTracks.length > 0) {
           setSearchSource('spotify')
-          setTracks(tracksWithPreviews)
+          setTracks(validTracks)
           setError(null)
           setSearching(false)
           return
         } else {
-          // Spotify returned tracks but none have previews - don't fallback to YouTube
-          setError(`No songs with preview clips found for "${searchQuery}".\n\nTry:\n• A different song or artist\n• Some songs don't have preview clips available`)
+          // All tracks were filtered out (shouldn't happen)
+          setError(`No valid preview clips found for "${searchQuery}".\n\nTry:\n• A different song or artist\n• Some songs don't have preview clips available`)
           setTracks([])
           setSearching(false)
           return

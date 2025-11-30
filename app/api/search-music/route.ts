@@ -97,12 +97,24 @@ export async function GET(request: NextRequest) {
 
     // Format tracks for our app - ONLY return tracks with preview URLs
     const allTracks = searchData.tracks.items || []
-    const tracksWithPreviews = allTracks.filter((track: any) => track.preview_url)
+    const tracksWithPreviews = allTracks.filter((track: any) => {
+      // Only include tracks with preview_url (Spotify preview URLs are direct MP3 links)
+      return track.preview_url && track.preview_url.trim() !== ''
+    })
     
     console.log(`Spotify search: Found ${allTracks.length} total tracks, ${tracksWithPreviews.length} with preview URLs`)
     
+    // Log sample preview URLs for debugging
+    if (tracksWithPreviews.length > 0) {
+      console.log('Sample preview URLs:', tracksWithPreviews.slice(0, 3).map((t: any) => ({
+        name: t.name,
+        preview_url: t.preview_url?.substring(0, 50) + '...'
+      })))
+    }
+    
     // Only return tracks with preview URLs - no fallback to web URLs
     if (tracksWithPreviews.length === 0) {
+      console.log('No tracks with preview URLs found')
       return NextResponse.json({ 
         tracks: [],
         error: `No songs with preview clips found for "${query}".\n\nTry:\n• A different song or artist\n• Some songs don't have preview clips available`
@@ -114,7 +126,7 @@ export async function GET(request: NextRequest) {
       name: track.name,
       artist: track.artists.map((a: any) => a.name).join(', '),
       album: track.album.name,
-      preview_url: track.preview_url, // This is a direct MP3 URL from Spotify
+      preview_url: track.preview_url, // This is a direct MP3 URL from Spotify (usually p.scdn.co)
       external_urls: {
         spotify: track.external_urls.spotify,
       },
@@ -122,6 +134,7 @@ export async function GET(request: NextRequest) {
       source: 'spotify',
     }))
 
+    console.log(`Returning ${tracks.length} tracks with preview URLs`)
     return NextResponse.json({ tracks })
   } catch (error: any) {
     console.error('Spotify search error:', error)
