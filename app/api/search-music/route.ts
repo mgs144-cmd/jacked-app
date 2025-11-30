@@ -132,43 +132,48 @@ export async function GET(request: NextRequest) {
     // Format tracks for our app - ONLY return tracks with preview URLs
     const allTracks = searchData.tracks.items || []
     
+    console.log(`Received ${allTracks.length} tracks from Spotify`)
+    
     // Debug: Log first few tracks to see what we're getting
     if (allTracks.length > 0) {
       const sampleTrack = allTracks[0]
-      console.log('First track sample:', {
+      console.log('=== FIRST TRACK FULL STRUCTURE ===')
+      console.log(JSON.stringify({
         name: sampleTrack.name,
-        artist: sampleTrack.artists?.[0]?.name,
-        hasPreviewUrl: 'preview_url' in sampleTrack,
-        previewUrl: sampleTrack.preview_url,
-        previewUrlType: typeof sampleTrack.preview_url,
-        previewUrlLength: sampleTrack.preview_url?.length,
-        allKeys: Object.keys(sampleTrack).filter(k => k.includes('preview') || k.includes('Preview'))
-      })
+        id: sampleTrack.id,
+        preview_url: sampleTrack.preview_url,
+        external_urls: sampleTrack.external_urls,
+        // Show all keys to see what's available
+        availableKeys: Object.keys(sampleTrack).slice(0, 20)
+      }, null, 2))
       
-      // Check multiple tracks
-      console.log('Preview URL status for first 5 tracks:', allTracks.slice(0, 5).map((t: any) => ({
-        name: t.name,
-        preview_url: t.preview_url,
-        isNull: t.preview_url === null,
-        isUndefined: t.preview_url === undefined,
-        isEmpty: t.preview_url === '',
-        truthy: !!t.preview_url
-      })))
+      // Check multiple tracks - show raw preview_url values
+      console.log('=== PREVIEW URL STATUS FOR FIRST 10 TRACKS ===')
+      allTracks.slice(0, 10).forEach((t: any, index: number) => {
+        console.log(`Track ${index + 1}: "${t.name}" by ${t.artists?.[0]?.name}`)
+        console.log(`  preview_url: ${JSON.stringify(t.preview_url)}`)
+        console.log(`  type: ${typeof t.preview_url}`)
+        console.log(`  truthy: ${!!t.preview_url}`)
+        console.log(`  length: ${t.preview_url?.length || 'N/A'}`)
+      })
+    } else {
+      console.log('WARNING: No tracks returned from Spotify API')
     }
     
     const tracksWithPreviews = allTracks.filter((track: any) => {
       // Only include tracks with preview_url (Spotify preview URLs are direct MP3 links)
-      // Check for null, undefined, empty string, or just falsy values
       const previewUrl = track.preview_url
+      
+      // Very permissive check - accept anything that's not null/undefined/empty
       const hasPreview = previewUrl != null && 
                         previewUrl !== undefined && 
                         previewUrl !== '' && 
-                        previewUrl !== 'null' &&
-                        typeof previewUrl === 'string' &&
-                        previewUrl.trim().length > 0
+                        String(previewUrl).trim().length > 0
       
-      if (!hasPreview && allTracks.length > 0 && allTracks.indexOf(track) < 3) {
-        console.log(`Track "${track.name}" filtered out - preview_url:`, previewUrl, 'type:', typeof previewUrl)
+      if (!hasPreview && allTracks.indexOf(track) < 5) {
+        console.log(`❌ Filtered out: "${track.name}" - preview_url: ${JSON.stringify(previewUrl)} (${typeof previewUrl})`)
+      } else if (hasPreview && allTracks.indexOf(track) < 3) {
+        console.log(`✅ Accepted: "${track.name}" - preview_url: ${previewUrl?.substring(0, 50)}...`)
       }
       
       return hasPreview
