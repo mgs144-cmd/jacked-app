@@ -97,9 +97,22 @@ export async function GET(request: NextRequest) {
 
     // Format tracks for our app - ONLY return tracks with preview URLs
     const allTracks = searchData.tracks.items || []
+    
+    // Debug: Log first few tracks to see what we're getting
+    if (allTracks.length > 0) {
+      console.log('Sample tracks from Spotify:', allTracks.slice(0, 3).map((t: any) => ({
+        name: t.name,
+        artist: t.artists[0]?.name,
+        hasPreview: !!t.preview_url,
+        previewUrl: t.preview_url || 'null',
+        previewUrlType: typeof t.preview_url
+      })))
+    }
+    
     const tracksWithPreviews = allTracks.filter((track: any) => {
       // Only include tracks with preview_url (Spotify preview URLs are direct MP3 links)
-      return track.preview_url && track.preview_url.trim() !== ''
+      const hasPreview = track.preview_url && track.preview_url.trim() !== '' && track.preview_url !== 'null'
+      return hasPreview
     })
     
     console.log(`Spotify search: Found ${allTracks.length} total tracks, ${tracksWithPreviews.length} with preview URLs`)
@@ -110,14 +123,26 @@ export async function GET(request: NextRequest) {
         name: t.name,
         preview_url: t.preview_url?.substring(0, 50) + '...'
       })))
+    } else if (allTracks.length > 0) {
+      // Log why tracks were filtered out
+      console.log('Tracks filtered out - preview URL status:', allTracks.slice(0, 5).map((t: any) => ({
+        name: t.name,
+        preview_url: t.preview_url || 'MISSING',
+        preview_url_length: t.preview_url?.length || 0
+      })))
     }
     
     // Only return tracks with preview URLs - no fallback to web URLs
     if (tracksWithPreviews.length === 0) {
       console.log('No tracks with preview URLs found')
+      // Provide more helpful error message
+      const errorMsg = allTracks.length > 0
+        ? `Found ${allTracks.length} songs but none have preview clips available.\n\nThis is common - not all songs on Spotify have preview clips.\n\nTry:\n• A different song or artist\n• More popular songs often have previews`
+        : `No songs found for "${query}".\n\nTry:\n• A different song or artist\n• Check spelling`
+      
       return NextResponse.json({ 
         tracks: [],
-        error: `No songs with preview clips found for "${query}".\n\nTry:\n• A different song or artist\n• Some songs don't have preview clips available`
+        error: errorMsg
       })
     }
     
