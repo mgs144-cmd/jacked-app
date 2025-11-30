@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Music, Search, X, Upload } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
@@ -96,6 +96,63 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
   }
 
   if (!isOpen) {
+    // If song is selected, show it instead of "Add Song" button
+    if (selectedSong) {
+      return (
+        <div className="bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-4 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            {selectedSong.albumArt ? (
+              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-2 ring-gray-700">
+                <img
+                  src={selectedSong.albumArt}
+                  alt={`${selectedSong.title} album art`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center flex-shrink-0">
+                <Music className="w-6 h-6 text-white" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-bold text-sm truncate">{selectedSong.title}</p>
+              <p className="text-gray-400 text-xs truncate">{selectedSong.artist}</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setIsOpen(true)
+              }}
+              className="text-gray-400 hover:text-white transition-colors px-3 py-1 text-sm font-semibold"
+            >
+              Change
+            </button>
+            {onClear && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onClear()
+                }}
+                className="text-gray-500 hover:text-red-400 transition-colors p-2"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+        </div>
+      )
+    }
+    
+    // No song selected - show "Add Song" button
     return (
       <button
         type="button"
@@ -108,40 +165,79 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
     )
   }
 
-  // If song is selected, show it
+  // If song is selected and modal is closed, show selected song
   if (selectedSong && !isOpen) {
     return (
       <div className="bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center flex-shrink-0">
-            <Music className="w-6 h-6 text-white" />
-          </div>
+          {selectedSong.albumArt ? (
+            <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-2 ring-gray-700">
+              <img
+                src={selectedSong.albumArt}
+                alt={`${selectedSong.title} album art`}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback if image fails to load
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
+            </div>
+          ) : (
+            <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center flex-shrink-0">
+              <Music className="w-6 h-6 text-white" />
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <p className="text-white font-bold text-sm truncate">{selectedSong.title}</p>
             <p className="text-gray-400 text-xs truncate">{selectedSong.artist}</p>
           </div>
         </div>
-        {onClear && (
+        <div className="flex items-center space-x-2">
           <button
-            onClick={onClear}
-            className="text-gray-500 hover:text-red-400 transition-colors p-2"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setIsOpen(true)
+            }}
+            className="text-gray-400 hover:text-white transition-colors px-3 py-1 text-sm font-semibold"
           >
-            <X className="w-5 h-5" />
+            Change
           </button>
-        )}
+          {onClear && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                onClear()
+              }}
+              className="text-gray-500 hover:text-red-400 transition-colors p-2"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-6 space-y-4">
+    <div 
+      className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-6 space-y-4"
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <Music className="w-5 h-5 text-primary" />
           <h3 className="text-white font-bold">Add a Song</h3>
         </div>
         <button
-          onClick={() => {
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
             setIsOpen(false)
             setAudioFile(null)
             setSongTitle('')
@@ -198,10 +294,15 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
       {mode === 'search' && (
         <MusicSearch
           onSelect={(song) => {
+            console.log('MusicSelector received song:', song)
             onSelect(song)
             setIsOpen(false)
           }}
           selectedSong={selectedSong}
+          onSelectComplete={() => {
+            console.log('Selection complete, closing modal')
+            setIsOpen(false)
+          }}
         />
       )}
 
@@ -293,7 +394,7 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
               placeholder="e.g., https://spotify.com/..."
               className="input-field w-full"
             />
-            <p className="text-xs text-gray-600 mt-1">Spotify, Apple Music, YouTube, etc.</p>
+            <p className="text-xs text-gray-600 mt-1">SoundCloud, Spotify, or direct audio file URLs</p>
           </div>
         </>
       )}

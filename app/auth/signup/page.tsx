@@ -45,6 +45,7 @@ export default function SignUpPage() {
             .update({
               username: username || null,
               full_name: fullName || null,
+              email: email, // Store email in profiles for admin dashboard
             })
             .eq('id', userId)
 
@@ -55,6 +56,7 @@ export default function SignUpPage() {
                 id: userId,
                 username: username || null,
                 full_name: fullName || null,
+                email: email, // Store email in profiles for admin dashboard
               })
 
             if (insertError) {
@@ -254,9 +256,22 @@ export default function SignUpPage() {
         </div>
 
         {/* Footer tagline */}
-        <p className="text-center text-gray-600 text-sm font-medium">
+        <p className="text-center text-gray-600 text-sm font-medium mb-4">
           The social network for lifters
         </p>
+        
+        {/* Legal links */}
+        <div className="flex items-center justify-center space-x-6 text-xs text-gray-500">
+          <Link href="/terms" className="hover:text-white transition-colors">
+            Terms
+          </Link>
+          <Link href="/privacy" className="hover:text-white transition-colors">
+            Privacy
+          </Link>
+          <Link href="/refund" className="hover:text-white transition-colors">
+            Refund
+          </Link>
+        </div>
       </div>
     </div>
   )

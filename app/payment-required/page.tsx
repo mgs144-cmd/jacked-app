@@ -1,8 +1,10 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/Navbar'
+import { Footer } from '@/components/Footer'
 import { CreditCard, Loader2 } from 'lucide-react'
 import { PaymentRequiredClient } from '@/components/PaymentRequiredClient'
+import Link from 'next/link'
 
 export default async function PaymentRequiredPage() {
   const supabase = await createClient()
@@ -31,6 +33,20 @@ export default async function PaymentRequiredPage() {
     <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
       <Navbar />
       <PaymentRequiredClient userId={session.user.id} />
+      <div className="max-w-md mx-auto px-4 pb-8">
+        <div className="flex items-center justify-center space-x-6 text-sm text-gray-500 mt-8">
+          <Link href="/terms" className="hover:text-white transition-colors">
+            Terms
+          </Link>
+          <Link href="/privacy" className="hover:text-white transition-colors">
+            Privacy
+          </Link>
+          <Link href="/refund" className="hover:text-white transition-colors">
+            Refund
+          </Link>
+        </div>
+      </div>
+      <Footer />
     </div>
   )
 }

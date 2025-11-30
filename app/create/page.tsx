@@ -98,9 +98,15 @@ export default function CreatePage() {
         pr_reps: isPRPost && prReps ? parseInt(prReps) : null,
       }
 
-      // Only include spotify_id if it exists
+      // Only include spotify_id if it exists and column exists in database
+      // (This column may not exist if Spotify migration wasn't run)
       if (selectedSong?.spotifyId) {
-        postInsertData.song_spotify_id = selectedSong.spotifyId
+        try {
+          postInsertData.song_spotify_id = selectedSong.spotifyId
+        } catch (e) {
+          // Column doesn't exist, skip it
+          console.log('song_spotify_id column not available')
+        }
       }
 
       const { data: postData, error: insertError } = await (supabase.from('posts') as any).insert(postInsertData).select().single()

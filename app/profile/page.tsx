@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/Navbar'
 import { PostCard } from '@/components/PostCard'
-import { Crown, Settings, TrendingUp, Calendar } from 'lucide-react'
+import { Crown, Settings, TrendingUp } from 'lucide-react'
 import { ProfileMusicPlayer } from '@/components/ProfileMusicPlayer'
 import { PRDisplay } from '@/components/PRDisplay'
 import { BadgeDisplay } from '@/components/BadgeDisplay'
@@ -95,19 +95,19 @@ export default async function ProfilePage() {
         {/* Profile Header */}
         <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-6 md:p-8 mb-6 card-elevated">
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">
-            {/* Avatar */}
+            {/* Avatar - Much Larger */}
             <div className="relative">
-              <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden ring-4 ring-gray-800">
+              <div className="w-40 h-40 md:w-48 md:h-48 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden ring-4 ring-gray-800">
                 {(profile as any)?.avatar_url ? (
                   <Image
                     src={(profile as any).avatar_url}
                     alt={(profile as any).username || 'Profile'}
-                    width={128}
-                    height={128}
+                    width={192}
+                    height={192}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-white text-5xl font-black">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-white text-6xl md:text-7xl font-black">
                     {(profile as any)?.username?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || 'U'}
                   </div>
                 )}
@@ -120,11 +120,12 @@ export default async function ProfilePage() {
             </div>
 
             {/* Profile Info */}
-            <div className="flex-1">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h1 className="text-3xl font-black text-white">
+            <div className="flex-1 w-full">
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex-1">
+                  {/* Username - Much Larger */}
+                  <div className="flex items-center space-x-3 mb-3">
+                    <h1 className="text-4xl md:text-5xl font-black text-white">
                       {(profile as any)?.username || (profile as any)?.full_name || 'User'}
                     </h1>
                     {(profile as any)?.is_premium && (
@@ -132,21 +133,21 @@ export default async function ProfilePage() {
                     )}
                   </div>
                   {(profile as any)?.full_name && (profile as any).full_name !== (profile as any).username && (
-                    <p className="text-gray-400 font-medium mb-2">{(profile as any).full_name}</p>
+                    <p className="text-gray-400 font-medium mb-3 text-lg">{(profile as any).full_name}</p>
                   )}
                   {(profile as any)?.bio && (
-                    <p className="text-gray-300 leading-relaxed mb-3 max-w-2xl">{(profile as any).bio}</p>
+                    <p className="text-gray-300 leading-relaxed mb-4 max-w-2xl">{(profile as any).bio}</p>
                   )}
-                  <p className="text-sm text-gray-500 font-medium mb-4">{session.user.email}</p>
                   
-                  {/* Profile Song */}
+                  {/* Profile Song - Smaller */}
                   {(profile as any)?.profile_song_title && (profile as any)?.profile_song_artist && (
-                    <div className="mb-4">
+                    <div className="mb-3 scale-90 origin-left">
                       <ProfileMusicPlayer
                         songTitle={(profile as any).profile_song_title}
                         songArtist={(profile as any).profile_song_artist}
                         songUrl={(profile as any).profile_song_url || undefined}
                         spotifyId={(profile as any).profile_song_spotify_id || undefined}
+                        albumArt={(profile as any).profile_song_album_art_url || undefined}
                       />
                     </div>
                   )}
@@ -160,14 +161,14 @@ export default async function ProfilePage() {
                 </div>
                 <Link
                   href="/settings"
-                  className="btn-secondary px-4 py-2 flex items-center space-x-2"
+                  className="btn-secondary px-4 py-2 flex items-center space-x-2 flex-shrink-0"
                 >
                   <Settings className="w-4 h-4" />
                   <span className="hidden md:inline">Edit Profile</span>
                 </Link>
               </div>
 
-              {/* Stats */}
+              {/* Stats - Removed Join Date */}
               <div className="flex items-center space-x-8">
                 <div>
                   <p className="text-2xl font-black text-white">{postsWithCounts?.length || 0}</p>
@@ -187,13 +188,6 @@ export default async function ProfilePage() {
                     </div>
                   </>
                 )}
-                <div className="h-10 w-px bg-gray-800"></div>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4 text-gray-500" />
-                  <p className="text-sm text-gray-500 font-medium">
-                    Joined {new Date(session.user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                  </p>
-                </div>
               </div>
             </div>
           </div>

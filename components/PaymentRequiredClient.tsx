@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CreditCard, Loader2, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 interface PaymentRequiredClientProps {
   userId: string
@@ -12,6 +13,31 @@ export function PaymentRequiredClient({ userId }: PaymentRequiredClientProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const supabase = createClient()
+
+  // Check payment status periodically and redirect if paid
+  useEffect(() => {
+    const checkPaymentStatus = async () => {
+      const { data: profile } = await (supabase
+        .from('profiles') as any)
+        .select('has_paid_onboarding')
+        .eq('id', userId)
+        .single()
+
+      if ((profile as any)?.has_paid_onboarding) {
+        // User has paid, redirect to feed
+        window.location.href = '/feed'
+      }
+    }
+
+    // Check immediately
+    checkPaymentStatus()
+
+    // Check every 2 seconds (for webhook processing)
+    const interval = setInterval(checkPaymentStatus, 2000)
+
+    return () => clearInterval(interval)
+  }, [userId, supabase])
 
   const handleStartPayment = async () => {
     setLoading(true)
@@ -24,7 +50,9 @@ export function PaymentRequiredClient({ userId }: PaymentRequiredClientProps) {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Failed to create checkout session')
+        const errorMsg = data.error || data.message || 'Failed to create checkout session'
+        console.error('Checkout error:', data)
+        throw new Error(errorMsg)
       }
 
       const { url } = await response.json()

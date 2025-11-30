@@ -21,9 +21,10 @@ interface Track {
 interface MusicSearchProps {
   onSelect: (song: { title: string; artist: string; url?: string; spotifyId?: string; albumArt?: string }) => void
   selectedSong?: { title: string; artist: string; url?: string; spotifyId?: string; albumArt?: string } | null
+  onSelectComplete?: () => void // Callback when selection is complete
 }
 
-export function MusicSearch({ onSelect, selectedSong }: MusicSearchProps) {
+export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicSearchProps) {
   const [query, setQuery] = useState('')
   const [searching, setSearching] = useState(false)
   const [tracks, setTracks] = useState<Track[]>([])
@@ -36,41 +37,113 @@ export function MusicSearch({ onSelect, selectedSong }: MusicSearchProps) {
 
     setSearching(true)
     setError(null)
+    setTracks([])
 
     try {
       // Try Spotify first
       const spotifyResponse = await fetch(`/api/search-music?q=${encodeURIComponent(searchQuery)}`)
       const spotifyData = await spotifyResponse.json()
 
-      // If Spotify has results, use them
-      if (spotifyData.tracks && spotifyData.tracks.length > 0) {
-        setSearchSource('spotify')
-        setTracks(spotifyData.tracks)
+      console.log('Spotify API response:', {
+        status: spotifyResponse.status,
+        ok: spotifyResponse.ok,
+        hasError: !!spotifyData.error,
+        error: spotifyData.error,
+        tracksCount: spotifyData.tracks?.length || 0,
+        debug: spotifyData.debug,
+      })
+
+      // Check if Spotify credentials are missing
+      if (spotifyData.error && spotifyData.error.includes('not configured')) {
+        setError('⚠️ Spotify API not configured.\n\nPlease add SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET to Vercel environment variables.\n\nOnly Spotify tracks with preview clips can be played in-app.')
+        setTracks([])
         setSearching(false)
         return
       }
 
-      // If Spotify fails or no results, try YouTube
-      if (spotifyData.error || !spotifyData.tracks || spotifyData.tracks.length === 0) {
-        setSearchSource('youtube')
-        const youtubeResponse = await fetch(`/api/search-youtube?q=${encodeURIComponent(searchQuery)}`)
-        const youtubeData = await youtubeResponse.json()
-        
-        if (!youtubeResponse.ok) {
-          throw new Error(youtubeData.error || 'Failed to search songs')
-        }
+      // Check for other Spotify errors - no YouTube fallback for in-app playback only
+      if (spotifyData.error && !spotifyData.error.includes('not configured')) {
+        console.error('Spotify API error:', spotifyData.error)
+        setError(`Spotify error: ${spotifyData.error}\n\nOnly Spotify tracks with preview clips can be played in-app.`)
+        setTracks([])
+        setSearching(false)
+        return
+      }
 
-        if (youtubeData.tracks && youtubeData.tracks.length > 0) {
-          setTracks(youtubeData.tracks)
+      // Only show tracks with preview URLs - filter Spotify results
+      if (spotifyData.tracks && spotifyData.tracks.length > 0) {
+        // Filter to only tracks with Spotify preview URLs (p.scdn.co) - not YouTube links
+        const tracksWithPreviews = spotifyData.tracks.filter((track: Track) => {
+          if (!track.preview_url) return false
+          // Only accept Spotify preview URLs (p.scdn.co) or direct audio files
+          const isSpotifyPreview = track.preview_url.includes('p.scdn.co') || 
+                                   track.preview_url.includes('preview') ||
+                                   (track.preview_url.includes('spotify') && track.preview_url.endsWith('.mp3'))
+          const isDirectAudio = ['.mp3', '.m4a', '.wav', '.ogg', '.aac'].some(ext => 
+            track.preview_url?.toLowerCase().endsWith(ext)
+          )
+          // Reject YouTube URLs
+          const isYouTube = track.preview_url.includes('youtube.com') || track.preview_url.includes('youtu.be')
+          return (isSpotifyPreview || isDirectAudio) && !isYouTube
+        })
+        
+        if (tracksWithPreviews.length > 0) {
+          setSearchSource('spotify')
+          setTracks(tracksWithPreviews)
+          setError(null)
+          setSearching(false)
+          return
         } else {
-          // No results from either source
-          setError('No songs found. Try a different search term.')
+          // Spotify returned tracks but none have previews - don't fallback to YouTube
+          setError(`No songs with preview clips found for "${searchQuery}".\n\nTry:\n• A different song or artist\n• Some songs don't have preview clips available`)
           setTracks([])
+          setSearching(false)
+          return
         }
+      }
+
+      // No tracks returned from Spotify
+      if (!spotifyData.tracks || spotifyData.tracks.length === 0) {
+        console.log('Spotify returned no tracks with previews')
+        setError(spotifyData.error || `No songs with preview clips found for "${searchQuery}".\n\nTry:\n• A different song or artist\n• Some songs don't have preview clips available`)
+        setTracks([])
+        setSearching(false)
+        return
       }
     } catch (err: any) {
       console.error('Search error:', err)
-      setError(err.message || 'Failed to search songs. Make sure Spotify API credentials are configured.')
+      setError(`Failed to search Spotify: ${err.message || 'Unknown error'}\n\nOnly Spotify tracks with preview clips can be played in-app.`)
+      setTracks([])
+      setSearching(false)
+    }
+  }
+
+  const tryYouTubeFallback = async (searchQuery: string) => {
+    try {
+      setSearchSource('youtube')
+      const youtubeResponse = await fetch(`/api/search-youtube?q=${encodeURIComponent(searchQuery)}`)
+      const youtubeData = await youtubeResponse.json()
+      
+      console.log('YouTube response:', youtubeData)
+
+      if (!youtubeResponse.ok) {
+        throw new Error(youtubeData.error || 'Failed to search YouTube')
+      }
+
+      if (youtubeData.tracks && youtubeData.tracks.length > 0) {
+        setTracks(youtubeData.tracks)
+        setError(null)
+      } else {
+        // No results from either source
+        const errorMsg = youtubeData.error 
+          ? `YouTube search failed: ${youtubeData.error}\n\nPlease configure Spotify API (SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET) for better results.`
+          : 'No songs found from any source.\n\nPossible reasons:\n• Spotify API not configured\n• YouTube API not configured\n• No songs match your search\n\nTry:\n• A different search term\n• Adding Spotify API credentials in Vercel'
+        setError(errorMsg)
+        setTracks([])
+      }
+    } catch (err: any) {
+      console.error('YouTube fallback error:', err)
+      setError('Failed to search songs. Please configure Spotify API credentials (SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET) for the best experience.')
       setTracks([])
     } finally {
       setSearching(false)
@@ -79,21 +152,44 @@ export function MusicSearch({ onSelect, selectedSong }: MusicSearchProps) {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation() // Prevent bubbling to parent form
+    if (query.trim()) {
+      searchSongs(query)
+    }
+  }
+
+  const handleSearchClick = () => {
     if (query.trim()) {
       searchSongs(query)
     }
   }
 
   const handleSelect = (track: Track) => {
-    onSelect({
+    console.log('Track selected:', track)
+    // Only use preview_url for in-app playback - no fallback to web URLs
+    if (!track.preview_url) {
+      console.error('Track selected without preview URL - this should not happen')
+      return
+    }
+    
+    const selectedSong = {
       title: track.name,
       artist: track.artist,
-      url: track.preview_url || track.external_urls.spotify || track.external_urls.youtube,
+      url: track.preview_url, // Only use preview URL for in-app playback
       spotifyId: track.source === 'spotify' ? track.id : undefined,
       albumArt: track.album_image || undefined,
-    })
+    }
+    
+    console.log('Calling onSelect with:', selectedSong)
+    onSelect(selectedSong)
     setTracks([])
     setQuery('')
+    // Call completion callback if provided
+    if (onSelectComplete) {
+      setTimeout(() => {
+        onSelectComplete()
+      }, 100)
+    }
   }
 
   // Don't show selected song here - MusicSelector handles that
@@ -113,16 +209,24 @@ export function MusicSearch({ onSelect, selectedSong }: MusicSearchProps) {
         </div>
       </div>
 
-      <form onSubmit={handleSearch} className="flex space-x-2">
+      <form onSubmit={handleSearch} className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              e.stopPropagation()
+              handleSearchClick()
+            }
+          }}
           placeholder="Search songs, artists..."
           className="input-field flex-1"
         />
         <button
-          type="submit"
+          type="button"
+          onClick={handleSearchClick}
           disabled={searching || !query.trim()}
           className="btn-primary px-6 py-3 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -135,8 +239,27 @@ export function MusicSearch({ onSelect, selectedSong }: MusicSearchProps) {
       </form>
 
       {error && (
-        <div className="bg-red-950/50 border border-red-600/50 text-red-400 px-4 py-3 rounded-lg text-sm">
-          {error}
+        <div className="bg-red-950/50 border-2 border-red-600/50 text-red-400 px-4 py-3 rounded-lg text-sm font-medium">
+          <div className="flex items-start space-x-2">
+            <span className="text-red-500 font-bold text-lg">⚠️</span>
+            <div className="flex-1">
+              <p className="font-bold mb-2 text-base">Search Error:</p>
+              <div className="whitespace-pre-line text-sm leading-relaxed">{error}</div>
+              {(error.includes('not configured') || error.includes('Spotify API')) && (
+                <div className="mt-3 pt-3 border-t border-red-800/50">
+                  <p className="text-xs text-red-300 font-semibold mb-1">Quick Fix:</p>
+                  <ol className="text-xs text-red-300/90 list-decimal list-inside space-y-1">
+                    <li>Get Client ID & Secret from <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener noreferrer" className="underline hover:text-red-200">Spotify Dashboard</a></li>
+                    <li>Add to Vercel → Settings → Environment Variables</li>
+                    <li>Redeploy your app</li>
+                  </ol>
+                  <p className="text-xs text-red-400/80 mt-2 italic">
+                    See <code className="bg-red-950/50 px-1 rounded">ADD_SPOTIFY_TO_VERCEL.md</code> for detailed steps
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
@@ -145,8 +268,21 @@ export function MusicSearch({ onSelect, selectedSong }: MusicSearchProps) {
           {tracks.map((track) => (
             <button
               key={track.id}
-              onClick={() => handleSelect(track)}
-              className="w-full bg-gray-800/60 hover:bg-gray-800 rounded-lg p-3 flex items-center space-x-3 transition-all text-left"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                e.nativeEvent.stopImmediatePropagation()
+                console.log('Track button clicked:', track)
+                setTimeout(() => {
+                  handleSelect(track)
+                }, 0)
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }}
+              className="w-full bg-gray-800/60 hover:bg-gray-800 rounded-lg p-3 flex items-center space-x-3 transition-all text-left cursor-pointer"
             >
               {track.album_image ? (
                 <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 relative">
@@ -167,9 +303,7 @@ export function MusicSearch({ onSelect, selectedSong }: MusicSearchProps) {
                 <p className="text-white font-bold text-sm truncate">{track.name}</p>
                 <p className="text-gray-400 text-xs truncate">{track.artist}</p>
               </div>
-              {track.preview_url && (
-                <Play className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              )}
+              <Play className="w-4 h-4 text-gray-400 flex-shrink-0" />
             </button>
           ))}
         </div>

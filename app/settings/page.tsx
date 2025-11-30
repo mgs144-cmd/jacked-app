@@ -19,7 +19,7 @@ export default function SettingsPage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [showCropper, setShowCropper] = useState(false)
   const [imageToCrop, setImageToCrop] = useState<string | null>(null)
-  const [profileSong, setProfileSong] = useState<{ title: string; artist: string; url?: string; spotifyId?: string } | null>(null)
+  const [profileSong, setProfileSong] = useState<{ title: string; artist: string; url?: string; spotifyId?: string; albumArt?: string } | null>(null)
   const [fitnessGoal, setFitnessGoal] = useState<'bulk' | 'cut' | 'maintenance' | null>(null)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -55,6 +55,7 @@ export default function SettingsPage() {
             artist: data.profile_song_artist,
             url: data.profile_song_url || undefined,
             spotifyId: data.profile_song_spotify_id || undefined,
+            albumArt: data.profile_song_album_art_url || undefined,
           })
         }
         setFitnessGoal(data.fitness_goal || null)
@@ -130,6 +131,12 @@ export default function SettingsPage() {
         profile_song_url: profileSong?.url || null,
       }
       
+      // Only include album_art_url if column exists (check by trying to include it conditionally)
+      // We'll try to update it, but if it fails, we'll catch the error
+      if (profileSong?.albumArt) {
+        updateData.profile_song_album_art_url = profileSong.albumArt
+      }
+      
       // Only include spotify_id if it exists
       if (profileSong?.spotifyId) {
         updateData.profile_song_spotify_id = profileSong.spotifyId
@@ -138,12 +145,37 @@ export default function SettingsPage() {
       // Add fitness goal
       updateData.fitness_goal = fitnessGoal || null
 
-      const { error: updateError } = await (supabase
+      // Try to update, but handle missing columns gracefully
+      const { error: updateError, data } = await (supabase
         .from('profiles') as any)
         .update(updateData)
         .eq('id', user.id)
+        .select()
 
-      if (updateError) throw updateError
+      if (updateError) {
+        // If error is about missing column, try without that column
+        if (updateError.message?.includes('profile_song_album_art_url') || 
+            updateError.message?.includes('profile_song_spotify_id')) {
+          console.log('Some profile song columns missing, trying without them...')
+          const fallbackData: any = {
+            username: username || null,
+            full_name: fullName || null,
+            bio: bio || null,
+            avatar_url: avatarUrl,
+            profile_song_title: profileSong?.title || null,
+            profile_song_artist: profileSong?.artist || null,
+            profile_song_url: profileSong?.url || null,
+            fitness_goal: fitnessGoal || null,
+          }
+          const { error: fallbackError } = await (supabase
+            .from('profiles') as any)
+            .update(fallbackData)
+            .eq('id', user.id)
+          if (fallbackError) throw fallbackError
+        } else {
+          throw updateError
+        }
+      }
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)

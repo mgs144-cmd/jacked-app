@@ -32,22 +32,60 @@ export async function middleware(request: NextRequest) {
   // Refresh session if expired
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Check payment requirement for protected routes (except auth pages and API routes)
-  if (user && !request.nextUrl.pathname.startsWith('/auth') && !request.nextUrl.pathname.startsWith('/api')) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('has_paid_onboarding')
+  // Public pages that don't require payment
+  const publicPages = ['/auth', '/api', '/terms', '/privacy', '/refund', '/payment-required']
+  const isPublicPage = publicPages.some(page => request.nextUrl.pathname.startsWith(page))
+
+  // Check if user is admin (for /admin access) - admins can access without payment
+  if (user && request.nextUrl.pathname.startsWith('/admin')) {
+    const { data: profile } = await (supabase
+      .from('profiles') as any)
+      .select('*')
       .eq('id', user.id)
       .single()
+
+    const adminEmail = process.env.ADMIN_EMAIL
+    const isAdmin = (adminEmail && user.email === adminEmail) || 
+                    user.email === 'jackedapp@gmail.com' ||
+                    user.email === 'chippersnyder0227@gmail.com' ||
+                    (profile as any)?.is_admin === true ||
+                    !adminEmail // Allow if ADMIN_EMAIL not set (for initial setup)
+
+    // If not admin, redirect to feed
+    if (!isAdmin) {
+      return NextResponse.redirect(new URL('/feed', request.url))
+    }
+    // Admin can access without payment, continue
+    return supabaseResponse
+  }
+
+  // Check payment requirement for protected routes (except public pages and admin)
+  if (user && !isPublicPage && !request.nextUrl.pathname.startsWith('/admin')) {
+    const { data: profile } = await (supabase
+      .from('profiles') as any)
+      .select('has_paid_onboarding, is_admin')
+      .eq('id', user.id)
+      .single()
+
+    // Allow admins to bypass payment check
+    const adminEmail = process.env.ADMIN_EMAIL
+    const isAdmin = (adminEmail && user.email === adminEmail) || 
+                    user.email === 'jackedapp@gmail.com' ||
+                    user.email === 'chippersnyder0227@gmail.com' ||
+                    (profile as any)?.is_admin === true
+
+    if (isAdmin) {
+      return supabaseResponse
+    }
+
+    // If user has paid and on payment page, redirect to feed immediately
+    if ((profile as any)?.has_paid_onboarding && request.nextUrl.pathname === '/payment-required') {
+      return NextResponse.redirect(new URL('/feed', request.url))
+    }
 
     // If user hasn't paid and not already on payment page, redirect to payment
     if (!(profile as any)?.has_paid_onboarding && request.nextUrl.pathname !== '/payment-required') {
       return NextResponse.redirect(new URL('/payment-required', request.url))
-    }
-
-    // If user has paid and on payment page, redirect to feed
-    if ((profile as any)?.has_paid_onboarding && request.nextUrl.pathname === '/payment-required') {
-      return NextResponse.redirect(new URL('/feed', request.url))
     }
   }
 

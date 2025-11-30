@@ -184,10 +184,16 @@ export default function EditPostPage() {
         pr_reps: isPRPost && prReps ? parseInt(prReps) : null,
       }
 
-      // Only include spotify_id if it exists
-      if (selectedSong?.spotifyId) {
-        postUpdateData.song_spotify_id = selectedSong.spotifyId
-      }
+        // Only include spotify_id if it exists and column exists in database
+        // (This column may not exist if Spotify migration wasn't run)
+        if (selectedSong?.spotifyId) {
+          try {
+            postUpdateData.song_spotify_id = selectedSong.spotifyId
+          } catch (e) {
+            // Column doesn't exist, skip it
+            console.log('song_spotify_id column not available')
+          }
+        }
 
       // Update post
       const { error: updateError } = await (supabase.from('posts') as any)

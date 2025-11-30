@@ -1,98 +1,55 @@
-# Setup Audio Storage Buckets
+# Setup Audio Storage for Music Playback
 
-To enable in-app audio playback (like Instagram), you need to create two storage buckets in Supabase:
+## Step 1: Run SQL Migration
 
-## Step 1: Create Storage Buckets
+Run `SETUP_MUSIC.sql` in Supabase SQL Editor to add the music columns.
 
-1. **Go to Supabase Dashboard** → **Storage**
-2. **Click "New bucket"**
+## Step 2: Create Storage Buckets
 
-### Bucket 1: `post-songs`
-- **Name**: `post-songs`
-- **Public**: ✅ **Yes** (so audio can be played in the app)
-- **File size limit**: 10 MB
-- **Allowed MIME types**: `audio/*`
+1. Go to **Supabase Dashboard** → **Storage**
+2. Create these buckets (both must be **PUBLIC**):
+   - `post-songs` - For audio files in posts
+   - `profile-songs` - For profile music
 
-### Bucket 2: `profile-songs`
-- **Name**: `profile-songs`
-- **Public**: ✅ **Yes** (so audio can be played in the app)
-- **File size limit**: 10 MB
-- **Allowed MIME types**: `audio/*`
+3. For each bucket:
+   - Click "New bucket"
+   - Name: `post-songs` (or `profile-songs`)
+   - **Make it PUBLIC** (important!)
+   - Click "Create bucket"
 
-## Step 2: Set Up RLS Policies
+## Step 3: Set Up RLS Policies (Optional but Recommended)
 
-After creating the buckets, you need to set up Row Level Security (RLS) policies so users can upload and read audio files.
+Run this SQL to allow authenticated users to upload:
 
-### For `post-songs` bucket:
-
-1. Go to **Storage** → **post-songs** → **Policies**
-2. Click **"New Policy"** → **"For full customization"**
-
-**Policy 1: Allow authenticated users to upload**
-- **Policy name**: `Allow authenticated uploads`
-- **Allowed operation**: `INSERT`
-- **Policy definition**:
 ```sql
-bucket_id = 'post-songs' AND auth.role() = 'authenticated'
+-- Allow authenticated users to upload to post-songs
+CREATE POLICY "Users can upload audio to post-songs"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'post-songs');
+
+-- Allow authenticated users to upload to profile-songs
+CREATE POLICY "Users can upload audio to profile-songs"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'profile-songs');
+
+-- Allow public read access (since buckets are public)
+CREATE POLICY "Public can read post-songs"
+ON storage.objects FOR SELECT
+TO public
+USING (bucket_id = 'post-songs');
+
+CREATE POLICY "Public can read profile-songs"
+ON storage.objects FOR SELECT
+TO public
+USING (bucket_id = 'profile-songs');
 ```
 
-**Policy 2: Allow public read access**
-- **Policy name**: `Allow public read`
-- **Allowed operation**: `SELECT`
-- **Policy definition**:
-```sql
-bucket_id = 'post-songs'
-```
+## Step 4: Test
 
-**Policy 3: Allow users to delete their own files**
-- **Policy name**: `Allow users to delete own files`
-- **Allowed operation**: `DELETE`
-- **Policy definition**:
-```sql
-bucket_id = 'post-songs' AND auth.uid()::text = (storage.foldername(name))[1]
-```
-
-### For `profile-songs` bucket:
-
-Repeat the same 3 policies but change `bucket_id` to `'profile-songs'`:
-
-**Policy 1: Allow authenticated users to upload**
-- **Policy name**: `Allow authenticated uploads`
-- **Allowed operation**: `INSERT`
-- **Policy definition**:
-```sql
-bucket_id = 'profile-songs' AND auth.role() = 'authenticated'
-```
-
-**Policy 2: Allow public read access**
-- **Policy name**: `Allow public read`
-- **Allowed operation**: `SELECT`
-- **Policy definition**:
-```sql
-bucket_id = 'profile-songs'
-```
-
-**Policy 3: Allow users to delete their own files**
-- **Policy name**: `Allow users to delete own files`
-- **Allowed operation**: `DELETE`
-- **Policy definition**:
-```sql
-bucket_id = 'profile-songs' AND auth.uid()::text = (storage.foldername(name))[1]
-```
-
-## Step 3: Test It!
-
-1. Go to **Settings** → **PROFILE SONG**
-2. Click **"Add Song"**
-3. Toggle to **"Upload Audio File"**
+1. Create a post
+2. Click "Add Song"
+3. Choose "Upload" tab
 4. Upload an MP3 file
-5. The file should upload and play directly in the app! 🎵
-
-## Notes
-
-- **File size limit**: 10MB per file (you can increase this in bucket settings)
-- **Supported formats**: MP3, WAV, M4A, OGG, etc. (any audio format)
-- **Auto-play**: May be blocked by browsers, but users can click play
-- **Storage costs**: Audio files count toward your Supabase storage quota
-
-
+5. The audio should play when you click the play button!

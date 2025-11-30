@@ -13,11 +13,13 @@ export function Navbar() {
 
   const currentMonth = new Date().getMonth() + 1
   const isDecember = currentMonth === 12
+  // Always show Deadcember for now (can change back to isDecember only later)
+  const showDeadcember = true // Change to: isDecember
 
   const navItems = [
     { href: '/feed', icon: Home, label: 'Feed' },
     { href: '/discover', icon: Users, label: 'Discover' },
-    ...(isDecember ? [{ href: '/deadcember', icon: Trophy, label: 'Deadcember' }] : []),
+    ...(showDeadcember ? [{ href: '/deadcember', icon: Trophy, label: 'Deadcember' }] : []),
     { href: '/create', icon: PlusCircle, label: 'Post', isPrimary: true },
     { href: '/profile', icon: User, label: 'Profile' },
     { href: '/settings', icon: Settings, label: 'Settings' },

@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import Stripe from 'stripe'
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2023-10-16',
+})
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if Paddle API key is configured
-    if (!process.env.PADDLE_API_KEY) {
-      console.error('PADDLE_API_KEY is not configured')
+    // Check if Stripe key is configured
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error('STRIPE_SECRET_KEY is not configured')
       return NextResponse.json({ error: 'Payment system not configured' }, { status: 500 })
     }
 
@@ -29,74 +34,49 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Already paid' }, { status: 400 })
     }
 
-    // Create Paddle checkout transaction
+    // Create Stripe checkout session
     try {
-      // Paddle API endpoint - adjust based on your Paddle account type
-      // For Paddle Classic: https://vendors.paddle.com/api/2.0/product/generate_pay_link
-      // For Paddle Billing: https://api.paddle.com/transactions
-      const paddleApiUrl = process.env.PADDLE_API_URL || 'https://api.paddle.com/transactions'
-      
-      const paddleResponse = await fetch(paddleApiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.PADDLE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          items: [
-            {
-              quantity: 1,
-              custom_price: {
-                amount: '0.99',
-                currency_code: 'USD',
+      const checkoutSession = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: 'Jacked App - One-Time Onboarding Fee',
+                description: 'One-time $0.99 charge to create your account',
               },
+              unit_amount: 99, // $0.99 in cents
             },
-          ],
-          customer_id: session.user.id,
-          custom_data: {
-            user_id: session.user.id,
-            type: 'onboarding',
+            quantity: 1,
           },
-          checkout: {
-            url: `${request.nextUrl.origin}/feed?payment=success`,
-            cancel_url: `${request.nextUrl.origin}/payment-required?canceled=true`,
-          },
-        }),
+        ],
+        mode: 'payment',
+        success_url: `${request.nextUrl.origin}/feed?payment=success&session_id={CHECKOUT_SESSION_ID}&redirect_status=succeeded`,
+        cancel_url: `${request.nextUrl.origin}/payment-required?canceled=true`,
+        client_reference_id: session.user.id,
+        metadata: {
+          user_id: session.user.id,
+          type: 'onboarding',
+        },
       })
 
-      if (!paddleResponse.ok) {
-        const errorData = await paddleResponse.json()
-        console.error('Paddle API error:', {
-          status: paddleResponse.status,
-          statusText: paddleResponse.statusText,
-          error: errorData,
-        })
-        return NextResponse.json({ 
-          error: errorData.error?.detail || 'Failed to create checkout session',
-          details: process.env.NODE_ENV === 'development' ? errorData : undefined
-        }, { status: 500 })
-      }
-
-      const checkoutData = await paddleResponse.json()
-      
-      // Paddle returns checkout URL in response
-      if (!checkoutData.data?.checkout?.url) {
-        console.error('Paddle checkout created but no URL returned:', checkoutData)
+      if (!checkoutSession.url) {
+        console.error('Stripe checkout session created but no URL returned')
         return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 })
       }
 
-      return NextResponse.json({ 
-        url: checkoutData.data.checkout.url,
-        transaction_id: checkoutData.data.id,
+      return NextResponse.json({ url: checkoutSession.url })
+    } catch (stripeError: any) {
+      console.error('Stripe API error:', {
+        message: stripeError.message,
+        type: stripeError.type,
+        code: stripeError.code,
+        statusCode: stripeError.statusCode,
       })
-    } catch (paddleError: any) {
-      console.error('Paddle API error:', {
-        message: paddleError.message,
-        stack: paddleError.stack,
-      })
       return NextResponse.json({ 
-        error: paddleError.message || 'Failed to create checkout session',
-        details: process.env.NODE_ENV === 'development' ? paddleError.stack : undefined
+        error: stripeError.message || 'Failed to create checkout session',
+        details: process.env.NODE_ENV === 'development' ? stripeError : undefined
       }, { status: 500 })
     }
   } catch (error: any) {
@@ -107,4 +87,3 @@ export async function POST(request: NextRequest) {
     }, { status: 500 })
   }
 }
-
