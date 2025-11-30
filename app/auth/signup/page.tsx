@@ -59,8 +59,21 @@ export default function SignUpPage() {
               if (insertError) throw insertError
             }
 
-            router.push('/feed')
-            router.refresh()
+            // Redirect to payment checkout
+            const response = await fetch('/api/create-onboarding-checkout', {
+              method: 'POST',
+            })
+
+            if (!response.ok) {
+              throw new Error('Failed to create checkout session')
+            }
+
+            const { url } = await response.json()
+            if (url) {
+              window.location.href = url
+            } else {
+              throw new Error('No checkout URL received')
+            }
           } catch (profileError: any) {
             console.error('Profile creation error:', profileError)
             setError(profileError.message || 'Failed to create profile')

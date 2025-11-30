@@ -130,15 +130,26 @@ export function PostCard({ post }: PostCardProps) {
   }
 
   const isPRPost = post.is_pr_post
+  const isDeadcemberPost = post.is_deadcember_post
 
   return (
     <article className={`bg-gray-900/60 rounded-2xl border overflow-hidden card-elevated card-hover backdrop-blur-sm ${
-      isPRPost 
+      isDeadcemberPost
+        ? 'border-primary/80 glow-red-lg bg-gradient-to-br from-red-950/20 via-gray-900/60 to-gray-900/60'
+        : isPRPost 
         ? 'border-primary/50 glow-red-sm' 
         : 'border-gray-800/60'
     }`}>
+      {/* Deadcember Badge */}
+      {isDeadcemberPost && (
+        <div className="bg-gradient-to-r from-primary via-red-700 to-primary px-5 py-3 flex items-center justify-center space-x-2">
+          <span className="text-2xl">💀</span>
+          <span className="text-white font-black text-base tracking-wider">DEADCEMBER</span>
+        </div>
+      )}
+
       {/* PR Badge */}
-      {isPRPost && (
+      {isPRPost && !isDeadcemberPost && (
         <div className="bg-gradient-primary px-5 py-2 flex items-center space-x-2">
           <Trophy className="w-4 h-4 text-white" />
           <span className="text-white font-bold text-sm">PERSONAL RECORD</span>
@@ -309,6 +320,30 @@ export function PostCard({ post }: PostCardProps) {
           )}
           {/* Gradient overlay for better text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"></div>
+        </div>
+      )}
+
+      {/* Deadcember Stats */}
+      {isDeadcemberPost && (post.deadcember_volume || post.deadcember_personal_total) && (
+        <div className="px-5 py-6 bg-gradient-to-br from-red-950/30 via-gray-900/60 to-gray-900/60 border-b border-primary/30">
+          <div className="space-y-4">
+            {post.deadcember_volume && (
+              <div className="text-center">
+                <p className="text-gray-400 text-xs font-bold tracking-wider uppercase mb-2">This Workout</p>
+                <p className="text-3xl md:text-4xl font-black text-primary">
+                  {post.deadcember_volume.toLocaleString()} lbs
+                </p>
+              </div>
+            )}
+            {post.deadcember_personal_total && (
+              <div className="text-center pt-4 border-t border-primary/20">
+                <p className="text-gray-400 text-xs font-bold tracking-wider uppercase mb-2">Personal Total</p>
+                <p className="text-2xl md:text-3xl font-black text-white">
+                  {post.deadcember_personal_total.toLocaleString()} lbs
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

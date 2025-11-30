@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/app/providers'
-import { Home, PlusCircle, User, Settings, Users } from 'lucide-react'
+import { Home, PlusCircle, User, Settings, Users, Trophy } from 'lucide-react'
 
 export function Navbar() {
   const pathname = usePathname()
@@ -11,9 +11,13 @@ export function Navbar() {
 
   if (!user) return null
 
+  const currentMonth = new Date().getMonth() + 1
+  const isDecember = currentMonth === 12
+
   const navItems = [
     { href: '/feed', icon: Home, label: 'Feed' },
     { href: '/discover', icon: Users, label: 'Discover' },
+    ...(isDecember ? [{ href: '/deadcember', icon: Trophy, label: 'Deadcember' }] : []),
     { href: '/create', icon: PlusCircle, label: 'Post', isPrimary: true },
     { href: '/profile', icon: User, label: 'Profile' },
     { href: '/settings', icon: Settings, label: 'Settings' },

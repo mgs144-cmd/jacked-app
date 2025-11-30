@@ -37,15 +37,15 @@ export async function POST(request: NextRequest) {
             currency: 'usd',
             product_data: {
               name: 'Jacked App - One-Time Onboarding Fee',
-              description: 'One-time $1 charge to create your account',
+              description: 'One-time $0.99 charge to create your account',
             },
-            unit_amount: 100, // $1.00 in cents
+            unit_amount: 99, // $0.99 in cents
           },
           quantity: 1,
         },
       ],
       mode: 'payment',
-      success_url: `${request.nextUrl.origin}/auth/signup?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${request.nextUrl.origin}/feed?payment=success`,
       cancel_url: `${request.nextUrl.origin}/auth/signup?canceled=true`,
       client_reference_id: session.user.id,
       metadata: {
