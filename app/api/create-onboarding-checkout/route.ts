@@ -52,12 +52,14 @@ export async function POST(request: NextRequest) {
           },
         ],
         mode: 'payment',
-        success_url: `${request.nextUrl.origin}/feed?payment=success&session_id={CHECKOUT_SESSION_ID}&redirect_status=succeeded`,
+        success_url: `${request.nextUrl.origin}/payment-required?payment=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${request.nextUrl.origin}/payment-required?canceled=true`,
         client_reference_id: session.user.id,
+        customer_email: session.user.email || undefined, // Include email for fallback lookup
         metadata: {
           user_id: session.user.id,
           type: 'onboarding',
+          email: session.user.email || '',
         },
       })
 

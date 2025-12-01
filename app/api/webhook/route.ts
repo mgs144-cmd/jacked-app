@@ -241,18 +241,40 @@ export async function POST(request: Request) {
     })
 
     if (userId && paymentIntent.metadata?.type === 'onboarding') {
-      const { error } = await (supabase
+      // Verify user exists first
+      const { data: existingProfile } = await (supabase
         .from('profiles') as any)
-        .update({ 
-          has_paid_onboarding: true,
-          onboarding_payment_id: paymentIntent.id,
-        })
+        .select('id, email, has_paid_onboarding')
         .eq('id', userId)
+        .single()
 
-      if (error) {
-        console.error('❌ Error updating payment status from payment_intent:', error)
+      if (!existingProfile) {
+        console.error(`❌ User ${userId} not found for payment_intent`)
       } else {
-        console.log(`✅ User ${userId} activated via payment_intent webhook`)
+        const { error } = await (supabase
+          .from('profiles') as any)
+          .update({ 
+            has_paid_onboarding: true,
+            onboarding_payment_id: paymentIntent.id,
+          })
+          .eq('id', userId)
+
+        if (error) {
+          console.error('❌ Error updating payment status from payment_intent:', error)
+        } else {
+          // Verify update
+          const { data: verifyProfile } = await (supabase
+            .from('profiles') as any)
+            .select('has_paid_onboarding')
+            .eq('id', userId)
+            .single()
+          
+          if (verifyProfile?.has_paid_onboarding) {
+            console.log(`✅ User ${userId} activated via payment_intent webhook (verified)`)
+          } else {
+            console.error(`❌ User ${userId} update failed verification`)
+          }
+        }
       }
     }
   }

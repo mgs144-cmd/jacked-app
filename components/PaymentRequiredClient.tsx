@@ -17,8 +17,14 @@ export function PaymentRequiredClient({ userId }: PaymentRequiredClientProps) {
 
   // Check payment status periodically and redirect if paid
   useEffect(() => {
+    let checkCount = 0
+    const maxChecks = 30 // Check for up to 60 seconds (30 * 2s)
+    
     const checkPaymentStatus = async () => {
       try {
+        checkCount++
+        
+        // First, check database
         const { data: profile, error } = await (supabase
           .from('profiles') as any)
           .select('has_paid_onboarding, onboarding_payment_id')
@@ -32,36 +38,46 @@ export function PaymentRequiredClient({ userId }: PaymentRequiredClientProps) {
 
         if ((profile as any)?.has_paid_onboarding) {
           // User has paid, redirect to feed immediately
-          console.log('✅ Payment confirmed, redirecting to feed')
+          console.log('✅ Payment confirmed in database, redirecting to feed')
           window.location.href = '/feed'
           return
         }
 
-        // Also check URL params for payment success
+        // Check URL params for payment success
         const urlParams = new URLSearchParams(window.location.search)
         const sessionId = urlParams.get('session_id')
         const paymentSuccess = urlParams.get('payment') === 'success'
 
         if (paymentSuccess && sessionId) {
-          console.log('Payment success detected in URL, verifying...')
+          console.log(`[Check ${checkCount}] Payment success detected in URL, verifying with Stripe...`)
           // Verify payment directly with Stripe
-          const verifyResponse = await fetch('/api/verify-payment', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ session_id: sessionId }),
-          })
+          try {
+            const verifyResponse = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ session_id: sessionId }),
+            })
 
-          const verifyData = await verifyResponse.json()
-          
-          if (verifyData.paid) {
-            console.log('✅ Payment verified, redirecting...')
-            // Force redirect
-            window.location.href = '/feed'
-          } else {
-            console.log('Payment not yet verified, will check again...')
+            const verifyData = await verifyResponse.json()
+            
+            if (verifyData.paid) {
+              console.log('✅ Payment verified via Stripe API, redirecting...')
+              // Force redirect
+              window.location.href = '/feed'
+              return
+            } else {
+              console.log(`[Check ${checkCount}] Payment not yet verified. Status:`, verifyData)
+            }
+          } catch (verifyErr) {
+            console.error('Error verifying payment:', verifyErr)
           }
+        }
+
+        // Stop checking after max attempts
+        if (checkCount >= maxChecks) {
+          console.log('Stopped checking payment status after max attempts')
         }
       } catch (err) {
         console.error('Error in payment status check:', err)
@@ -72,7 +88,13 @@ export function PaymentRequiredClient({ userId }: PaymentRequiredClientProps) {
     checkPaymentStatus()
 
     // Check every 2 seconds (for webhook processing)
-    const interval = setInterval(checkPaymentStatus, 2000)
+    const interval = setInterval(() => {
+      if (checkCount < maxChecks) {
+        checkPaymentStatus()
+      } else {
+        clearInterval(interval)
+      }
+    }, 2000)
 
     return () => clearInterval(interval)
   }, [userId, supabase])
