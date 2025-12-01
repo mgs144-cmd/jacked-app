@@ -17,16 +17,29 @@ export default async function PaymentRequiredPage() {
     redirect('/auth/login')
   }
 
-  // Check if user has paid
+  // Check if user has paid with proper validation
   const { data: profile } = await supabase
     .from('profiles')
-    .select('has_paid_onboarding')
+    .select('has_paid_onboarding, onboarding_payment_id')
     .eq('id', session.user.id)
     .single()
 
-  // If they've paid, redirect to feed
-  if ((profile as any)?.has_paid_onboarding) {
-    redirect('/feed')
+  // If they've paid with valid payment ID, redirect to feed
+  // Use same validation logic as middleware to prevent loops
+  if (profile) {
+    const hasPaidOnboarding = (profile as any)?.has_paid_onboarding === true
+    const paymentId = (profile as any)?.onboarding_payment_id
+    
+    const hasValidPayment = hasPaidOnboarding && paymentId && (
+      paymentId.startsWith('cs_') ||
+      paymentId.startsWith('pi_') ||
+      paymentId.startsWith('manual_') ||
+      paymentId.startsWith('stripe_fix_')
+    )
+
+    if (hasValidPayment) {
+      redirect('/feed')
+    }
   }
 
   return (

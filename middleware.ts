@@ -70,6 +70,12 @@ export async function middleware(request: NextRequest) {
       return supabaseResponse
     }
 
+    // Prevent redirect loops - if we're already redirecting, don't redirect again
+    const redirectHeader = request.headers.get('x-middleware-redirect')
+    if (redirectHeader) {
+      return supabaseResponse
+    }
+
     const { data: profile, error } = await (supabase
       .from('profiles') as any)
       .select('has_paid_onboarding, is_admin, onboarding_payment_id')
@@ -79,6 +85,9 @@ export async function middleware(request: NextRequest) {
     // Log for debugging if there's an error
     if (error) {
       console.error('Middleware: Error fetching profile:', error)
+      // If we can't fetch profile, allow through to avoid blocking legitimate users
+      // The app will handle the missing profile case
+      return supabaseResponse
     }
 
     // Allow admins to bypass payment check
@@ -113,13 +122,24 @@ export async function middleware(request: NextRequest) {
     )
 
     // If user has valid payment and on payment page, redirect to feed immediately
+    // Use replace: true to prevent redirect loops
     if (hasValidPayment && request.nextUrl.pathname === '/payment-required') {
-      return NextResponse.redirect(new URL('/feed', request.url))
+      const feedUrl = new URL('/feed', request.url)
+      feedUrl.searchParams.set('_redirect', '1') // Add flag to prevent loops
+      const response = NextResponse.redirect(feedUrl)
+      response.headers.set('x-middleware-redirect', '1')
+      return response
     }
 
     // If user hasn't paid or has invalid payment, redirect to payment
-    if (!hasValidPayment && request.nextUrl.pathname !== '/payment-required') {
-      return NextResponse.redirect(new URL('/payment-required', request.url))
+    // Only redirect if not already on payment page and not coming from a redirect
+    if (!hasValidPayment && 
+        request.nextUrl.pathname !== '/payment-required' &&
+        !request.nextUrl.searchParams.has('_redirect')) {
+      const paymentUrl = new URL('/payment-required', request.url)
+      const response = NextResponse.redirect(paymentUrl)
+      response.headers.set('x-middleware-redirect', '1')
+      return response
     }
   }
 
