@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { exercise_type, weight, reps, sets, caption } = body
+    const { exercise_type, weight, reps, sets, caption, is_private } = body
 
     if (!exercise_type || !weight || !reps || !sets) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         is_deadcember_post: true,
         deadcember_volume: volume,
         deadcember_personal_total: newPersonalTotal,
-        is_private: false, // Deadcember posts are public
+        is_private: is_private !== undefined ? is_private : true, // Default to private for privacy
       })
       .select()
       .single()

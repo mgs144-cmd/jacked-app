@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Trophy, Loader2 } from 'lucide-react'
+import { Trophy, Loader2, Lock, Globe } from 'lucide-react'
 
 interface DeadcemberLogFormProps {
   onSuccess?: () => void
@@ -13,6 +13,7 @@ export function DeadcemberLogForm({ onSuccess }: DeadcemberLogFormProps) {
   const [reps, setReps] = useState('')
   const [sets, setSets] = useState('')
   const [caption, setCaption] = useState('')
+  const [isPrivate, setIsPrivate] = useState(true) // Default to private
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -53,6 +54,7 @@ export function DeadcemberLogForm({ onSuccess }: DeadcemberLogFormProps) {
           reps: repsNum,
           sets: setsNum,
           caption: caption.trim() || null,
+          is_private: isPrivate,
         }),
       })
 
@@ -180,6 +182,42 @@ export function DeadcemberLogForm({ onSuccess }: DeadcemberLogFormProps) {
             className="input-field w-full resize-none"
           />
           <p className="text-gray-500 text-xs mt-1">{caption.length}/500</p>
+        </div>
+
+        {/* Privacy Toggle */}
+        <div>
+          <label className="block text-sm font-bold text-gray-300 mb-2">PRIVACY</label>
+          <div className="flex space-x-3">
+            <button
+              type="button"
+              onClick={() => setIsPrivate(true)}
+              className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all font-bold flex items-center justify-center space-x-2 ${
+                isPrivate
+                  ? 'border-primary bg-primary/20 text-primary'
+                  : 'border-gray-700 bg-gray-800/40 text-gray-400 hover:border-gray-600'
+              }`}
+            >
+              <Lock className="w-4 h-4" />
+              <span>PRIVATE</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsPrivate(false)}
+              className={`flex-1 py-3 px-4 rounded-xl border-2 transition-all font-bold flex items-center justify-center space-x-2 ${
+                !isPrivate
+                  ? 'border-primary bg-primary/20 text-primary'
+                  : 'border-gray-700 bg-gray-800/40 text-gray-400 hover:border-gray-600'
+              }`}
+            >
+              <Globe className="w-4 h-4" />
+              <span>PUBLIC</span>
+            </button>
+          </div>
+          <p className="text-gray-500 text-xs mt-2">
+            {isPrivate 
+              ? 'Only people you follow can see your weights. Your volume still counts towards the community total.'
+              : 'Everyone can see your Deadcember post and weights.'}
+          </p>
         </div>
 
         {/* Volume Display */}
