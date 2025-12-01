@@ -33,41 +33,6 @@ export function AdminDashboard() {
 
       if (unpaidError) throw unpaidError
 
-      // Get all users who have paid
-      const { data: paidUsers, error: paidError } = await (supabase
-        .from('profiles') as any)
-        .select('id, username, full_name, has_paid_onboarding, created_at, email, onboarding_payment_id')
-        .eq('has_paid_onboarding', true)
-        .order('created_at', { ascending: false })
-
-      if (paidError) throw paidError
-
-      setUnpaidUsers(unpaidUsers || [])
-      setPaidUsers(paidUsers || [])
-    } catch (err: any) {
-      console.error('Error loading users:', err)
-      alert('Failed to load users')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadUsers()
-  }, [])
-
-  const loadUsers = async () => {
-    setLoading(true)
-    try {
-      // Get all users who haven't paid
-      const { data: unpaidUsers, error: unpaidError } = await (supabase
-        .from('profiles') as any)
-        .select('id, username, full_name, has_paid_onboarding, created_at, email')
-        .eq('has_paid_onboarding', false)
-        .order('created_at', { ascending: false })
-
-      if (unpaidError) throw unpaidError
-
       // Email is now stored in profiles table (added during signup)
       const usersWithEmails = unpaidUsers?.map((user: any) => ({
         ...user,
