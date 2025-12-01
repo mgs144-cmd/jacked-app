@@ -1,13 +1,14 @@
 -- Reset specific users by email to require payment
--- Replace the email addresses below with the actual user emails
+-- These users have webhook_fix_ payment IDs which are not valid Stripe payments
 
 UPDATE profiles
 SET 
   has_paid_onboarding = false,
   onboarding_payment_id = NULL
 WHERE email IN (
-  'user1@example.com',  -- Replace with first user's email
-  'user2@example.com'    -- Replace with second user's email
+  'jonathanmilesfrank@gmail.com',
+  'purbanek06@gmail.com',
+  'oliviaselden@icloud.com'
 );
 
 -- Verify the reset worked

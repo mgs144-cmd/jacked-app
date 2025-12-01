@@ -12,6 +12,7 @@ export function DeadcemberLogForm({ onSuccess }: DeadcemberLogFormProps) {
   const [weight, setWeight] = useState('')
   const [reps, setReps] = useState('')
   const [sets, setSets] = useState('')
+  const [caption, setCaption] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -51,6 +52,7 @@ export function DeadcemberLogForm({ onSuccess }: DeadcemberLogFormProps) {
           weight: weightNum,
           reps: repsNum,
           sets: setsNum,
+          caption: caption.trim() || null,
         }),
       })
 
@@ -64,6 +66,7 @@ export function DeadcemberLogForm({ onSuccess }: DeadcemberLogFormProps) {
       setWeight('')
       setReps('')
       setSets('')
+      setCaption('')
       setError('')
 
       if (onSuccess) {
@@ -163,6 +166,20 @@ export function DeadcemberLogForm({ onSuccess }: DeadcemberLogFormProps) {
               required
             />
           </div>
+        </div>
+
+        {/* Caption (Optional) */}
+        <div>
+          <label className="block text-sm font-bold text-gray-300 mb-2">CAPTION (OPTIONAL)</label>
+          <textarea
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            placeholder="Add a caption to your Deadcember post..."
+            rows={3}
+            maxLength={500}
+            className="input-field w-full resize-none"
+          />
+          <p className="text-gray-500 text-xs mt-1">{caption.length}/500</p>
         </div>
 
         {/* Volume Display */}

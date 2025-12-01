@@ -4,6 +4,7 @@ import { Navbar } from '@/components/Navbar'
 import { PostCard } from '@/components/PostCard'
 import { DeadcemberLogForm } from '@/components/DeadcemberLogForm'
 import { DeadcemberPRTracker } from '@/components/DeadcemberPRTracker'
+import { DeadcemberChat } from '@/components/DeadcemberChat'
 import { Trophy, TrendingUp } from 'lucide-react'
 
 export default async function DeadcemberPage() {
@@ -74,8 +75,7 @@ export default async function DeadcemberPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8 text-center">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <span className="text-4xl">💀</span>
+          <div className="flex items-center justify-center mb-4">
             <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">DEADCEMBER</h1>
           </div>
           <p className="text-gray-400 font-medium">December Deadlift & RDL Volume Challenge</p>
@@ -128,6 +128,11 @@ export default async function DeadcemberPage() {
           <DeadcemberLogForm />
         </div>
 
+        {/* Deadcember Group Chat */}
+        <div className="mb-10">
+          <DeadcemberChat />
+        </div>
+
         {/* Deadcember Feed */}
         <div className="mb-6">
           <h2 className="text-2xl font-black text-white mb-6">Deadcember Feed</h2>
@@ -139,7 +144,6 @@ export default async function DeadcemberPage() {
             </div>
           ) : (
             <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-12 text-center">
-              <span className="text-6xl mb-4 block">💀</span>
               <p className="text-gray-400 text-lg font-semibold">No Deadcember posts yet</p>
               <p className="text-gray-500 text-sm mt-2">Be the first to log a workout!</p>
             </div>

@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { exercise_type, weight, reps, sets } = body
+    const { exercise_type, weight, reps, sets, caption } = body
 
     if (!exercise_type || !weight || !reps || !sets) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -50,11 +50,14 @@ export async function POST(request: NextRequest) {
 
     if (entryError) throw entryError
 
-    // Create Deadcember post
+    // Create Deadcember post with optional caption
+    const defaultContent = `Deadcember Log: ${exercise_type.toUpperCase()} - ${weight}lbs × ${reps} reps × ${sets} sets = ${volume.toLocaleString()}lbs total volume`
+    const postContent = caption ? `${caption}\n\n${defaultContent}` : defaultContent
+    
     const { data: post, error: postError } = await (supabase.from('posts') as any)
       .insert({
         user_id: session.user.id,
-        content: `💀 Deadcember Log: ${exercise_type.toUpperCase()} - ${weight}lbs × ${reps} reps × ${sets} sets = ${volume.toLocaleString()}lbs total volume`,
+        content: postContent,
         is_deadcember_post: true,
         deadcember_volume: volume,
         deadcember_personal_total: newPersonalTotal,
