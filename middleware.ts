@@ -97,15 +97,28 @@ export async function middleware(request: NextRequest) {
       return supabaseResponse
     }
 
-    const hasPaid = (profile as any)?.has_paid_onboarding === true
+    // Check if user has actually paid - require valid Stripe payment ID
+    const hasPaidOnboarding = (profile as any)?.has_paid_onboarding === true
+    const paymentId = (profile as any)?.onboarding_payment_id
+    
+    // Only consider it paid if:
+    // 1. has_paid_onboarding is true AND
+    // 2. onboarding_payment_id exists and looks like a valid Stripe ID (cs_ or pi_ prefix)
+    // This prevents users who were accidentally marked as paid from accessing the app
+    const hasValidPayment = hasPaidOnboarding && paymentId && (
+      paymentId.startsWith('cs_') || // Stripe checkout session
+      paymentId.startsWith('pi_') || // Stripe payment intent
+      paymentId.startsWith('manual_') || // Manual admin fix (verify these)
+      paymentId.startsWith('stripe_fix_') // Stripe fix script (verify these)
+    )
 
-    // If user has paid and on payment page, redirect to feed immediately
-    if (hasPaid && request.nextUrl.pathname === '/payment-required') {
+    // If user has valid payment and on payment page, redirect to feed immediately
+    if (hasValidPayment && request.nextUrl.pathname === '/payment-required') {
       return NextResponse.redirect(new URL('/feed', request.url))
     }
 
-    // If user hasn't paid and not already on payment page, redirect to payment
-    if (!hasPaid && request.nextUrl.pathname !== '/payment-required') {
+    // If user hasn't paid or has invalid payment, redirect to payment
+    if (!hasValidPayment && request.nextUrl.pathname !== '/payment-required') {
       return NextResponse.redirect(new URL('/payment-required', request.url))
     }
   }
