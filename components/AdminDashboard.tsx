@@ -24,22 +24,23 @@ export function AdminDashboard() {
   const loadUsers = async () => {
     setLoading(true)
     try {
-      // Get all users who haven't paid
-      const { data: unpaidUsers, error: unpaidError } = await (supabase
+      // Get all users (both paid and unpaid)
+      const { data: allUsersData, error: usersError } = await (supabase
         .from('profiles') as any)
         .select('id, username, full_name, has_paid_onboarding, created_at, email')
-        .eq('has_paid_onboarding', false)
         .order('created_at', { ascending: false })
 
-      if (unpaidError) throw unpaidError
+      if (usersError) throw usersError
 
       // Email is now stored in profiles table (added during signup)
-      const usersWithEmails = unpaidUsers?.map((user: any) => ({
+      const usersWithEmails = allUsersData?.map((user: any) => ({
         ...user,
         email: user.email || 'Email not available',
       })) || []
 
-      setPendingUsers(usersWithEmails)
+      // Separate paid and unpaid users
+      const unpaid = usersWithEmails.filter((u: any) => !u.has_paid_onboarding)
+      setPendingUsers(unpaid)
       setAllUsers(usersWithEmails)
     } catch (error) {
       console.error('Error loading users:', error)
@@ -68,14 +69,18 @@ export function AdminDashboard() {
     }
   }
 
+  const [showAllUsers, setShowAllUsers] = useState(false)
+  
+  const usersToDisplay = showAllUsers ? allUsers : pendingUsers
+  
   const filteredUsers = searchTerm
-    ? pendingUsers.filter(
+    ? usersToDisplay.filter(
         (user) =>
           user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
       )
-    : pendingUsers
+    : usersToDisplay
 
   if (loading) {
     return (
@@ -101,9 +106,32 @@ export function AdminDashboard() {
         </div>
 
         <p className="text-gray-400 mb-6">
-          View pending accounts. Payments are automatically processed via Stripe webhooks.
-          Manual approval is only needed if webhook fails.
+          View and manage user accounts. Search for users by email, username, or name to help recover accounts.
         </p>
+
+        {/* Toggle between pending and all users */}
+        <div className="mb-4 flex space-x-3">
+          <button
+            onClick={() => setShowAllUsers(false)}
+            className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${
+              !showAllUsers
+                ? 'bg-primary text-white'
+                : 'bg-gray-800/40 text-gray-400 hover:bg-gray-800/60'
+            }`}
+          >
+            Pending Only
+          </button>
+          <button
+            onClick={() => setShowAllUsers(true)}
+            className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${
+              showAllUsers
+                ? 'bg-primary text-white'
+                : 'bg-gray-800/40 text-gray-400 hover:bg-gray-800/60'
+            }`}
+          >
+            All Users
+          </button>
+        </div>
 
         {/* Search */}
         <div className="mb-6">
@@ -123,14 +151,16 @@ export function AdminDashboard() {
         <div className="space-y-4">
           {filteredUsers.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
-              <p className="text-lg">No pending approvals</p>
-              <p className="text-sm mt-2">All users have been approved!</p>
+              <p className="text-lg">No users found</p>
+              <p className="text-sm mt-2">
+                {searchTerm ? 'Try a different search term' : showAllUsers ? 'No users in database' : 'All users have been approved!'}
+              </p>
             </div>
           ) : (
             filteredUsers.map((user) => (
               <div
                 key={user.id}
-                className="bg-gray-800/40 rounded-xl border border-gray-700 p-6 rounded-xl"
+                className="bg-gray-800/40 rounded-xl border border-gray-700 p-6"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -143,7 +173,7 @@ export function AdminDashboard() {
                         <div className="flex items-center space-x-4 mt-1 text-sm text-gray-400">
                           <div className="flex items-center space-x-1">
                             <Mail className="w-4 h-4" />
-                            <span>{user.email}</span>
+                            <span className="font-mono">{user.email}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <Calendar className="w-4 h-4" />
@@ -153,27 +183,38 @@ export function AdminDashboard() {
                         {user.username && (
                           <p className="text-gray-500 text-sm mt-1">@{user.username}</p>
                         )}
+                        <div className="mt-2">
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            user.has_paid_onboarding 
+                              ? 'bg-green-900/50 text-green-400' 
+                              : 'bg-red-900/50 text-red-400'
+                          }`}>
+                            {user.has_paid_onboarding ? 'Paid' : 'Not Paid'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => approveUser(user.id)}
-                    disabled={processing === user.id}
-                    className="btn-primary px-6 py-2 flex items-center space-x-2 disabled:opacity-50"
-                  >
-                    {processing === user.id ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Processing...</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-4 h-4" />
-                        <span>Approve</span>
-                      </>
-                    )}
-                  </button>
+                  {!user.has_paid_onboarding && (
+                    <button
+                      onClick={() => approveUser(user.id)}
+                      disabled={processing === user.id}
+                      className="btn-primary px-6 py-2 flex items-center space-x-2 disabled:opacity-50"
+                    >
+                      {processing === user.id ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Processing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Approve</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             ))
@@ -182,7 +223,12 @@ export function AdminDashboard() {
 
         <div className="mt-8 pt-6 border-t border-gray-800">
           <p className="text-gray-400 text-sm">
-            <strong className="text-white">Total Pending:</strong> {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}
+            <strong className="text-white">
+              {showAllUsers ? 'Total Users:' : 'Pending Users:'}
+            </strong> {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}
+          </p>
+          <p className="text-gray-500 text-xs mt-2">
+            💡 <strong>Password Recovery:</strong> Use the email above to reset password in Supabase Dashboard → Authentication → Users
           </p>
         </div>
       </div>
