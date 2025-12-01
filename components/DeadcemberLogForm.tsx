@@ -219,12 +219,6 @@ export function DeadcemberLogForm({ onSuccess }: DeadcemberLogFormProps) {
               <span className="text-gray-400 font-bold text-sm">TOTAL VOLUME</span>
               <span className="text-primary font-black text-2xl">{volume.toLocaleString()} lbs</span>
             </div>
-            <div className="mt-2 text-xs text-gray-500">
-              {sets.filter(s => s.weight && s.reps).map((set, i) => {
-                const setVol = (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0)
-                return setVol > 0 ? `${set.weight}lbs × ${set.reps} = ${setVol.toLocaleString()}lbs` : null
-              }).filter(Boolean).join(' + ')}
-            </div>
           </div>
         )}
 
