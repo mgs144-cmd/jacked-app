@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Music, Search, X, Upload } from 'lucide-react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
 import { MusicSearch } from './MusicSearch'
@@ -102,10 +103,12 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
         <div className="bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {selectedSong.albumArt ? (
-              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-2 ring-gray-700">
-                <img
+              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-2 ring-gray-700 relative">
+                <Image
                   src={selectedSong.albumArt}
                   alt={`${selectedSong.title} album art`}
+                  width={48}
+                  height={48}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none'
@@ -171,10 +174,12 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
       <div className="bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           {selectedSong.albumArt ? (
-            <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-2 ring-gray-700">
-              <img
+            <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-2 ring-gray-700 relative">
+              <Image
                 src={selectedSong.albumArt}
                 alt={`${selectedSong.title} album art`}
+                width={48}
+                height={48}
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   // Fallback if image fails to load

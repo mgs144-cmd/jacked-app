@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { MessageCircle, Send, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
@@ -81,18 +81,26 @@ export function DeadcemberChat() {
           const newMessage = payload.new as any
           setMessages((prev) => [...prev, newMessage])
           
-          // Load profile if not already loaded
-          if (!profiles[newMessage.user_id]) {
-            const { data: profile } = await supabase
+          // Load profile if not already loaded - use functional update to avoid dependency
+          setProfiles((prevProfiles) => {
+            if (prevProfiles[newMessage.user_id]) {
+              return prevProfiles // Already loaded
+            }
+            
+            // Load profile asynchronously
+            supabase
               .from('profiles')
               .select('id, username, avatar_url, full_name')
               .eq('id', newMessage.user_id)
               .single()
+              .then(({ data: profile }) => {
+                if (profile) {
+                  setProfiles((current) => ({ ...current, [profile.id]: profile }))
+                }
+              })
             
-            if (profile) {
-              setProfiles((prev) => ({ ...prev, [profile.id]: profile }))
-            }
-          }
+            return prevProfiles
+          })
         }
       )
       .subscribe()
