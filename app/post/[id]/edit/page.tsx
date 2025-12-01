@@ -27,7 +27,7 @@ export default function EditPostPage() {
   const [prExercise, setPRExercise] = useState('')
   const [prWeight, setPRWeight] = useState('')
   const [prReps, setPRReps] = useState('')
-  const [workoutExercises, setWorkoutExercises] = useState<Array<{ exercise_name: string; sets: number | null; reps: number | null; weight: number | null; order_index: number }>>([])
+  const [workoutExercises, setWorkoutExercises] = useState<Array<{ exercise_name: string; sets_data: Array<{ weight: number | null; reps: number | null }>; order_index: number }>>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -85,20 +85,32 @@ export default function EditPostPage() {
         })
       }
 
-      // Load workout exercises
+      // Load workout exercises and group by exercise_name and order_index
       const { data: exercises } = await (supabase.from('workout_exercises') as any)
         .select('*')
         .eq('post_id', postId)
         .order('order_index')
 
-      if (exercises) {
-        setWorkoutExercises(exercises.map((ex: any) => ({
-          exercise_name: ex.exercise_name,
-          sets: ex.sets,
-          reps: ex.reps,
-          weight: ex.weight,
-          order_index: ex.order_index,
-        })))
+      if (exercises && exercises.length > 0) {
+        // Group exercises by exercise_name and order_index to create sets_data
+        const exerciseMap = new Map<string, { exercise_name: string; sets_data: Array<{ weight: number | null; reps: number | null }>; order_index: number }>()
+        
+        exercises.forEach((ex: any) => {
+          const key = `${ex.exercise_name}_${ex.order_index}`
+          if (!exerciseMap.has(key)) {
+            exerciseMap.set(key, {
+              exercise_name: ex.exercise_name,
+              sets_data: [],
+              order_index: ex.order_index,
+            })
+          }
+          exerciseMap.get(key)!.sets_data.push({
+            weight: ex.weight,
+            reps: ex.reps,
+          })
+        })
+        
+        setWorkoutExercises(Array.from(exerciseMap.values()).sort((a, b) => a.order_index - b.order_index))
       }
     } catch (err: any) {
       setError(err.message || 'Failed to load post')
@@ -236,18 +248,25 @@ export default function EditPostPage() {
         .delete()
         .eq('post_id', postId)
 
-      // Insert new exercises
+      // Insert new exercises - flatten sets_data into individual workout_exercise entries
       if (workoutExercises.length > 0 && workoutExercises.some(ex => ex.exercise_name.trim())) {
-        const validExercises = workoutExercises
+        const validExercises: any[] = []
+        workoutExercises
           .filter(ex => ex.exercise_name.trim())
-          .map((ex, index) => ({
-            post_id: postId,
-            exercise_name: ex.exercise_name.trim(),
-            sets: ex.sets,
-            reps: ex.reps,
-            weight: ex.weight,
-            order_index: index,
-          }))
+          .forEach((ex, exerciseIndex) => {
+            ex.sets_data.forEach((set) => {
+              if (set.weight !== null && set.reps !== null) {
+                validExercises.push({
+                  post_id: postId,
+                  exercise_name: ex.exercise_name.trim(),
+                  sets: 1, // Each entry is one set
+                  reps: set.reps,
+                  weight: set.weight,
+                  order_index: exerciseIndex,
+                })
+              }
+            })
+          })
 
         if (validExercises.length > 0) {
           await (supabase.from('workout_exercises') as any).insert(validExercises)
