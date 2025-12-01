@@ -167,22 +167,6 @@ export async function GET(request: NextRequest) {
       tracks,
       note: 'Spotify deprecated preview_url. Use Upload tab for in-app playback, or tracks will open in Spotify.'
     })
-    
-    const tracks = tracksWithPreviews.slice(0, 20).map((track: any) => ({
-      id: track.id,
-      name: track.name,
-      artist: track.artists.map((a: any) => a.name).join(', '),
-      album: track.album.name,
-      preview_url: track.preview_url, // This is a direct MP3 URL from Spotify (usually p.scdn.co)
-      external_urls: {
-        spotify: track.external_urls.spotify,
-      },
-      album_image: track.album.images?.[0]?.url,
-      source: 'spotify',
-    }))
-
-    console.log(`Returning ${tracks.length} tracks with preview URLs`)
-    return NextResponse.json({ tracks })
   } catch (error: any) {
     console.error('Spotify search error:', error)
     return NextResponse.json(
