@@ -138,6 +138,25 @@ export async function POST(request: Request) {
     if (paymentType === 'onboarding') {
       // Mark user as having paid onboarding fee
       console.log(`💳 Updating payment status for user ${userId}...`)
+      
+      // First, verify the user exists
+      const { data: existingProfile } = await (supabase
+        .from('profiles') as any)
+        .select('id, email, has_paid_onboarding')
+        .eq('id', userId)
+        .single()
+      
+      if (!existingProfile) {
+        console.error(`❌ User ${userId} not found in profiles table`)
+        return NextResponse.json({ 
+          error: 'User not found',
+          userId
+        }, { status: 404 })
+      }
+      
+      console.log('Current profile status:', existingProfile)
+      
+      // Update payment status
       const { error, data } = await (supabase
         .from('profiles') as any)
         .update({ 
@@ -149,19 +168,41 @@ export async function POST(request: Request) {
       
       if (error) {
         console.error('❌ Error updating onboarding payment status:', error)
+        console.error('Error details:', JSON.stringify(error, null, 2))
         return NextResponse.json({ 
           error: 'Database update failed',
-          details: error.message 
+          details: error.message,
+          userId
         }, { status: 500 })
-      } else {
-        console.log(`✅ User ${userId} automatically activated after payment`)
-        console.log('Updated profile:', data)
+      }
+      
+      // Verify the update worked
+      const { data: verifyProfile } = await (supabase
+        .from('profiles') as any)
+        .select('has_paid_onboarding, onboarding_payment_id')
+        .eq('id', userId)
+        .single()
+      
+      console.log('✅ User updated. Verification:', verifyProfile)
+      
+      if (verifyProfile && verifyProfile.has_paid_onboarding === true) {
+        console.log(`✅ User ${userId} successfully activated after payment`)
         return NextResponse.json({ 
           success: true,
           message: `User ${userId} payment processed and account activated`,
           userId,
-          sessionId: session.id
+          sessionId: session.id,
+          verified: true
         })
+      } else {
+        console.error(`❌ Update appeared to succeed but verification failed!`)
+        console.error('Verification result:', verifyProfile)
+        return NextResponse.json({ 
+          error: 'Update verification failed',
+          userId,
+          sessionId: session.id,
+          verification: verifyProfile
+        }, { status: 500 })
       }
     } else {
       // Premium subscription

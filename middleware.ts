@@ -59,8 +59,17 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
+  // TEMPORARY: Bypass payment check if DISABLE_PAYMENT_CHECK is set
+  // Set this environment variable to "true" to disable payment requirements
+  const disablePaymentCheck = process.env.DISABLE_PAYMENT_CHECK === 'true'
+
   // Check payment requirement for protected routes (except public pages and admin)
   if (user && !isPublicPage && !request.nextUrl.pathname.startsWith('/admin')) {
+    // If payment check is disabled, allow all users through
+    if (disablePaymentCheck) {
+      return supabaseResponse
+    }
+
     const { data: profile, error } = await (supabase
       .from('profiles') as any)
       .select('has_paid_onboarding, is_admin, onboarding_payment_id')
