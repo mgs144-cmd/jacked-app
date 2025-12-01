@@ -119,9 +119,11 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
         {/* Album Art - Smaller */}
         {albumArt ? (
           <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 ring-1 ring-gray-700">
-            <img
+            <Image
               src={albumArt}
               alt={`${songTitle} album art`}
+              width={40}
+              height={40}
               className="w-full h-full object-cover"
               onError={(e) => {
                 e.currentTarget.style.display = 'none'

@@ -93,7 +93,7 @@ export function DeadcemberChat() {
               .select('id, username, avatar_url, full_name')
               .eq('id', newMessage.user_id)
               .single()
-              .then(({ data: profile }) => {
+              .then(({ data: profile }: any) => {
                 if (profile) {
                   setProfiles((current) => ({ ...current, [profile.id]: profile }))
                 }
