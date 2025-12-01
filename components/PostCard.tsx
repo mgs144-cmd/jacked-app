@@ -86,7 +86,7 @@ export function PostCard({ post }: PostCardProps) {
         }
       }
 
-      // Delete the post (this will cascade delete likes and comments due to foreign keys)
+      // Delete the post (this will cascade delete likes, comments, workout_exercises, and personal_records due to foreign keys)
       const { error } = await (supabase.from('posts') as any)
         .delete()
         .eq('id', post.id)

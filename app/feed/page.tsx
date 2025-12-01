@@ -28,8 +28,8 @@ export default async function FeedPage() {
     .select(`
       *,
       profiles:user_id(username, avatar_url, full_name, is_premium, is_account_private),
-      likes(count),
-      comments(count),
+      likes(id),
+      comments(id),
       workout_exercises(*)
     `)
     .in('user_id', [...followingIds, session.user.id])
@@ -42,8 +42,8 @@ export default async function FeedPage() {
     .select(`
       *,
       profiles:user_id(username, avatar_url, full_name, is_premium, is_account_private),
-      likes(count),
-      comments(count),
+      likes(id),
+      comments(id),
       workout_exercises(*)
     `)
     .not('user_id', 'in', `(${[session.user.id, ...followingIds].join(',')})`)
@@ -77,8 +77,8 @@ export default async function FeedPage() {
     return {
       ...post,
       profile: profile,
-      like_count: post.likes?.length || 0,
-      comment_count: post.comments?.length || 0,
+      like_count: Array.isArray(post.likes) ? post.likes.length : 0,
+      comment_count: Array.isArray(post.comments) ? post.comments.length : 0,
     }
   }) || []
 
@@ -96,8 +96,8 @@ export default async function FeedPage() {
           return {
             ...post,
             profile: profile,
-            like_count: post.likes?.length || 0,
-            comment_count: post.comments?.length || 0,
+            like_count: Array.isArray(post.likes) ? post.likes.length : 0,
+            comment_count: Array.isArray(post.comments) ? post.comments.length : 0,
           }
         }) || []}
       />

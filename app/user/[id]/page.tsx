@@ -88,16 +88,16 @@ export default async function UserProfilePage({
     .select(`
       *,
       profiles:user_id(username, avatar_url, full_name, is_premium),
-      likes(count),
-      comments(count)
+      likes(id),
+      comments(id)
     `)
     .eq('user_id', params.id)
     .order('created_at', { ascending: false })
 
   const postsWithCounts = posts?.map((post: any) => ({
     ...post,
-    like_count: post.likes?.length || 0,
-    comment_count: post.comments?.length || 0,
+    like_count: Array.isArray(post.likes) ? post.likes.length : 0,
+    comment_count: Array.isArray(post.comments) ? post.comments.length : 0,
   }))
 
   // Filter posts based on privacy
