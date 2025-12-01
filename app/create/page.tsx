@@ -23,7 +23,7 @@ export default function CreatePage() {
   const [prExercise, setPRExercise] = useState('')
   const [prWeight, setPRWeight] = useState('')
   const [prReps, setPRReps] = useState('')
-  const [workoutExercises, setWorkoutExercises] = useState<Array<{ exercise_name: string; sets: number | null; reps: number | null; weight: number | null; order_index: number }>>([])
+  const [workoutExercises, setWorkoutExercises] = useState<Array<{ exercise_name: string; sets_data: Array<{ weight: number | null; reps: number | null }>; order_index: number }>>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -127,16 +127,24 @@ export default function CreatePage() {
 
       // Create workout exercises if any
       if (workoutExercises.length > 0 && workoutExercises.some(ex => ex.exercise_name.trim())) {
-        const validExercises = workoutExercises
+        // Flatten sets_data into individual workout_exercise entries
+        const validExercises: any[] = []
+        workoutExercises
           .filter(ex => ex.exercise_name.trim())
-          .map((ex, index) => ({
-            post_id: postData.id,
-            exercise_name: ex.exercise_name.trim(),
-            sets: ex.sets,
-            reps: ex.reps,
-            weight: ex.weight,
-            order_index: index,
-          }))
+          .forEach((ex, exerciseIndex) => {
+            ex.sets_data.forEach((set, setIndex) => {
+              if (set.weight !== null && set.reps !== null) {
+                validExercises.push({
+                  post_id: postData.id,
+                  exercise_name: ex.exercise_name.trim(),
+                  sets: 1, // Each entry is one set
+                  reps: set.reps,
+                  weight: set.weight,
+                  order_index: exerciseIndex,
+                })
+              }
+            })
+          })
 
         if (validExercises.length > 0) {
           await (supabase.from('workout_exercises') as any).insert(validExercises)
