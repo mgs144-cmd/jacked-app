@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { Loader2, Upload, LogOut, User, Shield } from 'lucide-react'
 import { MusicSelector } from '@/components/MusicSelector'
 import { ImageCropper } from '@/components/ImageCropper'
+import { SongPreviewPlayer } from '@/components/SongPreviewPlayer'
 
 export default function SettingsPage() {
   const [username, setUsername] = useState('')
@@ -332,15 +333,31 @@ export default function SettingsPage() {
                     <label htmlFor="songStartTime" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
                       START TIME (SECONDS)
                     </label>
-                    <p className="text-xs text-gray-500 mb-2">Skip to a specific part of the song (e.g., 30 to start at 30 seconds, leave empty to start from beginning)</p>
-                    <input
-                      id="songStartTime"
-                      type="number"
-                      min="0"
-                      value={songStartTime || ''}
-                      onChange={(e) => setSongStartTime(e.target.value ? parseInt(e.target.value) : null)}
-                      className="input-field w-full"
-                      placeholder="0 (start from beginning)"
+                    <p className="text-xs text-gray-500 mb-2">Skip to a specific part of the song (e.g., 30 to start at 30 seconds, leave empty to start from beginning). A 5-second preview will play as you adjust.</p>
+                    <div className="flex items-center space-x-3">
+                      <input
+                        id="songStartTime"
+                        type="number"
+                        min="0"
+                        value={songStartTime || ''}
+                        onChange={(e) => {
+                          const value = e.target.value ? parseInt(e.target.value) : null
+                          setSongStartTime(value)
+                        }}
+                        className="input-field flex-1"
+                        placeholder="0 (start from beginning)"
+                      />
+                      {songStartTime !== null && songStartTime >= 0 && (
+                        <div className="text-xs text-gray-400">
+                          Preview playing...
+                        </div>
+                      )}
+                    </div>
+                    {/* Hidden preview player */}
+                    <SongPreviewPlayer
+                      songUrl={profileSong.url}
+                      spotifyId={profileSong.spotifyId}
+                      startTime={songStartTime}
                     />
                   </div>
                 )}

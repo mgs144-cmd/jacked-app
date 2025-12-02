@@ -169,9 +169,18 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
       const timer = setTimeout(() => {
         if (currentPlayingId !== songId) { // Double check it hasn't changed
           console.log('Auto-playing profile song:', songId, 'with start time:', startTime)
-          playSong(songId, startPlayback, stopPlayback)
+          // Use a longer delay for YouTube to ensure player is ready
+          if (youtubeVideoId) {
+            setTimeout(() => {
+              if (currentPlayingId !== songId) {
+                playSong(songId, startPlayback, stopPlayback)
+              }
+            }, 1000) // Additional delay for YouTube
+          } else {
+            playSong(songId, startPlayback, stopPlayback)
+          }
         }
-      }, 2000) // Increased delay to ensure YouTube player is fully ready
+      }, 2500) // Initial delay to ensure page is loaded
       return () => clearTimeout(timer)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
