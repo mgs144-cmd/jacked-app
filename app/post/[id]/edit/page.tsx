@@ -192,6 +192,7 @@ export default function EditPostPage() {
         song_artist: selectedSong?.artist || null,
         song_url: selectedSong?.url || null,
         song_album_art_url: selectedSong?.albumArt || null,
+        song_start_time: songStartTime || null,
         is_private: isPrivate,
         is_pr_post: isPRPost,
         pr_exercise: isPRPost ? prExercise.trim() : null,

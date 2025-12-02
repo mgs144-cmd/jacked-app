@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
@@ -107,6 +107,7 @@ export default function CreatePage() {
         song_artist: selectedSong?.artist || null,
         song_url: selectedSong?.url || null,
         song_album_art_url: selectedSong?.albumArt || null,
+        song_start_time: songStartTime || null,
         is_private: isPrivate,
         is_pr_post: isPRPost,
         pr_exercise: isPRPost ? prExercise.trim() : null,
