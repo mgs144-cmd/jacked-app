@@ -148,7 +148,7 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
       setLoading(false)
       stopCurrentSong()
     }
-  }, [youtubeVideoId, audioUrl, stopCurrentSong])
+  }, [youtubeVideoId, audioUrl, stopCurrentSong, isMuted, startTime])
 
   const stopPlayback = useCallback(() => {
     if (audioRef.current) {
@@ -163,19 +163,17 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   useEffect(() => {
     // Only auto-play once when component mounts with a valid song
     if ((youtubeVideoId || audioUrl) && currentPlayingId !== songId) {
-      // Reduced delay - start trying to play sooner
+      // Start trying to play - reduced delay for faster response
       const timer = setTimeout(() => {
         if (currentPlayingId !== songId) { // Double check it hasn't changed
           console.log('Auto-playing profile song:', songId, 'with start time:', startTime)
-          // For YouTube, the player's onReady callback will handle playback
-          // For audio, play immediately
           playSong(songId, startPlayback, stopPlayback)
         }
-      }, 2000) // Reduced from 3000ms to 2000ms
+      }, 1500) // Reduced to 1.5 seconds for faster auto-play
       return () => clearTimeout(timer)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [youtubeVideoId, audioUrl]) // Re-run when song URL changes
+  }, []) // Only run once on mount - don't re-run when song URL changes to prevent re-triggering
 
   // Sync with music context - prevent rapid toggling
   useEffect(() => {
@@ -205,9 +203,15 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   }
 
   const toggleMute = () => {
-    if (!audioRef.current) return
-    audioRef.current.muted = !isMuted
-    setIsMuted(!isMuted)
+    const newMutedState = !isMuted
+    setIsMuted(newMutedState)
+    
+    // Handle audio files
+    if (audioRef.current) {
+      audioRef.current.muted = newMutedState
+      audioRef.current.volume = newMutedState ? 0 : 0.7
+    }
+    // Note: YouTube mute is handled by the YouTubePlayer component via isMuted prop
   }
 
   return (
@@ -235,7 +239,7 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
               )}
             </button>
 
-            {audioUrl && !youtubeVideoId && (
+            {isPlaying && (
               <button
                 onClick={toggleMute}
                 className="w-7 h-7 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all flex-shrink-0"
@@ -257,6 +261,7 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
           videoId={youtubeVideoId}
           isPlaying={isPlaying}
           startTime={startTime}
+          isMuted={isMuted}
           onPlay={() => {
             // Only update if not already playing to prevent loops
             if (!isPlaying) {
