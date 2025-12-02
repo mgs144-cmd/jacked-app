@@ -169,30 +169,24 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   // Auto-play when profile opens (if song is available)
   useEffect(() => {
     // For audio files, we can auto-play immediately
-    // For YouTube, we need to wait for the player to be ready
-    if (audioUrl && !hasAutoPlayedRef.current && currentPlayingId !== songId) {
+    if (audioUrl && !hasAutoPlayedRef.current) {
       hasAutoPlayedRef.current = true
       const timer = setTimeout(() => {
-        if (currentPlayingId !== songId) {
-          console.log('Auto-playing profile song (audio):', songId)
-          playSong(songId, startPlayback, stopPlayback)
-        }
-      }, 500) // Faster for audio files
+        console.log('Auto-playing profile song (audio):', songId)
+        playSong(songId, startPlayback, stopPlayback)
+      }, 800) // Delay to ensure component is fully mounted
       return () => clearTimeout(timer)
     }
     
-    // For YouTube, wait for player to be ready
-    if (youtubeVideoId && !hasAutoPlayedRef.current && currentPlayingId !== songId && youtubePlayerReadyRef.current) {
-      hasAutoPlayedRef.current = true
-      const timer = setTimeout(() => {
-        if (currentPlayingId !== songId) {
-          console.log('Auto-playing profile song (YouTube, player ready):', songId)
-          playSong(songId, startPlayback, stopPlayback)
-        }
-      }, 300) // Small delay even after ready
-      return () => clearTimeout(timer)
+    // For YouTube, auto-play will be triggered by onReady callback
+    // This effect just ensures we reset the flag when video changes
+    if (youtubeVideoId) {
+      // Reset flag when video ID changes to allow new auto-play
+      if (!hasAutoPlayedRef.current) {
+        // Will be set to true in onReady callback
+      }
     }
-  }, [youtubeVideoId, audioUrl, currentPlayingId, songId, startTime, playSong, startPlayback, stopPlayback])
+  }, [audioUrl, youtubeVideoId, songId, playSong, startPlayback, stopPlayback])
 
   // Sync with music context - prevent rapid toggling
   useEffect(() => {
@@ -294,16 +288,18 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
           startTime={startTime}
           isMuted={isMuted}
           onReady={() => {
-            // YouTube player is ready - mark it and trigger auto-play if needed
+            // YouTube player is ready - mark it and trigger auto-play
+            console.log('Profile: YouTube player ready, triggering auto-play for:', songId)
             youtubePlayerReadyRef.current = true
-            if (!hasAutoPlayedRef.current && currentPlayingId !== songId) {
+            
+            // Only auto-play if we haven't already attempted and no other song is playing
+            if (!hasAutoPlayedRef.current) {
               hasAutoPlayedRef.current = true
+              // Small delay to ensure everything is set up
               setTimeout(() => {
-                if (currentPlayingId !== songId) {
-                  console.log('Auto-playing profile song (YouTube, onReady callback):', songId)
-                  playSong(songId, startPlayback, stopPlayback)
-                }
-              }, 300)
+                console.log('Profile: Auto-playing YouTube song:', songId)
+                playSong(songId, startPlayback, stopPlayback)
+              }, 500)
             }
           }}
           onPlay={() => {

@@ -185,16 +185,28 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
   useEffect(() => {
     // Load YouTube iframe API script
     if (!window.YT) {
-      const tag = document.createElement('script')
-      tag.src = 'https://www.youtube.com/iframe_api'
-      const firstScriptTag = document.getElementsByTagName('script')[0]
-      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag)
+      // Check if script is already being loaded
+      const existingScript = document.querySelector('script[src="https://www.youtube.com/iframe_api"]')
+      if (!existingScript) {
+        const tag = document.createElement('script')
+        tag.src = 'https://www.youtube.com/iframe_api'
+        const firstScriptTag = document.getElementsByTagName('script')[0]
+        firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag)
+      }
 
-      // Wait for API to load
+      // Wait for API to load (use existing callback or create new one)
+      const originalCallback = window.onYouTubeIframeAPIReady
       window.onYouTubeIframeAPIReady = () => {
+        if (originalCallback) originalCallback()
+        initializePlayer()
+      }
+      
+      // If API is already loaded, initialize immediately
+      if (window.YT && window.YT.Player) {
         initializePlayer()
       }
     } else {
+      // API is already loaded, initialize immediately
       initializePlayer()
     }
 
@@ -205,7 +217,9 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
         } catch (e) {
           // Ignore cleanup errors
         }
+        youtubePlayerRef.current = null
       }
+      setIsReady(false)
     }
   }, [videoId, initializePlayer])
 
