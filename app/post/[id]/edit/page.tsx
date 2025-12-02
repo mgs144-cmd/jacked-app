@@ -48,6 +48,20 @@ export default function EditPostPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, postId, router])
 
+  // Debounce preview start time - only play after user stops typing
+  useEffect(() => {
+    if (songStartTime === null || songStartTime === undefined || songStartTime < 0) {
+      setPreviewStartTime(null)
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setPreviewStartTime(songStartTime)
+    }, 800) // Wait 800ms after user stops typing
+
+    return () => clearTimeout(timer)
+  }, [songStartTime])
+
   const loadPost = async () => {
     if (!user || !postId) return
 
