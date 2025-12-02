@@ -192,34 +192,21 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
 
     const observer = new IntersectionObserver(
       (entries) => {
-        // On mobile, find the most visible post first
-        if (isMobile) {
-          let maxRatio = 0
-          let maxEntry: IntersectionObserverEntry | null = null
+        entries.forEach((entry) => {
+          const currentRatio = entry.intersectionRatio
           
-          entries.forEach((entry) => {
-            if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
-              maxRatio = entry.intersectionRatio
-              maxEntry = entry
-            }
-          })
+          // Clear any pending timeouts
+          if (timeoutId) {
+            clearTimeout(timeoutId)
+            timeoutId = null
+          }
 
-          // Only proceed if we have a clearly most visible post
-          if (maxEntry && maxRatio >= 0.5) {
-            const entry = maxEntry
-            const currentRatio = entry.intersectionRatio
-            
-            // Clear any pending timeouts
-            if (timeoutId) {
-              clearTimeout(timeoutId)
-              timeoutId = null
-            }
-
-            // Only play if this is the most visible post and meets threshold
-            if (currentRatio >= 0.5 && currentPlayingId !== songId && !isPlayingRef.current && 
-                (!mostVisiblePost || currentRatio > mostVisiblePost.ratio)) {
-              mostVisiblePost = { songId, ratio: currentRatio }
+          // On mobile, use different logic - only play if post is clearly most visible
+          if (isMobile) {
+            // Only play if post is 50%+ visible and more visible than before
+            if (entry.isIntersecting && currentRatio >= 0.5 && currentRatio > lastVisibleRatio && currentPlayingId !== songId && !isPlayingRef.current) {
               isPlayingRef.current = true
+              lastVisibleRatio = currentRatio
               timeoutId = setTimeout(() => {
                 if (currentPlayingId !== songId && entry.isIntersecting && entry.intersectionRatio >= 0.5) {
                   console.log('Post auto-playing (mobile):', songId, 'ratio:', entry.intersectionRatio)
@@ -230,16 +217,17 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
               }, 600) // Longer delay on mobile to prevent rapid switching
             } else if ((!entry.isIntersecting || currentRatio < 0.2) && currentPlayingId === songId) {
               isPlayingRef.current = false
-              mostVisiblePost = null
+              lastVisibleRatio = 0
               timeoutId = setTimeout(() => {
                 if (currentPlayingId === songId) {
                   console.log('Post stopping (mobile, not visible):', songId)
                   stopCurrentSong()
                 }
               }, 600)
+            } else if (entry.isIntersecting) {
+              lastVisibleRatio = currentRatio
             }
-          }
-        } else {
+          } else {
           // Desktop logic - more strict
           entries.forEach((entry) => {
             const currentRatio = entry.intersectionRatio
