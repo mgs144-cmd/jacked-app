@@ -18,7 +18,7 @@ type Mode = 'search' | 'upload' | 'link'
 
 export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'post' }: MusicSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [mode, setMode] = useState<Mode>('upload') // Default to upload for best in-app playback
+  const [mode, setMode] = useState<Mode>('search') // Default to search (like Snapchat/Instagram)
   const [songTitle, setSongTitle] = useState('')
   const [artist, setArtist] = useState('')
   const [songUrl, setSongUrl] = useState('')
@@ -259,19 +259,6 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
       <div className="grid grid-cols-3 gap-2 p-1 bg-gray-800/40 rounded-lg">
         <button
           type="button"
-          onClick={() => setMode('upload')}
-          className={`py-2 px-3 rounded-lg font-bold text-xs transition-all ${
-            mode === 'upload'
-              ? 'bg-primary text-white'
-              : 'bg-gray-700 text-gray-400 hover:text-white'
-          }`}
-        >
-          <Upload className="w-4 h-4 inline mr-1" />
-          Upload
-          <span className="ml-1 text-[10px] opacity-75">✨ Best</span>
-        </button>
-        <button
-          type="button"
           onClick={() => setMode('search')}
           className={`py-2 px-3 rounded-lg font-bold text-xs transition-all ${
             mode === 'search'
@@ -281,6 +268,19 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
         >
           <Search className="w-4 h-4 inline mr-1" />
           Search
+          <span className="ml-1 text-[10px] opacity-75">✨ In-App</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode('upload')}
+          className={`py-2 px-3 rounded-lg font-bold text-xs transition-all ${
+            mode === 'upload'
+              ? 'bg-primary text-white'
+              : 'bg-gray-700 text-gray-400 hover:text-white'
+          }`}
+        >
+          <Upload className="w-4 h-4 inline mr-1" />
+          Upload
         </button>
         <button
           type="button"

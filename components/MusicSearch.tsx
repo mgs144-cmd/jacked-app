@@ -30,7 +30,7 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
   const [tracks, setTracks] = useState<Track[]>([])
   const [error, setError] = useState<string | null>(null)
 
-  const [searchSource, setSearchSource] = useState<'spotify' | 'youtube'>('spotify')
+  const [searchSource, setSearchSource] = useState<'spotify' | 'youtube'>('youtube')
 
   const searchSongs = async (searchQuery: string) => {
     if (!searchQuery.trim()) return
@@ -40,7 +40,19 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
     setTracks([])
 
     try {
-      // Try Spotify for discovery
+      // Try YouTube first (best for in-app playback via iframe)
+      const youtubeResponse = await fetch(`/api/search-youtube?q=${encodeURIComponent(searchQuery)}`)
+      const youtubeData = await youtubeResponse.json()
+
+      if (youtubeData.tracks && youtubeData.tracks.length > 0) {
+        setSearchSource('youtube')
+        setTracks(youtubeData.tracks)
+        setError(null)
+        setSearching(false)
+        return
+      }
+
+      // Fallback to Spotify for discovery
       const spotifyResponse = await fetch(`/api/search-music?q=${encodeURIComponent(searchQuery)}`)
       const spotifyData = await spotifyResponse.json()
 

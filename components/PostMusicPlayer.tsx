@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Play, Pause, Music } from 'lucide-react'
 import Image from 'next/image'
+import { YouTubePlayer } from './YouTubePlayer'
 
 interface PostMusicPlayerProps {
   songTitle: string
@@ -16,19 +17,39 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Extract YouTube video ID from URL
+  const extractYouTubeId = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+      /youtube\.com\/.*[?&]v=([^&\n?#]+)/,
+    ]
+    for (const pattern of patterns) {
+      const match = url.match(pattern)
+      if (match && match[1]) {
+        return match[1]
+      }
+    }
+    return null
+  }
 
   useEffect(() => {
     // Determine audio URL for in-app playback
     if (songUrl) {
+      // Check if it's a YouTube URL - use iframe player for in-app playback
+      const youtubeId = extractYouTubeId(songUrl)
+      if (youtubeId) {
+        console.log('YouTube video detected, using iframe player:', youtubeId)
+        setYoutubeVideoId(youtubeId)
+        setAudioUrl(null) // Don't use audio element for YouTube
+        return
+      }
+
       // Check if it's a direct audio file URL (common audio extensions)
       const audioExtensions = ['.mp3', '.m4a', '.wav', '.ogg', '.aac', '.flac', '.webm']
       const isDirectAudio = audioExtensions.some(ext => songUrl.toLowerCase().endsWith(ext))
-      
-      // SoundCloud stream URLs - these work great for in-app playback!
-      const isSoundCloud = songUrl.includes('soundcloud.com') || 
-                          songUrl.includes('api.soundcloud.com') ||
-                          songUrl.includes('sndcdn.com')
       
       // Spotify preview URLs are typically from p.scdn.co or contain "preview" or are direct MP3s
       const isSpotifyPreview = songUrl.includes('p.scdn.co') || 
@@ -42,30 +63,32 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       if (isDirectAudio) {
         console.log('Direct audio file detected:', songUrl)
         setAudioUrl(songUrl)
-      } else if (isSoundCloud) {
-        // SoundCloud stream URL - perfect for in-app playback!
-        console.log('SoundCloud stream URL detected:', songUrl)
-        setAudioUrl(songUrl)
+        setYoutubeVideoId(null)
       } else if (isSpotifyPreview) {
         // Spotify preview URL - these are direct MP3 URLs that can be played
         console.log('Spotify preview URL detected:', songUrl)
         setAudioUrl(songUrl)
+        setYoutubeVideoId(null)
       } else if (isSupabaseStorage) {
         // Supabase storage URL - try to play it
         console.log('Supabase storage URL detected:', songUrl)
         setAudioUrl(songUrl)
-      } else if (songUrl.startsWith('http') && !songUrl.includes('youtube.com') && !songUrl.includes('youtu.be')) {
+        setYoutubeVideoId(null)
+      } else if (songUrl.startsWith('http') && !songUrl.includes('open.spotify.com')) {
         // Try other HTTP URLs (might be direct audio links)
         console.log('Trying to use URL as audio:', songUrl)
         setAudioUrl(songUrl)
+        setYoutubeVideoId(null)
       } else {
-        // YouTube links or other non-playable URLs
+        // Spotify web links or other non-playable URLs
         console.log('URL not playable in-app:', songUrl)
         setAudioUrl(null)
+        setYoutubeVideoId(null)
       }
     } else {
       console.log('No songUrl provided')
       setAudioUrl(null)
+      setYoutubeVideoId(null)
     }
 
     return () => {
@@ -77,9 +100,9 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   }, [songUrl, spotifyId])
 
   const handlePlayPause = async () => {
-    // Handle YouTube URLs - open in new tab
-    if (songUrl && (songUrl.includes('youtube.com') || songUrl.includes('youtu.be'))) {
-      window.open(songUrl, '_blank')
+    // Handle YouTube URLs - use iframe player for in-app playback
+    if (youtubeVideoId) {
+      setIsPlaying(!isPlaying)
       return
     }
 
@@ -90,16 +113,11 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     }
 
     // If no audio URL available, show helpful message
-    if (!audioUrl) {
+    if (!audioUrl && !youtubeVideoId) {
       console.log('No audio URL available for playback. songUrl:', songUrl)
       if (songUrl) {
         // If it's a Spotify link, open it
         if (songUrl.includes('open.spotify.com')) {
-          window.open(songUrl, '_blank')
-          return
-        }
-        // If it's a YouTube link, open it
-        if (songUrl.includes('youtube.com') || songUrl.includes('youtu.be')) {
           window.open(songUrl, '_blank')
           return
         }
@@ -211,17 +229,15 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
           </p>
         )}
       </div>
-      {audioUrl || (songUrl && (songUrl.includes('youtube.com') || songUrl.includes('youtu.be'))) ? (
+      {(audioUrl || youtubeVideoId) ? (
         <button
           onClick={handlePlayPause}
           disabled={loading}
           className="p-2 rounded-full bg-primary hover:bg-primary-dark text-white transition-all flex-shrink-0 hover:scale-110 disabled:opacity-50"
-          title={songUrl && (songUrl.includes('youtube.com') || songUrl.includes('youtu.be')) ? 'Open in YouTube' : 'Play audio'}
+          title={youtubeVideoId ? 'Play YouTube audio' : 'Play audio'}
         >
           {loading ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : songUrl && (songUrl.includes('youtube.com') || songUrl.includes('youtu.be')) ? (
-            <Play className="w-4 h-4" />
           ) : isPlaying ? (
             <Pause className="w-4 h-4" />
           ) : (
@@ -234,6 +250,18 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
         </div>
       )}
       <audio ref={audioRef} src={audioUrl || undefined} style={{ display: 'none' }} />
+      {youtubeVideoId && (
+        <YouTubePlayer
+          videoId={youtubeVideoId}
+          isPlaying={isPlaying}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onError={(error) => {
+            console.error('YouTube player error:', error)
+            setLoading(false)
+          }}
+        />
+      )}
     </div>
   )
 }
