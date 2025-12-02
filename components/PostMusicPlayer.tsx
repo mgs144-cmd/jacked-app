@@ -179,31 +179,44 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     setLoading(false)
   }, [])
 
-  // Simple intersection observer - just check if post is visible
+  // Intersection observer with debouncing to prevent rapid switching
   useEffect(() => {
     if (!containerRef.current || (!youtubeVideoId && !audioUrl)) return
 
+    let debounceTimer: NodeJS.Timeout | null = null
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // Simple logic: if post is 60%+ visible and not playing, play it
-        // If post is <40% visible and is playing, stop it
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.6 && currentPlayingId !== songId) {
-          console.log('Post visible, auto-playing:', songId, 'ratio:', entry.intersectionRatio)
-          playSong(songId, startPlayback, stopPlayback)
-        } else if (entry.intersectionRatio < 0.4 && currentPlayingId === songId) {
-          console.log('Post not visible, stopping:', songId)
-          stopCurrentSong()
+        // Clear any pending actions
+        if (debounceTimer) {
+          clearTimeout(debounceTimer)
+          debounceTimer = null
         }
+
+        // Only act after user stops scrolling (800ms delay)
+        debounceTimer = setTimeout(() => {
+          // Play if post is 80%+ visible and nothing else is playing
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.8 && currentPlayingId !== songId) {
+            console.log('Post auto-playing (stable):', songId, 'ratio:', entry.intersectionRatio)
+            playSong(songId, startPlayback, stopPlayback)
+          } 
+          // Stop if post is <30% visible and this is the current song
+          else if (entry.intersectionRatio < 0.3 && currentPlayingId === songId) {
+            console.log('Post stopping (not visible):', songId, 'ratio:', entry.intersectionRatio)
+            stopCurrentSong()
+          }
+        }, 800) // Long delay to ensure user has stopped scrolling
       },
       {
-        threshold: [0, 0.4, 0.6, 1],
-        rootMargin: '-10% 0px -10% 0px',
+        threshold: [0, 0.3, 0.8, 1], // Very strict thresholds
+        rootMargin: '-15% 0px -15% 0px', // Only play when in center 70% of viewport
       }
     )
 
     observer.observe(containerRef.current)
 
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer)
       observer.disconnect()
     }
   }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong, startPlayback, stopPlayback])
