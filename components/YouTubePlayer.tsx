@@ -18,9 +18,28 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
   const [error, setError] = useState<string | null>(null)
 
   const initializePlayer = useCallback(() => {
-    if (!playerRef.current || !window.YT) return
+    if (!playerRef.current) {
+      console.log('Player ref not available')
+      return
+    }
+    
+    if (!window.YT) {
+      console.log('YouTube API not loaded yet')
+      return
+    }
+
+    // Destroy existing player if it exists
+    if (youtubePlayerRef.current) {
+      try {
+        youtubePlayerRef.current.destroy()
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+      youtubePlayerRef.current = null
+    }
 
     try {
+      console.log('Initializing YouTube player with video ID:', videoId)
       youtubePlayerRef.current = new window.YT.Player(playerRef.current, {
         videoId: videoId,
         playerVars: {
@@ -34,30 +53,42 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
           playsinline: 1,
           rel: 0,
           showinfo: 0,
+          origin: typeof window !== 'undefined' ? window.location.origin : '',
         },
         events: {
           onReady: (event: any) => {
+            console.log('YouTube player ready')
             setLoading(false)
             setError(null)
           },
           onError: (event: any) => {
+            console.error('YouTube player error:', event.data)
             setLoading(false)
             const errorMsg = 'Failed to load video. The video may be unavailable or restricted.'
             setError(errorMsg)
             onError?.(errorMsg)
           },
           onStateChange: (event: any) => {
+            console.log('YouTube player state changed:', event.data)
             // YT.PlayerState.PLAYING = 1
             // YT.PlayerState.PAUSED = 2
+            // YT.PlayerState.ENDED = 0
+            // YT.PlayerState.CUED = 5
             if (event.data === window.YT.PlayerState.PLAYING) {
+              console.log('YouTube video is playing')
               onPlay()
             } else if (event.data === window.YT.PlayerState.PAUSED) {
+              console.log('YouTube video is paused')
+              onPause()
+            } else if (event.data === window.YT.PlayerState.ENDED) {
+              console.log('YouTube video ended')
               onPause()
             }
           },
         },
       })
     } catch (err: any) {
+      console.error('Error initializing YouTube player:', err)
       setLoading(false)
       const errorMsg = err.message || 'Failed to initialize YouTube player'
       setError(errorMsg)
@@ -93,22 +124,38 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
   }, [videoId, initializePlayer])
 
   useEffect(() => {
-    if (!youtubePlayerRef.current) return
+    if (!youtubePlayerRef.current) {
+      console.log('YouTube player not ready yet')
+      return
+    }
 
     try {
       if (isPlaying) {
+        console.log('Playing YouTube video:', videoId)
         youtubePlayerRef.current.playVideo()
       } else {
+        console.log('Pausing YouTube video:', videoId)
         youtubePlayerRef.current.pauseVideo()
       }
     } catch (err) {
       console.error('Error controlling YouTube player:', err)
+      onError?.(`Failed to control playback: ${err}`)
     }
-  }, [isPlaying])
+  }, [isPlaying, videoId, onError])
 
   return (
-    <div className="relative w-full" style={{ display: 'none' }}>
-      <div ref={playerRef} className="w-full h-full" />
+    <div 
+      className="relative" 
+      style={{ 
+        position: 'absolute',
+        width: '1px',
+        height: '1px',
+        opacity: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden'
+      }}
+    >
+      <div ref={playerRef} style={{ width: '100%', height: '100%' }} />
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-900/50">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />

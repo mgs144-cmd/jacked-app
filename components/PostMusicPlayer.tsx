@@ -102,6 +102,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   const handlePlayPause = async () => {
     // Handle YouTube URLs - use iframe player for in-app playback
     if (youtubeVideoId) {
+      console.log('Toggling YouTube playback, current state:', isPlaying)
       setIsPlaying(!isPlaying)
       return
     }
