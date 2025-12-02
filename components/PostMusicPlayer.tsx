@@ -25,10 +25,13 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       const audioExtensions = ['.mp3', '.m4a', '.wav', '.ogg', '.aac', '.flac', '.webm']
       const isDirectAudio = audioExtensions.some(ext => songUrl.toLowerCase().endsWith(ext))
       
+      // SoundCloud stream URLs - these work great for in-app playback!
+      const isSoundCloud = songUrl.includes('soundcloud.com') || 
+                          songUrl.includes('api.soundcloud.com') ||
+                          songUrl.includes('sndcdn.com')
+      
       // Spotify preview URLs are typically from p.scdn.co or contain "preview" or are direct MP3s
-      // Also check for ec-media.soundcloud.com which Spotify sometimes uses
       const isSpotifyPreview = songUrl.includes('p.scdn.co') || 
-                               songUrl.includes('ec-media.soundcloud.com') ||
                                songUrl.includes('preview') ||
                                (songUrl.includes('spotify') && songUrl.endsWith('.mp3')) ||
                                (songUrl.includes('spotify') && songUrl.includes('preview'))
@@ -38,6 +41,10 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       
       if (isDirectAudio) {
         console.log('Direct audio file detected:', songUrl)
+        setAudioUrl(songUrl)
+      } else if (isSoundCloud) {
+        // SoundCloud stream URL - perfect for in-app playback!
+        console.log('SoundCloud stream URL detected:', songUrl)
         setAudioUrl(songUrl)
       } else if (isSpotifyPreview) {
         // Spotify preview URL - these are direct MP3 URLs that can be played

@@ -30,7 +30,7 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
   const [tracks, setTracks] = useState<Track[]>([])
   const [error, setError] = useState<string | null>(null)
 
-  const [searchSource, setSearchSource] = useState<'spotify' | 'youtube'>('spotify')
+  const [searchSource, setSearchSource] = useState<'spotify' | 'youtube' | 'soundcloud'>('soundcloud')
 
   const searchSongs = async (searchQuery: string) => {
     if (!searchQuery.trim()) return
@@ -40,7 +40,21 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
     setTracks([])
 
     try {
-      // Try Spotify first
+      // Try SoundCloud first (best for in-app playback)
+      const soundcloudResponse = await fetch(`/api/search-soundcloud?q=${encodeURIComponent(searchQuery)}`)
+      const soundcloudData = await soundcloudResponse.json()
+
+      if (soundcloudData.tracks && soundcloudData.tracks.length > 0) {
+        setSearchSource('soundcloud')
+        setTracks(soundcloudData.tracks)
+        if (soundcloudData.note) {
+          setError(null) // SoundCloud works great!
+        }
+        setSearching(false)
+        return
+      }
+
+      // Fallback to Spotify if SoundCloud has no results
       const spotifyResponse = await fetch(`/api/search-music?q=${encodeURIComponent(searchQuery)}`)
       const spotifyData = await spotifyResponse.json()
 
@@ -148,14 +162,14 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
   const handleSelect = (track: Track) => {
     console.log('Track selected:', track)
     
+    // SoundCloud has stream URLs for in-app playback
     // Spotify deprecated preview_url - use external Spotify link
-    // User will need to open it externally or upload their own audio
     const selectedSong = {
       title: track.name,
       artist: track.artist,
-      url: track.preview_url || track.external_urls?.spotify || undefined, // Use Spotify link if no preview
+      url: track.stream_url || track.preview_url || track.external_urls?.spotify || (track as any).permalink_url || undefined,
       spotifyId: track.source === 'spotify' ? track.id : undefined,
-      albumArt: track.album_image || undefined,
+      albumArt: track.album_image || (track as any).artwork_url || undefined,
     }
     
     console.log('Calling onSelect with:', selectedSong)
@@ -181,8 +195,12 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
         </div>
         <div className="flex items-center space-x-2 text-xs">
           <span className="text-gray-500">Source:</span>
-          <span className={`px-2 py-1 rounded ${searchSource === 'spotify' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-400'}`}>
-            {searchSource === 'spotify' ? 'Spotify' : 'YouTube'}
+          <span className={`px-2 py-1 rounded ${
+            searchSource === 'soundcloud' ? 'bg-primary text-white' : 
+            searchSource === 'spotify' ? 'bg-green-600 text-white' : 
+            'bg-gray-700 text-gray-400'
+          }`}>
+            {searchSource === 'soundcloud' ? 'SoundCloud' : searchSource === 'spotify' ? 'Spotify' : 'YouTube'}
           </span>
         </div>
       </div>
