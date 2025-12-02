@@ -86,13 +86,15 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
 
   const startPlayback = useCallback(async () => {
     if (youtubeVideoId) {
-      // For YouTube, just set playing state - the YouTubePlayer component will handle actual playback
-      // But add a small delay to ensure player is ready
+      // For YouTube, wait longer to ensure player is ready before setting playing state
       setLoading(true)
+      console.log('Profile: Starting YouTube playback, waiting for player to be ready...')
+      // Wait longer to ensure YouTube player is fully initialized
       setTimeout(() => {
+        console.log('Profile: Setting isPlaying to true for YouTube')
         setIsPlaying(true)
         setLoading(false)
-      }, 100)
+      }, 500) // Increased delay to ensure player is ready
       return
     }
 
@@ -178,10 +180,12 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
 
   const togglePlay = () => {
     console.log('Profile play button clicked', { currentPlayingId, songId, isPlaying, youtubeVideoId, audioUrl })
-    if (currentPlayingId === songId) {
+    if (currentPlayingId === songId && isPlaying) {
+      // Currently playing, so stop it
       stopCurrentSong()
     } else {
-      // Force play immediately on click
+      // Not playing, so start it
+      console.log('Profile: Calling playSong to start playback')
       playSong(songId, startPlayback, stopPlayback)
     }
   }

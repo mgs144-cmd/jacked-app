@@ -74,6 +74,17 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
                 setError(null)
                 setIsReady(true)
                 isControllingRef.current = false // Reset control flag
+                // If we should be playing, trigger it now that we're ready
+                // This helps with profile auto-play
+                if (isPlaying) {
+                  console.log('Player ready and should be playing, triggering playVideo')
+                  try {
+                    isControllingRef.current = true
+                    youtubePlayerRef.current.playVideo()
+                  } catch (err) {
+                    console.error('Error playing on ready:', err)
+                  }
+                }
               } else {
                 console.warn('YouTube player ready but methods not available yet, retrying...')
                 // Retry after another short delay
@@ -86,6 +97,16 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
                     setError(null)
                     setIsReady(true)
                     isControllingRef.current = false
+                    // If we should be playing, trigger it now
+                    if (isPlaying) {
+                      console.log('Player ready (retry) and should be playing, triggering playVideo')
+                      try {
+                        isControllingRef.current = true
+                        youtubePlayerRef.current.playVideo()
+                      } catch (err) {
+                        console.error('Error playing on ready (retry):', err)
+                      }
+                    }
                   } else {
                     console.error('YouTube player methods still not available')
                     setError('YouTube player initialization incomplete')
