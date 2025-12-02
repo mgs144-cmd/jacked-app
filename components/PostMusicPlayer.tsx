@@ -145,7 +145,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       }
 
       console.log('Creating audio element with URL:', audioUrl)
-      audioRef.current = new Audio(audioUrl)
+      audioRef.current = new Audio(audioUrl || undefined)
       audioRef.current.volume = 0.7
       audioRef.current.crossOrigin = 'anonymous' // Help with CORS issues
       
