@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Play, Pause, Music } from 'lucide-react'
 import Image from 'next/image'
 import { YouTubePlayer } from './YouTubePlayer'
@@ -103,7 +103,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   }, [songUrl, spotifyId])
 
   // Play function
-  const startPlayback = async () => {
+  const startPlayback = useCallback(async () => {
     if (youtubeVideoId) {
       setIsPlaying(true)
       return
@@ -147,17 +147,17 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       setLoading(false)
       stopCurrentSong()
     }
-  }
+  }, [youtubeVideoId, audioUrl, stopCurrentSong])
 
   // Stop function
-  const stopPlayback = () => {
+  const stopPlayback = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause()
       audioRef.current = null
     }
     setIsPlaying(false)
     setLoading(false)
-  }
+  }, [])
 
   // Intersection Observer for auto-play (Instagram style)
   useEffect(() => {
@@ -190,7 +190,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     return () => {
       observer.disconnect()
     }
-  }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong])
+  }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong, startPlayback, stopPlayback])
 
   // Sync with music context
   useEffect(() => {
@@ -203,7 +203,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
         stopPlayback()
       }
     }
-  }, [currentPlayingId, songId])
+  }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
 
   const handlePlayPause = () => {
     if (currentPlayingId === songId) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Music, Play, Pause, Volume2, VolumeX } from 'lucide-react'
 import Image from 'next/image'
 import { YouTubePlayer } from './YouTubePlayer'
@@ -94,7 +94,7 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [youtubeVideoId, audioUrl]) // Only run when song URL changes (profile loads)
+  }, [youtubeVideoId, audioUrl, isPlaying, currentPlayingId, songId, playSong, startPlayback, stopPlayback]) // Only run when song URL changes (profile loads)
 
   // Sync with music context
   useEffect(() => {
@@ -107,9 +107,9 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
         stopPlayback()
       }
     }
-  }, [currentPlayingId, songId])
+  }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
 
-  const startPlayback = async () => {
+  const startPlayback = useCallback(async () => {
     if (youtubeVideoId) {
       setIsPlaying(true)
       return
@@ -153,16 +153,16 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
       setLoading(false)
       stopCurrentSong()
     }
-  }
+  }, [youtubeVideoId, audioUrl, stopCurrentSong])
 
-  const stopPlayback = () => {
+  const stopPlayback = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause()
       audioRef.current = null
     }
     setIsPlaying(false)
     setLoading(false)
-  }
+  }, [])
 
   const togglePlay = () => {
     if (currentPlayingId === songId) {
