@@ -7,12 +7,13 @@ interface YouTubePlayerProps {
   videoId: string
   isPlaying: boolean
   startTime?: number // Start time in seconds
+  isMuted?: boolean // Mute state
   onPlay: () => void
   onPause: () => void
   onError?: (error: string) => void
 }
 
-export function YouTubePlayer({ videoId, isPlaying, startTime, onPlay, onPause, onError }: YouTubePlayerProps) {
+export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, onPlay, onPause, onError }: YouTubePlayerProps) {
   const playerRef = useRef<HTMLDivElement>(null)
   const youtubePlayerRef = useRef<any>(null)
   const [loading, setLoading] = useState(true)

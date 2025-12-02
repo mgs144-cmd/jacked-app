@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Play, Pause } from 'lucide-react'
+import { Play, Pause, Volume2, VolumeX } from 'lucide-react'
 import { YouTubePlayer } from './YouTubePlayer'
 import { useMusic } from '@/app/providers/MusicProvider'
 
@@ -17,6 +17,7 @@ interface PostMusicPlayerProps {
 
 export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, albumArt, postId, startTime }: PostMusicPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null)
@@ -160,41 +161,49 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   }, [])
 
   // Intersection Observer for auto-play (Instagram style)
+  // Improved to handle scrolling between posts better
   useEffect(() => {
     if (!containerRef.current || (!youtubeVideoId && !audioUrl)) return
 
     let timeoutId: NodeJS.Timeout | null = null
+    let lastIntersectionRatio = 0
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
+          const currentRatio = entry.intersectionRatio
+          
           // Clear any pending timeouts
           if (timeoutId) {
             clearTimeout(timeoutId)
             timeoutId = null
           }
 
-          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
-            // Post is visible - auto-play if not already playing
-            // Add small delay to prevent rapid toggling
+          // Only play if this post is the most visible one (highest intersection ratio)
+          // This prevents multiple posts from trying to play at once
+          if (entry.isIntersecting && currentRatio > 0.6 && currentRatio > lastIntersectionRatio) {
+            // Post is visible and becoming more visible - auto-play if not already playing
             timeoutId = setTimeout(() => {
-              if (currentPlayingId !== songId) {
+              // Double-check this is still the most visible post
+              if (currentPlayingId !== songId && entry.isIntersecting && entry.intersectionRatio > 0.6) {
                 playSong(songId, startPlayback, stopPlayback)
               }
-            }, 300)
-          } else {
-            // Post is not visible - stop if this is the current song
+            }, 500) // Increased delay to prevent rapid switching
+          } else if (!entry.isIntersecting || currentRatio < 0.3) {
+            // Post is not visible or barely visible - stop if this is the current song
             timeoutId = setTimeout(() => {
               if (currentPlayingId === songId) {
                 stopCurrentSong()
               }
-            }, 300)
+            }, 500) // Increased delay to prevent rapid switching
           }
+          
+          lastIntersectionRatio = currentRatio
         })
       },
       {
-        threshold: [0, 0.5, 1],
-        rootMargin: '-20% 0px -20% 0px', // Only play when in center 60% of viewport
+        threshold: [0, 0.3, 0.6, 1], // More granular thresholds
+        rootMargin: '-25% 0px -25% 0px', // Only play when in center 50% of viewport
       }
     )
 
@@ -217,7 +226,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       stopPlayback()
     }
     // Don't do anything if state is already correct
-  }, [currentPlayingId, songId]) // Removed isPlaying, startPlayback, stopPlayback to prevent loops
+  }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
 
   const handlePlayPause = () => {
     if (currentPlayingId === songId) {
@@ -225,6 +234,15 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     } else {
       playSong(songId, startPlayback, stopPlayback)
     }
+  }
+
+  const toggleMute = () => {
+    if (audioRef.current) {
+      audioRef.current.muted = !isMuted
+      audioRef.current.volume = !isMuted ? 0.7 : 0
+      setIsMuted(!isMuted)
+    }
+    // Note: YouTube player mute is handled by the YouTubePlayer component
   }
 
   // Don't render if no song info
@@ -260,6 +278,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
           videoId={youtubeVideoId}
           isPlaying={isPlaying}
           startTime={startTime}
+          isMuted={isMuted}
           onPlay={() => {
             // Only update if not already playing to prevent loops
             if (!isPlaying) {
