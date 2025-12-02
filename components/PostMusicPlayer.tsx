@@ -23,6 +23,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const isPlayingRef = useRef(false) // Track if we've triggered playback to prevent flashing
   const { currentPlayingId, playSong, stopCurrentSong } = useMusic()
   
   // Generate unique song ID for this post
@@ -180,7 +181,6 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     if (!containerRef.current || (!youtubeVideoId && !audioUrl)) return
 
     let timeoutId: NodeJS.Timeout | null = null
-    const isPlayingRef = useRef(false) // Track if we've triggered playback to prevent flashing
 
     const observer = new IntersectionObserver(
       (entries) => {
