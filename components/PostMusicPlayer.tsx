@@ -239,12 +239,19 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     // Only sync if there's an actual change
     if (currentPlayingId === songId && !isPlaying) {
       // This song should be playing but isn't
+      isPlayingRef.current = true // Set flag to prevent intersection observer from triggering again
       startPlayback()
     } else if (currentPlayingId !== songId && isPlaying) {
       // A different song is playing, stop this one
+      isPlayingRef.current = false // Reset flag
       stopPlayback()
+    } else if (currentPlayingId === songId && isPlaying) {
+      // Song is playing correctly - ensure flag is set
+      isPlayingRef.current = true
+    } else {
+      // Song is not playing and shouldn't be - reset flag
+      isPlayingRef.current = false
     }
-    // Don't do anything if state is already correct
   }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
 
   const handlePlayPause = () => {
