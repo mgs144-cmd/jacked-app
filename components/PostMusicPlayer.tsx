@@ -271,20 +271,36 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
         <p className="text-gray-400 text-xs truncate">{songArtist || 'Unknown'}</p>
       </div>
       {(audioUrl || youtubeVideoId || songUrl) ? (
-        <button
-          onClick={handlePlayPause}
-          disabled={loading}
-          className="p-2 rounded-full bg-primary hover:bg-primary-dark text-white transition-all flex-shrink-0 hover:scale-110 disabled:opacity-50"
-          title={isPlaying ? 'Pause' : 'Play'}
-        >
-          {loading ? (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : isPlaying ? (
-            <Pause className="w-4 h-4" />
-          ) : (
-            <Play className="w-4 h-4" />
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={handlePlayPause}
+            disabled={loading}
+            className="p-2 rounded-full bg-primary hover:bg-primary-dark text-white transition-all flex-shrink-0 hover:scale-110 disabled:opacity-50"
+            title={isPlaying ? 'Pause' : 'Play'}
+          >
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : isPlaying ? (
+              <Pause className="w-4 h-4" />
+            ) : (
+              <Play className="w-4 h-4" />
+            )}
+          </button>
+          
+          {isPlaying && (
+            <button
+              onClick={toggleMute}
+              className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-all flex-shrink-0 hover:scale-110"
+              title={isMuted ? 'Unmute' : 'Mute'}
+            >
+              {isMuted ? (
+                <VolumeX className="w-4 h-4" />
+              ) : (
+                <Volume2 className="w-4 h-4" />
+              )}
+            </button>
           )}
-        </button>
+        </div>
       ) : null}
       <audio ref={audioRef} src={audioUrl || undefined} style={{ display: 'none' }} />
       {youtubeVideoId && (
