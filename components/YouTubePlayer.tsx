@@ -33,12 +33,18 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
       return
     }
 
-    // Destroy existing player if it exists
+    // Don't re-initialize if player already exists with the same video ID
     if (youtubePlayerRef.current) {
       try {
+        const currentVideoId = youtubePlayerRef.current.getVideoData?.()?.video_id
+        if (currentVideoId === videoId && isReady) {
+          console.log('YouTube player already initialized with same video ID, skipping re-initialization')
+          return
+        }
+        // Video ID changed or player not ready, destroy and recreate
         youtubePlayerRef.current.destroy()
       } catch (e) {
-        // Ignore cleanup errors
+        // Ignore cleanup errors, continue with initialization
       }
       youtubePlayerRef.current = null
     }
