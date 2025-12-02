@@ -16,6 +16,7 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
   const youtubePlayerRef = useRef<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isReady, setIsReady] = useState(false)
 
   const initializePlayer = useCallback(() => {
     if (!playerRef.current) {
@@ -60,6 +61,7 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
             console.log('YouTube player ready')
             setLoading(false)
             setError(null)
+            setIsReady(true)
           },
           onError: (event: any) => {
             console.error('YouTube player error:', event.data)
@@ -124,8 +126,16 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
   }, [videoId, initializePlayer])
 
   useEffect(() => {
-    if (!youtubePlayerRef.current) {
-      console.log('YouTube player not ready yet')
+    if (!youtubePlayerRef.current || !isReady) {
+      console.log('YouTube player not ready yet', { hasPlayer: !!youtubePlayerRef.current, isReady })
+      return
+    }
+
+    // Check if player has the methods we need
+    if (typeof youtubePlayerRef.current.playVideo !== 'function' || 
+        typeof youtubePlayerRef.current.pauseVideo !== 'function') {
+      console.error('YouTube player methods not available')
+      onError?.('YouTube player not properly initialized')
       return
     }
 
@@ -141,7 +151,7 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
       console.error('Error controlling YouTube player:', err)
       onError?.(`Failed to control playback: ${err}`)
     }
-  }, [isPlaying, videoId, onError])
+  }, [isPlaying, videoId, onError, isReady])
 
   return (
     <div 

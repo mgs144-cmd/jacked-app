@@ -163,19 +163,32 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   useEffect(() => {
     if (!containerRef.current || (!youtubeVideoId && !audioUrl)) return
 
+    let timeoutId: NodeJS.Timeout | null = null
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
+          // Clear any pending timeouts
+          if (timeoutId) {
+            clearTimeout(timeoutId)
+            timeoutId = null
+          }
+
           if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
             // Post is visible - auto-play if not already playing
-            if (currentPlayingId !== songId) {
-              playSong(songId, startPlayback, stopPlayback)
-            }
+            // Add small delay to prevent rapid toggling
+            timeoutId = setTimeout(() => {
+              if (currentPlayingId !== songId) {
+                playSong(songId, startPlayback, stopPlayback)
+              }
+            }, 300)
           } else {
             // Post is not visible - stop if this is the current song
-            if (currentPlayingId === songId) {
-              stopCurrentSong()
-            }
+            timeoutId = setTimeout(() => {
+              if (currentPlayingId === songId) {
+                stopCurrentSong()
+              }
+            }, 300)
           }
         })
       },
@@ -188,22 +201,23 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     observer.observe(containerRef.current)
 
     return () => {
+      if (timeoutId) clearTimeout(timeoutId)
       observer.disconnect()
     }
   }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong, startPlayback, stopPlayback])
 
-  // Sync with music context
+  // Sync with music context - prevent rapid toggling
   useEffect(() => {
-    if (currentPlayingId === songId) {
-      if (!isPlaying) {
-        startPlayback()
-      }
-    } else {
-      if (isPlaying) {
-        stopPlayback()
-      }
+    // Only sync if there's an actual change
+    if (currentPlayingId === songId && !isPlaying) {
+      // This song should be playing but isn't
+      startPlayback()
+    } else if (currentPlayingId !== songId && isPlaying) {
+      // A different song is playing, stop this one
+      stopPlayback()
     }
-  }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
+    // Don't do anything if state is already correct
+  }, [currentPlayingId, songId]) // Removed isPlaying, startPlayback, stopPlayback to prevent loops
 
   const handlePlayPause = () => {
     if (currentPlayingId === songId) {

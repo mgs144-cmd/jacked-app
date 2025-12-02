@@ -142,27 +142,32 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
 
   // Auto-play when profile opens (if song is available)
   useEffect(() => {
-    if ((youtubeVideoId || audioUrl) && !isPlaying && currentPlayingId !== songId) {
+    // Only auto-play once when component mounts with a valid song
+    if ((youtubeVideoId || audioUrl) && currentPlayingId !== songId) {
       // Small delay to ensure page is loaded
       const timer = setTimeout(() => {
-        playSong(songId, startPlayback, stopPlayback)
-      }, 500)
+        if (currentPlayingId !== songId) { // Double check it hasn't changed
+          playSong(songId, startPlayback, stopPlayback)
+        }
+      }, 1000) // Increased delay to ensure everything is ready
       return () => clearTimeout(timer)
     }
-  }, [youtubeVideoId, audioUrl, isPlaying, currentPlayingId, songId, playSong, startPlayback, stopPlayback]) // Only run when song URL changes (profile loads)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run once on mount
 
-  // Sync with music context
+  // Sync with music context - prevent rapid toggling
   useEffect(() => {
-    if (currentPlayingId === songId) {
-      if (!isPlaying) {
-        startPlayback()
-      }
-    } else {
-      if (isPlaying) {
-        stopPlayback()
-      }
+    // Only sync if there's an actual change
+    if (currentPlayingId === songId && !isPlaying) {
+      // This song should be playing but isn't
+      startPlayback()
+    } else if (currentPlayingId !== songId && isPlaying) {
+      // A different song is playing, stop this one
+      stopPlayback()
     }
-  }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
+    // Don't do anything if state is already correct
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPlayingId, songId]) // Removed isPlaying, startPlayback, stopPlayback to prevent loops
 
   const togglePlay = () => {
     if (currentPlayingId === songId) {
