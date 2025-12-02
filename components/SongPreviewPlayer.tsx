@@ -82,40 +82,6 @@ export function SongPreviewPlayer({ songUrl, spotifyId, startTime, onPreviewEnd 
     }
   }, [songUrl, spotifyId])
 
-  // Auto-play preview when startTime changes
-  useEffect(() => {
-    if (startTime === null || startTime === undefined || startTime < 0) return
-    if (!youtubeVideoId && !audioUrl) return
-
-    // Stop any current playback
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current = null
-    }
-    setIsPlaying(false)
-
-    // Start preview after a short delay
-    const timer = setTimeout(() => {
-      if (youtubeVideoId) {
-        setIsPlaying(true)
-        // Preview will play for 5 seconds
-        previewTimeoutRef.current = setTimeout(() => {
-          setIsPlaying(false)
-          onPreviewEnd?.()
-        }, 5000)
-      } else if (audioUrl) {
-        playAudioPreview()
-      }
-    }, 300)
-
-    return () => {
-      clearTimeout(timer)
-      if (previewTimeoutRef.current) {
-        clearTimeout(previewTimeoutRef.current)
-      }
-    }
-  }, [startTime, youtubeVideoId, audioUrl, onPreviewEnd, playAudioPreview])
-
   const playAudioPreview = useCallback(async () => {
     if (!audioUrl || startTime === null) return
 
@@ -158,7 +124,41 @@ export function SongPreviewPlayer({ songUrl, spotifyId, startTime, onPreviewEnd 
       console.error('Preview playback error:', error)
       setIsPlaying(false)
     }
-  }
+  }, [audioUrl, startTime, onPreviewEnd])
+
+  // Auto-play preview when startTime changes
+  useEffect(() => {
+    if (startTime === null || startTime === undefined || startTime < 0) return
+    if (!youtubeVideoId && !audioUrl) return
+
+    // Stop any current playback
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+    }
+    setIsPlaying(false)
+
+    // Start preview after a short delay
+    const timer = setTimeout(() => {
+      if (youtubeVideoId) {
+        setIsPlaying(true)
+        // Preview will play for 5 seconds
+        previewTimeoutRef.current = setTimeout(() => {
+          setIsPlaying(false)
+          onPreviewEnd?.()
+        }, 5000)
+      } else if (audioUrl) {
+        playAudioPreview()
+      }
+    }, 300)
+
+    return () => {
+      clearTimeout(timer)
+      if (previewTimeoutRef.current) {
+        clearTimeout(previewTimeoutRef.current)
+      }
+    }
+  }, [startTime, youtubeVideoId, audioUrl, onPreviewEnd, playAudioPreview])
 
   // Don't render anything visible - this is just for audio preview
   return (
