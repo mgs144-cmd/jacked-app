@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useRef as useRefAlias } from 'react'
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react'
 import { YouTubePlayer } from './YouTubePlayer'
 import { useMusic } from '@/app/providers/MusicProvider'
@@ -180,7 +180,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     if (!containerRef.current || (!youtubeVideoId && !audioUrl)) return
 
     let timeoutId: NodeJS.Timeout | null = null
-    let lastIntersectionRatio = 0
+    const isPlayingRef = useRef(false) // Track if we've triggered playback to prevent flashing
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -193,31 +193,35 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
             timeoutId = null
           }
 
-          // Only play if this post is the most visible one (highest intersection ratio)
-          // This prevents multiple posts from trying to play at once
-          if (entry.isIntersecting && currentRatio > 0.6 && currentRatio > lastIntersectionRatio) {
-            // Post is visible and becoming more visible - auto-play if not already playing
+          // Play if post is sufficiently visible (60%+) and not already playing
+          if (entry.isIntersecting && currentRatio >= 0.6 && currentPlayingId !== songId && !isPlayingRef.current) {
+            // Post is visible - auto-play if not already playing
+            isPlayingRef.current = true // Prevent multiple triggers
             timeoutId = setTimeout(() => {
-              // Double-check this is still the most visible post
-              if (currentPlayingId !== songId && entry.isIntersecting && entry.intersectionRatio > 0.6) {
+              // Double-check conditions before playing
+              if (currentPlayingId !== songId && entry.isIntersecting && entry.intersectionRatio >= 0.6) {
                 playSong(songId, startPlayback, stopPlayback)
+              } else {
+                isPlayingRef.current = false // Reset if conditions changed
               }
-            }, 500) // Increased delay to prevent rapid switching
-          } else if (!entry.isIntersecting || currentRatio < 0.3) {
+            }, 300) // Reduced delay for faster response
+          } else if ((!entry.isIntersecting || currentRatio < 0.3) && currentPlayingId === songId) {
             // Post is not visible or barely visible - stop if this is the current song
+            isPlayingRef.current = false // Reset flag
             timeoutId = setTimeout(() => {
               if (currentPlayingId === songId) {
                 stopCurrentSong()
               }
-            }, 500) // Increased delay to prevent rapid switching
+            }, 300) // Reduced delay
+          } else if (currentRatio < 0.6 && isPlayingRef.current && currentPlayingId !== songId) {
+            // Post became less visible and we're not playing - reset flag
+            isPlayingRef.current = false
           }
-          
-          lastIntersectionRatio = currentRatio
         })
       },
       {
         threshold: [0, 0.3, 0.6, 1], // More granular thresholds
-        rootMargin: '-25% 0px -25% 0px', // Only play when in center 50% of viewport
+        rootMargin: '-20% 0px -20% 0px', // Only play when in center 60% of viewport
       }
     )
 
@@ -226,6 +230,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     return () => {
       if (timeoutId) clearTimeout(timeoutId)
       observer.disconnect()
+      isPlayingRef.current = false
     }
   }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong, startPlayback, stopPlayback])
 

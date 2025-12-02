@@ -163,31 +163,15 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   useEffect(() => {
     // Only auto-play once when component mounts with a valid song
     if ((youtubeVideoId || audioUrl) && currentPlayingId !== songId) {
-      // Delay to ensure page and player are loaded
+      // Reduced delay - start trying to play sooner
       const timer = setTimeout(() => {
         if (currentPlayingId !== songId) { // Double check it hasn't changed
           console.log('Auto-playing profile song:', songId, 'with start time:', startTime)
-          // Use a much longer delay for YouTube to ensure player is fully ready
-          if (youtubeVideoId) {
-            // Wait for YouTube player to be ready - check every 500ms
-            let attempts = 0
-            const maxAttempts = 10 // 5 seconds total
-            const checkReady = setInterval(() => {
-              attempts++
-              // Try to play - the YouTubePlayer component will handle readiness
-              if (currentPlayingId !== songId) {
-                playSong(songId, startPlayback, stopPlayback)
-              }
-              if (attempts >= maxAttempts) {
-                clearInterval(checkReady)
-              }
-            }, 500)
-            return () => clearInterval(checkReady)
-          } else {
-            playSong(songId, startPlayback, stopPlayback)
-          }
+          // For YouTube, the player's onReady callback will handle playback
+          // For audio, play immediately
+          playSong(songId, startPlayback, stopPlayback)
         }
-      }, 3000) // Initial delay to ensure page is loaded
+      }, 2000) // Reduced from 3000ms to 2000ms
       return () => clearTimeout(timer)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
