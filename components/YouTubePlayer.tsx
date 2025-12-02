@@ -17,6 +17,7 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isReady, setIsReady] = useState(false)
+  const isControllingRef = useRef(false) // Track if we're programmatically controlling the player
 
   const initializePlayer = useCallback(() => {
     if (!playerRef.current) {
@@ -38,6 +39,10 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
       }
       youtubePlayerRef.current = null
     }
+
+    // Reset ready state when video changes
+    setIsReady(false)
+    setLoading(true)
 
     try {
       console.log('Initializing YouTube player with video ID:', videoId)
@@ -62,6 +67,7 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
             setLoading(false)
             setError(null)
             setIsReady(true)
+            isControllingRef.current = false // Reset control flag
           },
           onError: (event: any) => {
             console.error('YouTube player error:', event.data)
@@ -69,8 +75,16 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
             const errorMsg = 'Failed to load video. The video may be unavailable or restricted.'
             setError(errorMsg)
             onError?.(errorMsg)
+            isControllingRef.current = false
           },
           onStateChange: (event: any) => {
+            // Only update state if we're not programmatically controlling
+            if (isControllingRef.current) {
+              console.log('Ignoring state change - we are controlling the player')
+              isControllingRef.current = false // Reset after handling
+              return
+            }
+
             console.log('YouTube player state changed:', event.data)
             // YT.PlayerState.PLAYING = 1
             // YT.PlayerState.PAUSED = 2
@@ -134,21 +148,36 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
     // Check if player has the methods we need
     if (typeof youtubePlayerRef.current.playVideo !== 'function' || 
         typeof youtubePlayerRef.current.pauseVideo !== 'function') {
-      console.error('YouTube player methods not available')
+      console.error('YouTube player methods not available', {
+        hasPlayVideo: typeof youtubePlayerRef.current.playVideo,
+        hasPauseVideo: typeof youtubePlayerRef.current.pauseVideo,
+        playerState: youtubePlayerRef.current.getPlayerState?.()
+      })
       onError?.('YouTube player not properly initialized')
       return
     }
 
+    // Get current player state to avoid unnecessary calls
     try {
-      if (isPlaying) {
+      const currentState = youtubePlayerRef.current.getPlayerState()
+      const shouldBePlaying = isPlaying
+      const isCurrentlyPlaying = currentState === window.YT.PlayerState.PLAYING
+
+      // Only control if state doesn't match
+      if (shouldBePlaying && !isCurrentlyPlaying) {
         console.log('Playing YouTube video:', videoId)
+        isControllingRef.current = true // Set flag before controlling
         youtubePlayerRef.current.playVideo()
-      } else {
+      } else if (!shouldBePlaying && isCurrentlyPlaying) {
         console.log('Pausing YouTube video:', videoId)
+        isControllingRef.current = true // Set flag before controlling
         youtubePlayerRef.current.pauseVideo()
+      } else {
+        console.log('Player state already matches desired state', { shouldBePlaying, isCurrentlyPlaying })
       }
     } catch (err) {
       console.error('Error controlling YouTube player:', err)
+      isControllingRef.current = false
       onError?.(`Failed to control playback: ${err}`)
     }
   }, [isPlaying, videoId, onError, isReady])

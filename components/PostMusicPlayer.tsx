@@ -278,11 +278,22 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
         <YouTubePlayer
           videoId={youtubeVideoId}
           isPlaying={isPlaying}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
+          onPlay={() => {
+            // Only update if not already playing to prevent loops
+            if (!isPlaying) {
+              setIsPlaying(true)
+            }
+          }}
+          onPause={() => {
+            // Only update if not already paused to prevent loops
+            if (isPlaying) {
+              setIsPlaying(false)
+            }
+          }}
           onError={(error) => {
             console.error('YouTube player error:', error)
             setLoading(false)
+            setIsPlaying(false)
             stopCurrentSong()
           }}
         />
