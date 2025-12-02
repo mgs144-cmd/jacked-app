@@ -114,9 +114,9 @@ export function SongPreviewPlayer({ songUrl, spotifyId, startTime, onPreviewEnd 
         clearTimeout(previewTimeoutRef.current)
       }
     }
-  }, [startTime, youtubeVideoId, audioUrl])
+  }, [startTime, youtubeVideoId, audioUrl, onPreviewEnd, playAudioPreview])
 
-  const playAudioPreview = async () => {
+  const playAudioPreview = useCallback(async () => {
     if (!audioUrl || startTime === null) return
 
     try {

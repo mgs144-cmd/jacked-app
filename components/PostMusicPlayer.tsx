@@ -228,16 +228,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
               lastVisibleRatio = currentRatio
             }
           } else {
-          // Desktop logic - more strict
-          entries.forEach((entry) => {
-            const currentRatio = entry.intersectionRatio
-            
-            // Clear any pending timeouts
-            if (timeoutId) {
-              clearTimeout(timeoutId)
-              timeoutId = null
-            }
-
+            // Desktop logic - more strict
             // Only play if post is in the center of viewport (70%+ visible) and more visible than before
             if (entry.isIntersecting && currentRatio >= 0.7 && currentRatio > lastVisibleRatio && currentPlayingId !== songId && !isPlayingRef.current) {
               isPlayingRef.current = true
@@ -262,8 +253,8 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
             } else if (entry.isIntersecting) {
               lastVisibleRatio = currentRatio
             }
-          })
-        }
+          }
+        })
       },
       {
         threshold: isMobile ? [0, 0.2, 0.5, 0.8, 1] : [0, 0.2, 0.5, 0.7, 1], // Different thresholds for mobile
@@ -278,7 +269,6 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       observer.disconnect()
       isPlayingRef.current = false
       lastVisibleRatio = 0
-      mostVisiblePost = null
     }
   }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong, startPlayback, stopPlayback])
 
