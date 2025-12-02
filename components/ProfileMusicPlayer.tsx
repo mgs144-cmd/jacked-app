@@ -116,6 +116,9 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
       audioRef.current.volume = isMuted ? 0 : 0.7
       audioRef.current.muted = isMuted
       audioRef.current.crossOrigin = 'anonymous'
+      // Ensure audio plays on mobile
+      audioRef.current.setAttribute('playsinline', 'true')
+      audioRef.current.setAttribute('webkit-playsinline', 'true')
       
       // Set start time if provided
       if (startTime && startTime > 0) {

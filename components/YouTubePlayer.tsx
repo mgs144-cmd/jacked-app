@@ -281,10 +281,15 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
     if (!youtubePlayerRef.current || !isReady) return
 
     try {
-      if (isMuted) {
-        youtubePlayerRef.current.mute()
+      // Check if methods exist before calling
+      if (typeof youtubePlayerRef.current.mute === 'function' && typeof youtubePlayerRef.current.unMute === 'function') {
+        if (isMuted) {
+          youtubePlayerRef.current.mute()
+        } else {
+          youtubePlayerRef.current.unMute()
+        }
       } else {
-        youtubePlayerRef.current.unMute()
+        console.warn('YouTube mute/unmute methods not available')
       }
     } catch (err) {
       console.error('Error muting/unmuting YouTube player:', err)

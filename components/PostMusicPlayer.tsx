@@ -124,6 +124,9 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       audioRef.current.volume = isMuted ? 0 : 0.7
       audioRef.current.muted = isMuted
       audioRef.current.crossOrigin = 'anonymous'
+      // Ensure audio plays on mobile
+      audioRef.current.setAttribute('playsinline', 'true')
+      audioRef.current.setAttribute('webkit-playsinline', 'true')
       
       // Set start time if provided
       if (startTime && startTime > 0) {
@@ -182,52 +185,101 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
 
     let timeoutId: NodeJS.Timeout | null = null
     let lastVisibleRatio = 0
+    let mostVisiblePost: { songId: string; ratio: number } | null = null
+
+    // Detect if we're on mobile
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
 
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          const currentRatio = entry.intersectionRatio
+        // On mobile, find the most visible post first
+        if (isMobile) {
+          let maxRatio = 0
+          let maxEntry: IntersectionObserverEntry | null = null
           
-          // Clear any pending timeouts
-          if (timeoutId) {
-            clearTimeout(timeoutId)
-            timeoutId = null
-          }
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
+              maxRatio = entry.intersectionRatio
+              maxEntry = entry
+            }
+          })
 
-          // Only play if post is in the center of viewport (70%+ visible) and more visible than before
-          // This prevents switching between posts when scrolling
-          if (entry.isIntersecting && currentRatio >= 0.7 && currentRatio > lastVisibleRatio && currentPlayingId !== songId && !isPlayingRef.current) {
-            // Post is highly visible and becoming more visible - auto-play if not already playing
-            isPlayingRef.current = true // Prevent multiple triggers
-            lastVisibleRatio = currentRatio
-            timeoutId = setTimeout(() => {
-              // Double-check conditions before playing
-              if (currentPlayingId !== songId && entry.isIntersecting && entry.intersectionRatio >= 0.7) {
-                console.log('Post auto-playing:', songId, 'ratio:', entry.intersectionRatio)
-                playSong(songId, startPlayback, stopPlayback)
-              } else {
-                isPlayingRef.current = false // Reset if conditions changed
-              }
-            }, 400) // Slightly longer delay to prevent rapid switching
-          } else if ((!entry.isIntersecting || currentRatio < 0.2) && currentPlayingId === songId) {
-            // Post is not visible or barely visible - stop if this is the current song
-            isPlayingRef.current = false // Reset flag
-            lastVisibleRatio = 0
-            timeoutId = setTimeout(() => {
-              if (currentPlayingId === songId) {
-                console.log('Post stopping (not visible):', songId)
-                stopCurrentSong()
-              }
-            }, 400) // Slightly longer delay
-          } else if (entry.isIntersecting) {
-            // Update last visible ratio for comparison
-            lastVisibleRatio = currentRatio
+          // Only proceed if we have a clearly most visible post
+          if (maxEntry && maxRatio >= 0.5) {
+            const entry = maxEntry
+            const currentRatio = entry.intersectionRatio
+            
+            // Clear any pending timeouts
+            if (timeoutId) {
+              clearTimeout(timeoutId)
+              timeoutId = null
+            }
+
+            // Only play if this is the most visible post and meets threshold
+            if (currentRatio >= 0.5 && currentPlayingId !== songId && !isPlayingRef.current && 
+                (!mostVisiblePost || currentRatio > mostVisiblePost.ratio)) {
+              mostVisiblePost = { songId, ratio: currentRatio }
+              isPlayingRef.current = true
+              timeoutId = setTimeout(() => {
+                if (currentPlayingId !== songId && entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+                  console.log('Post auto-playing (mobile):', songId, 'ratio:', entry.intersectionRatio)
+                  playSong(songId, startPlayback, stopPlayback)
+                } else {
+                  isPlayingRef.current = false
+                }
+              }, 600) // Longer delay on mobile to prevent rapid switching
+            } else if ((!entry.isIntersecting || currentRatio < 0.2) && currentPlayingId === songId) {
+              isPlayingRef.current = false
+              mostVisiblePost = null
+              timeoutId = setTimeout(() => {
+                if (currentPlayingId === songId) {
+                  console.log('Post stopping (mobile, not visible):', songId)
+                  stopCurrentSong()
+                }
+              }, 600)
+            }
           }
-        })
+        } else {
+          // Desktop logic - more strict
+          entries.forEach((entry) => {
+            const currentRatio = entry.intersectionRatio
+            
+            // Clear any pending timeouts
+            if (timeoutId) {
+              clearTimeout(timeoutId)
+              timeoutId = null
+            }
+
+            // Only play if post is in the center of viewport (70%+ visible) and more visible than before
+            if (entry.isIntersecting && currentRatio >= 0.7 && currentRatio > lastVisibleRatio && currentPlayingId !== songId && !isPlayingRef.current) {
+              isPlayingRef.current = true
+              lastVisibleRatio = currentRatio
+              timeoutId = setTimeout(() => {
+                if (currentPlayingId !== songId && entry.isIntersecting && entry.intersectionRatio >= 0.7) {
+                  console.log('Post auto-playing (desktop):', songId, 'ratio:', entry.intersectionRatio)
+                  playSong(songId, startPlayback, stopPlayback)
+                } else {
+                  isPlayingRef.current = false
+                }
+              }, 400)
+            } else if ((!entry.isIntersecting || currentRatio < 0.2) && currentPlayingId === songId) {
+              isPlayingRef.current = false
+              lastVisibleRatio = 0
+              timeoutId = setTimeout(() => {
+                if (currentPlayingId === songId) {
+                  console.log('Post stopping (desktop, not visible):', songId)
+                  stopCurrentSong()
+                }
+              }, 400)
+            } else if (entry.isIntersecting) {
+              lastVisibleRatio = currentRatio
+            }
+          })
+        }
       },
       {
-        threshold: [0, 0.2, 0.5, 0.7, 1], // More granular thresholds
-        rootMargin: '-30% 0px -30% 0px', // Only play when in center 40% of viewport (stricter)
+        threshold: isMobile ? [0, 0.2, 0.5, 0.8, 1] : [0, 0.2, 0.5, 0.7, 1], // Different thresholds for mobile
+        rootMargin: isMobile ? '-20% 0px -20% 0px' : '-30% 0px -30% 0px', // Less strict on mobile
       }
     )
 
@@ -238,6 +290,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       observer.disconnect()
       isPlayingRef.current = false
       lastVisibleRatio = 0
+      mostVisiblePost = null
     }
   }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong, startPlayback, stopPlayback])
 
