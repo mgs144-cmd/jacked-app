@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
 import { Navbar } from '@/components/Navbar'
 import { MusicSelector } from '@/components/MusicSelector'
+import { SongPreviewPlayer } from '@/components/SongPreviewPlayer'
 import { PrivacyToggle } from '@/components/PrivacyToggle'
 import { WorkoutForm } from '@/components/WorkoutForm'
 import { ExerciseAutocomplete } from '@/components/ExerciseAutocomplete'
@@ -22,6 +23,8 @@ export default function EditPostPage() {
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null)
   const [existingMediaUrl, setExistingMediaUrl] = useState<string | null>(null)
   const [selectedSong, setSelectedSong] = useState<{ title: string; artist: string; url?: string; spotifyId?: string; albumArt?: string } | null>(null)
+  const [songStartTime, setSongStartTime] = useState<number | null>(null)
+  const [previewStartTime, setPreviewStartTime] = useState<number | null>(null)
   const [isPrivate, setIsPrivate] = useState(false)
   const [isPRPost, setIsPRPost] = useState(false)
   const [prExercise, setPRExercise] = useState('')

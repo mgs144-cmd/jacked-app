@@ -299,6 +299,7 @@ export function PostCard({ post }: PostCardProps) {
           spotifyId={post.song_spotify_id}
           albumArt={post.song_album_art_url}
           postId={post.id}
+          startTime={post.song_start_time || undefined}
         />
       )}
 

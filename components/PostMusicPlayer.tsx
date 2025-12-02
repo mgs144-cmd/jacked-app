@@ -12,9 +12,10 @@ interface PostMusicPlayerProps {
   spotifyId?: string
   albumArt?: string
   postId?: string // Unique ID for this post's song
+  startTime?: number // Start time in seconds
 }
 
-export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, albumArt, postId }: PostMusicPlayerProps) {
+export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, albumArt, postId, startTime }: PostMusicPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -258,6 +259,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
         <YouTubePlayer
           videoId={youtubeVideoId}
           isPlaying={isPlaying}
+          startTime={startTime}
           onPlay={() => {
             // Only update if not already playing to prevent loops
             if (!isPlaying) {
