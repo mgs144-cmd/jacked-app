@@ -15,10 +15,16 @@ FROM profiles
 WHERE email = 'clareamurray2006@icloud.com';
 
 -- Step 2: Fix username and ensure payment status is correct
+-- Set a valid payment ID so middleware accepts the payment
+-- If you have the actual Stripe payment ID, replace 'manual_clare_fix_' with it (e.g., 'pi_...' or 'cs_...')
 UPDATE profiles
 SET 
   username = 'Clare',
   has_paid_onboarding = true,
+  onboarding_payment_id = COALESCE(
+    onboarding_payment_id,  -- Keep existing if it's valid
+    'manual_clare_fix_' || EXTRACT(EPOCH FROM NOW())::text  -- Generate unique manual ID
+  ),
   updated_at = NOW()
 WHERE email = 'clareamurray2006@icloud.com';
 
