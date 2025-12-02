@@ -191,6 +191,14 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
     // Don't do anything if state is already correct
   }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
 
+  // Handle mute changes for audio files while playing
+  useEffect(() => {
+    if (audioRef.current && !youtubeVideoId) {
+      audioRef.current.muted = isMuted
+      audioRef.current.volume = isMuted ? 0 : 0.7
+    }
+  }, [isMuted, youtubeVideoId])
+
   const togglePlay = () => {
     console.log('Profile play button clicked', { currentPlayingId, songId, isPlaying, youtubeVideoId, audioUrl })
     if (currentPlayingId === songId && isPlaying) {
