@@ -1,30 +1,24 @@
--- Comprehensive check for daniellebsnyder@gmail.com
--- Run this to see the full status
+-- Check user status for clareamurray2006@icloud.com
+-- This will show all relevant information about the user
 
--- 1. Check if user exists in auth.users
-SELECT id, email, created_at, email_confirmed_at
-FROM auth.users
-WHERE email = 'daniellebsnyder@gmail.com';
-
--- 2. Check profile status
 SELECT 
-    id, 
-    email, 
-    username, 
-    full_name,
-    has_paid_onboarding, 
-    is_admin, 
-    onboarding_payment_id,
-    created_at
+  id,
+  email,
+  username,
+  full_name,
+  has_paid_onboarding,
+  onboarding_payment_id,
+  created_at,
+  updated_at
 FROM profiles
-WHERE email = 'daniellebsnyder@gmail.com';
+WHERE email = 'clareamurray2006@icloud.com';
 
--- 3. If profile doesn't exist but auth user does, create it:
--- (Replace USER_ID_HERE with the id from step 1)
--- INSERT INTO profiles (id, email, has_paid_onboarding, onboarding_payment_id)
--- VALUES ('USER_ID_HERE', 'daniellebsnyder@gmail.com', true, 'pi_3SZCL5LrnvsxMxER1cJ7ZkB9')
--- ON CONFLICT (id) DO UPDATE 
--- SET has_paid_onboarding = true,
---     onboarding_payment_id = 'pi_3SZCL5LrnvsxMxER1cJ7ZkB9',
---     email = 'daniellebsnyder@gmail.com';
-
+-- Also check if there's an auth user
+SELECT 
+  id,
+  email,
+  email_confirmed_at,
+  created_at,
+  raw_user_meta_data
+FROM auth.users
+WHERE email = 'clareamurray2006@icloud.com';
