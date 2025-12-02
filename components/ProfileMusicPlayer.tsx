@@ -85,30 +85,6 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
     }
   }, [songUrl, spotifyId])
 
-  // Auto-play when profile opens (if song is available)
-  useEffect(() => {
-    if ((youtubeVideoId || audioUrl) && !isPlaying && currentPlayingId !== songId) {
-      // Small delay to ensure page is loaded
-      const timer = setTimeout(() => {
-        playSong(songId, startPlayback, stopPlayback)
-      }, 500)
-      return () => clearTimeout(timer)
-    }
-  }, [youtubeVideoId, audioUrl, isPlaying, currentPlayingId, songId, playSong, startPlayback, stopPlayback]) // Only run when song URL changes (profile loads)
-
-  // Sync with music context
-  useEffect(() => {
-    if (currentPlayingId === songId) {
-      if (!isPlaying) {
-        startPlayback()
-      }
-    } else {
-      if (isPlaying) {
-        stopPlayback()
-      }
-    }
-  }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
-
   const startPlayback = useCallback(async () => {
     if (youtubeVideoId) {
       setIsPlaying(true)
@@ -163,6 +139,30 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
     setIsPlaying(false)
     setLoading(false)
   }, [])
+
+  // Auto-play when profile opens (if song is available)
+  useEffect(() => {
+    if ((youtubeVideoId || audioUrl) && !isPlaying && currentPlayingId !== songId) {
+      // Small delay to ensure page is loaded
+      const timer = setTimeout(() => {
+        playSong(songId, startPlayback, stopPlayback)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [youtubeVideoId, audioUrl, isPlaying, currentPlayingId, songId, playSong, startPlayback, stopPlayback]) // Only run when song URL changes (profile loads)
+
+  // Sync with music context
+  useEffect(() => {
+    if (currentPlayingId === songId) {
+      if (!isPlaying) {
+        startPlayback()
+      }
+    } else {
+      if (isPlaying) {
+        stopPlayback()
+      }
+    }
+  }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
 
   const togglePlay = () => {
     if (currentPlayingId === songId) {
