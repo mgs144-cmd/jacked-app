@@ -42,8 +42,9 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   }
 
   useEffect(() => {
-    // Reset auto-play flag when song changes
+    // Reset auto-play flag and YouTube ready flag when song changes
     hasAutoPlayedRef.current = false
+    youtubePlayerReadyRef.current = false
     
     if (songUrl) {
       const youtubeId = extractYouTubeId(songUrl)
