@@ -283,7 +283,13 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
           </div>
         ) : null}
       </div>
-      <audio ref={audioRef} src={audioUrl || undefined} style={{ display: 'none' }} />
+      <audio 
+        ref={audioRef} 
+        src={audioUrl || undefined} 
+        style={{ display: 'none' }}
+        playsInline
+        webkit-playsinline="true"
+      />
       {youtubeVideoId && (
         <YouTubePlayer
           videoId={youtubeVideoId}
