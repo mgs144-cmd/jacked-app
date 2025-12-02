@@ -251,6 +251,21 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
     }
   }, [isPlaying, videoId, onError, isReady, startTime])
 
+  // Handle mute changes
+  useEffect(() => {
+    if (!youtubePlayerRef.current || !isReady) return
+
+    try {
+      if (isMuted) {
+        youtubePlayerRef.current.mute()
+      } else {
+        youtubePlayerRef.current.unMute()
+      }
+    } catch (err) {
+      console.error('Error muting/unmuting YouTube player:', err)
+    }
+  }, [isMuted, isReady])
+
   return (
     <div 
       className="relative" 
