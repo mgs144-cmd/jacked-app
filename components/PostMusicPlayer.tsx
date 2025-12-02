@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Play, Pause, Music } from 'lucide-react'
-import Image from 'next/image'
+import { Play, Pause } from 'lucide-react'
 import { YouTubePlayer } from './YouTubePlayer'
 import { useMusic } from '@/app/providers/MusicProvider'
 
@@ -234,21 +233,6 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
 
   return (
     <div ref={containerRef} className="px-5 py-3 bg-gray-800/40 border-b border-gray-800/40 flex items-center space-x-3">
-      {albumArt ? (
-        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-2 ring-gray-700">
-          <Image
-            src={albumArt}
-            alt={`${songTitle} album art`}
-            width={48}
-            height={48}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ) : (
-        <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center flex-shrink-0">
-          <Music className="w-6 h-6 text-white" />
-        </div>
-      )}
       <div className="flex-1 min-w-0">
         <p className="text-white font-bold text-sm truncate">{songTitle || 'Unknown'}</p>
         <p className="text-gray-400 text-xs truncate">{songArtist || 'Unknown'}</p>
@@ -268,11 +252,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
             <Play className="w-4 h-4" />
           )}
         </button>
-      ) : (
-        <div className="p-2 rounded-full bg-gray-700 text-gray-500 flex-shrink-0" title="No playable audio URL">
-          <Music className="w-4 h-4" />
-        </div>
-      )}
+      ) : null}
       <audio ref={audioRef} src={audioUrl || undefined} style={{ display: 'none' }} />
       {youtubeVideoId && (
         <YouTubePlayer

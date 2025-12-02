@@ -63,11 +63,36 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
         },
         events: {
           onReady: (event: any) => {
-            console.log('YouTube player ready')
-            setLoading(false)
-            setError(null)
-            setIsReady(true)
-            isControllingRef.current = false // Reset control flag
+            console.log('YouTube player ready event fired')
+            // Wait a bit for the player methods to actually be available
+            setTimeout(() => {
+              if (youtubePlayerRef.current && 
+                  typeof youtubePlayerRef.current.playVideo === 'function' &&
+                  typeof youtubePlayerRef.current.pauseVideo === 'function') {
+                console.log('YouTube player methods confirmed available')
+                setLoading(false)
+                setError(null)
+                setIsReady(true)
+                isControllingRef.current = false // Reset control flag
+              } else {
+                console.warn('YouTube player ready but methods not available yet, retrying...')
+                // Retry after another short delay
+                setTimeout(() => {
+                  if (youtubePlayerRef.current && 
+                      typeof youtubePlayerRef.current.playVideo === 'function' &&
+                      typeof youtubePlayerRef.current.pauseVideo === 'function') {
+                    console.log('YouTube player methods now available')
+                    setLoading(false)
+                    setError(null)
+                    setIsReady(true)
+                    isControllingRef.current = false
+                  } else {
+                    console.error('YouTube player methods still not available')
+                    setError('YouTube player initialization incomplete')
+                  }
+                }, 500)
+              }
+            }, 200)
           },
           onError: (event: any) => {
             console.error('YouTube player error:', event.data)

@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { Music, Play, Pause, Volume2, VolumeX } from 'lucide-react'
-import Image from 'next/image'
+import { Play, Pause, Volume2, VolumeX } from 'lucide-react'
 import { YouTubePlayer } from './YouTubePlayer'
 import { useMusic } from '@/app/providers/MusicProvider'
 
@@ -144,16 +143,17 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   useEffect(() => {
     // Only auto-play once when component mounts with a valid song
     if ((youtubeVideoId || audioUrl) && currentPlayingId !== songId) {
-      // Small delay to ensure page is loaded
+      // Delay to ensure page and player are loaded
       const timer = setTimeout(() => {
         if (currentPlayingId !== songId) { // Double check it hasn't changed
+          console.log('Auto-playing profile song:', songId)
           playSong(songId, startPlayback, stopPlayback)
         }
-      }, 1000) // Increased delay to ensure everything is ready
+      }, 1500) // Delay to ensure YouTube player is ready
       return () => clearTimeout(timer)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Only run once on mount
+  }, [youtubeVideoId, audioUrl]) // Re-run when song URL changes
 
   // Sync with music context - prevent rapid toggling
   useEffect(() => {
@@ -186,25 +186,6 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   return (
     <div className="bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-2.5">
       <div className="flex items-center space-x-3">
-        {albumArt ? (
-          <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 ring-1 ring-gray-700">
-            <Image
-              src={albumArt}
-              alt={`${songTitle} album art`}
-              width={40}
-              height={40}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none'
-              }}
-            />
-          </div>
-        ) : (
-          <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center flex-shrink-0">
-            <Music className="w-5 h-5 text-white" />
-          </div>
-        )}
-        
         <div className="flex-1 min-w-0">
           <p className="text-white font-semibold text-xs truncate">{songTitle}</p>
           <p className="text-gray-400 text-[10px] truncate">{songArtist}</p>
@@ -241,11 +222,7 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
               </button>
             )}
           </div>
-        ) : (
-          <div className="w-7 h-7 rounded-lg bg-gray-700 flex items-center justify-center flex-shrink-0" title="No playable audio">
-            <Music className="w-3.5 h-3.5 text-gray-500" />
-          </div>
-        )}
+        ) : null}
       </div>
       <audio ref={audioRef} src={audioUrl || undefined} style={{ display: 'none' }} />
       {youtubeVideoId && (

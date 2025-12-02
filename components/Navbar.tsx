@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/app/providers'
-import { Home, PlusCircle, User, Settings, Users, Trophy } from 'lucide-react'
+import { Home, PlusCircle, User, Users, Trophy } from 'lucide-react'
 
 export function Navbar() {
   const pathname = usePathname()
@@ -22,7 +22,6 @@ export function Navbar() {
     ...(showDeadcember ? [{ href: '/deadcember', icon: Trophy, label: 'Deadcember' }] : []),
     { href: '/create', icon: PlusCircle, label: 'Post', isPrimary: true },
     { href: '/profile', icon: User, label: 'Profile' },
-    { href: '/settings', icon: Settings, label: 'Settings' },
   ]
 
   return (

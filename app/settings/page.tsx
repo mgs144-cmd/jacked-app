@@ -177,8 +177,8 @@ export default function SettingsPage() {
         }
       }
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
+      // Redirect to profile page instead of showing success message
+      router.push('/profile')
     } catch (err: any) {
       setError(err.message || 'Failed to update profile')
     } finally {
