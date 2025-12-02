@@ -166,14 +166,15 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
     // Only sync if there's an actual change
     if (currentPlayingId === songId && !isPlaying) {
       // This song should be playing but isn't
+      console.log('Sync effect: starting playback for', songId)
       startPlayback()
     } else if (currentPlayingId !== songId && isPlaying) {
       // A different song is playing, stop this one
+      console.log('Sync effect: stopping playback for', songId)
       stopPlayback()
     }
     // Don't do anything if state is already correct
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPlayingId, songId]) // Removed isPlaying, startPlayback, stopPlayback to prevent loops
+  }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
 
   const togglePlay = () => {
     console.log('Profile play button clicked', { currentPlayingId, songId, isPlaying, youtubeVideoId, audioUrl })
