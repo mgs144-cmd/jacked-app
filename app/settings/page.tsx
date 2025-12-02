@@ -20,6 +20,7 @@ export default function SettingsPage() {
   const [showCropper, setShowCropper] = useState(false)
   const [imageToCrop, setImageToCrop] = useState<string | null>(null)
   const [profileSong, setProfileSong] = useState<{ title: string; artist: string; url?: string; spotifyId?: string; albumArt?: string } | null>(null)
+  const [songStartTime, setSongStartTime] = useState<number | null>(null)
   const [fitnessGoal, setFitnessGoal] = useState<'bulk' | 'cut' | 'maintenance' | null>(null)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -59,6 +60,7 @@ export default function SettingsPage() {
           })
         }
         setFitnessGoal(data.fitness_goal || null)
+        setSongStartTime(data.profile_song_start_time || null)
       }
       setLoading(false)
     }
@@ -144,6 +146,9 @@ export default function SettingsPage() {
       
       // Add fitness goal
       updateData.fitness_goal = fitnessGoal || null
+      
+      // Add song start time
+      updateData.profile_song_start_time = songStartTime || null
 
       // Try to update, but handle missing columns gracefully
       const { error: updateError, data } = await (supabase
@@ -321,6 +326,24 @@ export default function SettingsPage() {
                   onClear={() => setProfileSong(null)}
                   uploadMode="profile"
                 />
+                
+                {profileSong && (
+                  <div className="mt-4">
+                    <label htmlFor="songStartTime" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+                      START TIME (SECONDS)
+                    </label>
+                    <p className="text-xs text-gray-500 mb-2">Skip to a specific part of the song (e.g., 30 to start at 30 seconds, leave empty to start from beginning)</p>
+                    <input
+                      id="songStartTime"
+                      type="number"
+                      min="0"
+                      value={songStartTime || ''}
+                      onChange={(e) => setSongStartTime(e.target.value ? parseInt(e.target.value) : null)}
+                      className="input-field w-full"
+                      placeholder="0 (start from beginning)"
+                    />
+                  </div>
+                )}
               </div>
 
               <div>

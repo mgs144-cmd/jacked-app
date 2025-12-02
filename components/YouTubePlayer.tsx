@@ -6,12 +6,13 @@ import { Play, Pause, Loader2 } from 'lucide-react'
 interface YouTubePlayerProps {
   videoId: string
   isPlaying: boolean
+  startTime?: number // Start time in seconds
   onPlay: () => void
   onPause: () => void
   onError?: (error: string) => void
 }
 
-export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: YouTubePlayerProps) {
+export function YouTubePlayer({ videoId, isPlaying, startTime, onPlay, onPause, onError }: YouTubePlayerProps) {
   const playerRef = useRef<HTMLDivElement>(null)
   const youtubePlayerRef = useRef<any>(null)
   const [loading, setLoading] = useState(true)
@@ -60,6 +61,7 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
           rel: 0,
           showinfo: 0,
           origin: typeof window !== 'undefined' ? window.location.origin : '',
+          ...(startTime && startTime > 0 ? { start: startTime } : {}), // Add start time if provided
         },
         events: {
           onReady: (event: any) => {
@@ -77,9 +79,13 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
                 // If we should be playing, trigger it now that we're ready
                 // This helps with profile auto-play
                 if (isPlaying) {
-                  console.log('Player ready and should be playing, triggering playVideo')
+                  console.log('Player ready and should be playing, triggering playVideo', { startTime })
                   try {
                     isControllingRef.current = true
+                    // If start time is set, seek to that position first
+                    if (startTime && startTime > 0) {
+                      youtubePlayerRef.current.seekTo(startTime, true)
+                    }
                     youtubePlayerRef.current.playVideo()
                   } catch (err) {
                     console.error('Error playing on ready:', err)
@@ -99,9 +105,13 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
                     isControllingRef.current = false
                     // If we should be playing, trigger it now
                     if (isPlaying) {
-                      console.log('Player ready (retry) and should be playing, triggering playVideo')
+                      console.log('Player ready (retry) and should be playing, triggering playVideo', { startTime })
                       try {
                         isControllingRef.current = true
+                        // If start time is set, seek to that position first
+                        if (startTime && startTime > 0) {
+                          youtubePlayerRef.current.seekTo(startTime, true)
+                        }
                         youtubePlayerRef.current.playVideo()
                       } catch (err) {
                         console.error('Error playing on ready (retry):', err)
@@ -211,8 +221,12 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
 
       // Only control if state doesn't match
       if (shouldBePlaying && !isCurrentlyPlaying) {
-        console.log('Playing YouTube video:', videoId)
+        console.log('Playing YouTube video:', videoId, 'with start time:', startTime)
         isControllingRef.current = true // Set flag before controlling
+        // If start time is set, seek to that position first
+        if (startTime && startTime > 0) {
+          youtubePlayerRef.current.seekTo(startTime, true)
+        }
         youtubePlayerRef.current.playVideo()
       } else if (!shouldBePlaying && isCurrentlyPlaying) {
         console.log('Pausing YouTube video:', videoId)
@@ -226,7 +240,7 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
       isControllingRef.current = false
       onError?.(`Failed to control playback: ${err}`)
     }
-  }, [isPlaying, videoId, onError, isReady])
+  }, [isPlaying, videoId, onError, isReady, startTime])
 
   return (
     <div 

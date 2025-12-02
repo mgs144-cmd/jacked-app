@@ -148,6 +148,7 @@ export default async function ProfilePage() {
                         songUrl={(profile as any).profile_song_url || undefined}
                         spotifyId={(profile as any).profile_song_spotify_id || undefined}
                         albumArt={(profile as any).profile_song_album_art_url || undefined}
+                        startTime={(profile as any).profile_song_start_time || undefined}
                       />
                     </div>
                   )}

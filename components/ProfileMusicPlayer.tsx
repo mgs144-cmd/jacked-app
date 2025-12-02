@@ -11,9 +11,10 @@ interface ProfileMusicPlayerProps {
   songUrl?: string
   spotifyId?: string
   albumArt?: string
+  startTime?: number // Start time in seconds (e.g., 30 to start at 30 seconds)
 }
 
-export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, albumArt }: ProfileMusicPlayerProps) {
+export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, albumArt, startTime }: ProfileMusicPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
@@ -111,6 +112,15 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
       audioRef.current.volume = 0.7
       audioRef.current.crossOrigin = 'anonymous'
       
+      // Set start time if provided
+      if (startTime && startTime > 0) {
+        audioRef.current.addEventListener('loadedmetadata', () => {
+          if (audioRef.current) {
+            audioRef.current.currentTime = startTime
+          }
+        }, { once: true })
+      }
+      
       audioRef.current.onended = () => {
         setIsPlaying(false)
         setLoading(false)
@@ -125,6 +135,10 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
       
       audioRef.current.oncanplay = () => {
         setLoading(false)
+        // Set start time after metadata is loaded
+        if (startTime && startTime > 0 && audioRef.current) {
+          audioRef.current.currentTime = startTime
+        }
       }
 
       await audioRef.current.play()
@@ -154,10 +168,10 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
       // Delay to ensure page and player are loaded
       const timer = setTimeout(() => {
         if (currentPlayingId !== songId) { // Double check it hasn't changed
-          console.log('Auto-playing profile song:', songId)
+          console.log('Auto-playing profile song:', songId, 'with start time:', startTime)
           playSong(songId, startPlayback, stopPlayback)
         }
-      }, 1500) // Delay to ensure YouTube player is ready
+      }, 2000) // Increased delay to ensure YouTube player is fully ready
       return () => clearTimeout(timer)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -242,6 +256,7 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
         <YouTubePlayer
           videoId={youtubeVideoId}
           isPlaying={isPlaying}
+          startTime={startTime}
           onPlay={() => {
             // Only update if not already playing to prevent loops
             if (!isPlaying) {
