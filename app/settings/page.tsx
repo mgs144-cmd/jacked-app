@@ -22,6 +22,7 @@ export default function SettingsPage() {
   const [imageToCrop, setImageToCrop] = useState<string | null>(null)
   const [profileSong, setProfileSong] = useState<{ title: string; artist: string; url?: string; spotifyId?: string; albumArt?: string } | null>(null)
   const [songStartTime, setSongStartTime] = useState<number | null>(null)
+  const [previewStartTime, setPreviewStartTime] = useState<number | null>(null) // Debounced value for preview
   const [fitnessGoal, setFitnessGoal] = useState<'bulk' | 'cut' | 'maintenance' | null>(null)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -343,12 +344,21 @@ export default function SettingsPage() {
                         onChange={(e) => {
                           const value = e.target.value ? parseInt(e.target.value) : null
                           setSongStartTime(value)
+                          // Debounce preview - only play after user stops typing for 800ms
+                          if (value !== null && value >= 0) {
+                            const timer = setTimeout(() => {
+                              setPreviewStartTime(value)
+                            }, 800)
+                            return () => clearTimeout(timer)
+                          } else {
+                            setPreviewStartTime(null)
+                          }
                         }}
                         className="input-field flex-1"
                         placeholder="0 (start from beginning)"
                       />
-                      {songStartTime !== null && songStartTime >= 0 && (
-                        <div className="text-xs text-gray-400">
+                      {previewStartTime !== null && previewStartTime >= 0 && (
+                        <div className="text-xs text-green-400 animate-pulse">
                           Preview playing...
                         </div>
                       )}
@@ -357,7 +367,8 @@ export default function SettingsPage() {
                     <SongPreviewPlayer
                       songUrl={profileSong.url}
                       spotifyId={profileSong.spotifyId}
-                      startTime={songStartTime}
+                      startTime={previewStartTime}
+                      onPreviewEnd={() => setPreviewStartTime(null)}
                     />
                   </div>
                 )}
