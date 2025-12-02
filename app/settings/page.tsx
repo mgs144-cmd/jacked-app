@@ -70,6 +70,20 @@ export default function SettingsPage() {
     loadProfile()
   }, [user, router, supabase])
 
+  // Debounce preview start time - only play after user stops typing
+  useEffect(() => {
+    if (songStartTime === null || songStartTime === undefined || songStartTime < 0) {
+      setPreviewStartTime(null)
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setPreviewStartTime(songStartTime)
+    }, 800) // Wait 800ms after user stops typing
+
+    return () => clearTimeout(timer)
+  }, [songStartTime])
+
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -344,15 +358,6 @@ export default function SettingsPage() {
                         onChange={(e) => {
                           const value = e.target.value ? parseInt(e.target.value) : null
                           setSongStartTime(value)
-                          // Debounce preview - only play after user stops typing for 800ms
-                          if (value !== null && value >= 0) {
-                            const timer = setTimeout(() => {
-                              setPreviewStartTime(value)
-                            }, 800)
-                            return () => clearTimeout(timer)
-                          } else {
-                            setPreviewStartTime(null)
-                          }
                         }}
                         className="input-field flex-1"
                         placeholder="0 (start from beginning)"
