@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Music, Play, Pause, Volume2, VolumeX } from 'lucide-react'
 import Image from 'next/image'
+import { YouTubePlayer } from './YouTubePlayer'
+import { useMusic } from '@/app/providers/MusicProvider'
 
 interface ProfileMusicPlayerProps {
   songTitle: string
@@ -17,35 +19,62 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   const [isMuted, setIsMuted] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const { currentPlayingId, playSong, stopCurrentSong } = useMusic()
+  const songId = `profile-${songUrl || spotifyId || 'unknown'}`
+
+  // Extract YouTube video ID from URL
+  const extractYouTubeId = (url: string): string | null => {
+    if (!url) return null
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+      /youtube\.com\/.*[?&]v=([^&\n?#]+)/,
+      /(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/,
+    ]
+    for (const pattern of patterns) {
+      const match = url.match(pattern)
+      if (match && match[1]) return match[1]
+    }
+    return null
+  }
 
   useEffect(() => {
-    // Only use preview URLs for in-app playback
     if (songUrl) {
-      // Spotify preview URLs (p.scdn.co) are direct MP3s that can be played
-      const isSpotifyPreview = songUrl.includes('p.scdn.co') || 
-                               songUrl.includes('preview') ||
-                               (songUrl.includes('spotify') && songUrl.endsWith('.mp3'))
+      const youtubeId = extractYouTubeId(songUrl)
+      if (youtubeId) {
+        setYoutubeVideoId(youtubeId)
+        setAudioUrl(null)
+        return
+      }
       
-      // Direct audio file URLs
+      if (songUrl.includes('youtube.com') || songUrl.includes('youtu.be')) {
+        const simpleMatch = songUrl.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)
+        if (simpleMatch && simpleMatch[1]) {
+          setYoutubeVideoId(simpleMatch[1])
+          setAudioUrl(null)
+          return
+        }
+      }
+
       const audioExtensions = ['.mp3', '.m4a', '.wav', '.ogg', '.aac', '.flac', '.webm']
       const isDirectAudio = audioExtensions.some(ext => songUrl.toLowerCase().endsWith(ext))
-      
-      // Supabase storage URLs
+      const isSpotifyPreview = songUrl.includes('p.scdn.co') || songUrl.includes('preview')
       const isSupabaseStorage = songUrl.includes('supabase.co') || songUrl.includes('storage')
       
-      // Only set audio URL if it's a playable preview/audio file
       if (isSpotifyPreview || isDirectAudio || isSupabaseStorage) {
         setAudioUrl(songUrl)
+        setYoutubeVideoId(null)
       } else {
-        // Not a playable URL - don't set audioUrl
         setAudioUrl(null)
+        setYoutubeVideoId(null)
       }
     } else if (spotifyId) {
-      // Try to construct preview URL from spotifyId
       setAudioUrl(`https://p.scdn.co/mp3-preview/${spotifyId}`)
+      setYoutubeVideoId(null)
     } else {
       setAudioUrl(null)
+      setYoutubeVideoId(null)
     }
 
     return () => {
@@ -56,44 +85,63 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
     }
   }, [songUrl, spotifyId])
 
-  const togglePlay = async () => {
-    // Only play preview URLs in-app - no opening external links
-    if (!audioUrl) {
-      alert('No playable audio available. This song may not have a preview clip.')
+  // Auto-play when profile opens (if song is available)
+  useEffect(() => {
+    if ((youtubeVideoId || audioUrl) && !isPlaying && currentPlayingId !== songId) {
+      // Small delay to ensure page is loaded
+      const timer = setTimeout(() => {
+        playSong(songId, startPlayback, stopPlayback)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [youtubeVideoId, audioUrl]) // Only run when song URL changes (profile loads)
+
+  // Sync with music context
+  useEffect(() => {
+    if (currentPlayingId === songId) {
+      if (!isPlaying) {
+        startPlayback()
+      }
+    } else {
+      if (isPlaying) {
+        stopPlayback()
+      }
+    }
+  }, [currentPlayingId, songId])
+
+  const startPlayback = async () => {
+    if (youtubeVideoId) {
+      setIsPlaying(true)
       return
     }
 
+    if (!audioUrl) return
+
     try {
-      // If already playing, pause it
-      if (isPlaying && audioRef.current) {
+      setLoading(true)
+      if (audioRef.current) {
         audioRef.current.pause()
-        setIsPlaying(false)
-        return
+        audioRef.current = null
       }
 
-      setLoading(true)
-
-      // Create new audio element if needed
-      if (!audioRef.current) {
-        audioRef.current = new Audio(audioUrl)
-        audioRef.current.volume = 0.7
-        audioRef.current.crossOrigin = 'anonymous'
-        
-        audioRef.current.onended = () => {
-          setIsPlaying(false)
-          setLoading(false)
-        }
-        
-        audioRef.current.onerror = (e) => {
-          console.error('Audio playback error:', e)
-          setIsPlaying(false)
-          setLoading(false)
-          alert(`Failed to play audio. The URL might not be accessible or might be blocked by CORS.\n\nURL: ${audioUrl}`)
-        }
-        
-        audioRef.current.oncanplay = () => {
-          setLoading(false)
-        }
+      audioRef.current = new Audio(audioUrl || undefined)
+      audioRef.current.volume = 0.7
+      audioRef.current.crossOrigin = 'anonymous'
+      
+      audioRef.current.onended = () => {
+        setIsPlaying(false)
+        setLoading(false)
+        stopCurrentSong()
+      }
+      
+      audioRef.current.onerror = () => {
+        setIsPlaying(false)
+        setLoading(false)
+        stopCurrentSong()
+      }
+      
+      audioRef.current.oncanplay = () => {
+        setLoading(false)
       }
 
       await audioRef.current.play()
@@ -103,7 +151,24 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
       console.error('Audio playback error:', error)
       setIsPlaying(false)
       setLoading(false)
-      alert(`Failed to play audio: ${error.message || 'Unknown error'}\n\nURL: ${audioUrl}`)
+      stopCurrentSong()
+    }
+  }
+
+  const stopPlayback = () => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+    }
+    setIsPlaying(false)
+    setLoading(false)
+  }
+
+  const togglePlay = () => {
+    if (currentPlayingId === songId) {
+      stopCurrentSong()
+    } else {
+      playSong(songId, startPlayback, stopPlayback)
     }
   }
 
@@ -116,7 +181,6 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   return (
     <div className="bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-2.5">
       <div className="flex items-center space-x-3">
-        {/* Album Art - Smaller */}
         {albumArt ? (
           <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 ring-1 ring-gray-700">
             <Image
@@ -136,14 +200,12 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
           </div>
         )}
         
-        {/* Song Info - Smaller */}
         <div className="flex-1 min-w-0">
           <p className="text-white font-semibold text-xs truncate">{songTitle}</p>
           <p className="text-gray-400 text-[10px] truncate">{songArtist}</p>
         </div>
 
-        {/* Controls - Only show if we have a playable audio URL */}
-        {audioUrl ? (
+        {(audioUrl || youtubeVideoId) ? (
           <div className="flex items-center space-x-1.5">
             <button
               onClick={togglePlay}
@@ -160,7 +222,7 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
               )}
             </button>
 
-            {audioUrl && (
+            {audioUrl && !youtubeVideoId && (
               <button
                 onClick={toggleMute}
                 className="w-7 h-7 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all flex-shrink-0"
@@ -181,7 +243,19 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
         )}
       </div>
       <audio ref={audioRef} src={audioUrl || undefined} style={{ display: 'none' }} />
+      {youtubeVideoId && (
+        <YouTubePlayer
+          videoId={youtubeVideoId}
+          isPlaying={isPlaying}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onError={(error) => {
+            console.error('YouTube player error:', error)
+            setLoading(false)
+            stopCurrentSong()
+          }}
+        />
+      )}
     </div>
   )
 }
-

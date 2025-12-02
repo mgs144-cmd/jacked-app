@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Play, Pause, Music } from 'lucide-react'
 import Image from 'next/image'
 import { YouTubePlayer } from './YouTubePlayer'
+import { useMusic } from '@/app/providers/MusicProvider'
 
 interface PostMusicPlayerProps {
   songTitle: string
@@ -11,107 +12,84 @@ interface PostMusicPlayerProps {
   songUrl?: string
   spotifyId?: string
   albumArt?: string
+  postId?: string // Unique ID for this post's song
 }
 
-export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, albumArt }: PostMusicPlayerProps) {
+export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, albumArt, postId }: PostMusicPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { currentPlayingId, playSong, stopCurrentSong } = useMusic()
+  
+  // Generate unique song ID for this post
+  const songId = postId || `song-${songUrl || spotifyId || 'unknown'}`
 
   // Extract YouTube video ID from URL
   const extractYouTubeId = (url: string): string | null => {
     if (!url) return null
     
-    console.log('Extracting YouTube ID from URL:', url)
-    
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
       /youtube\.com\/.*[?&]v=([^&\n?#]+)/,
       /youtube\.com\/watch\?.*v=([^&\n?#]+)/,
+      /(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/,
     ]
     for (const pattern of patterns) {
       const match = url.match(pattern)
       if (match && match[1]) {
-        const videoId = match[1]
-        console.log('Extracted YouTube video ID:', videoId)
-        return videoId
+        return match[1]
       }
     }
-    
-    console.log('No YouTube video ID found in URL')
     return null
   }
 
   useEffect(() => {
     // Determine audio URL for in-app playback
-    console.log('PostMusicPlayer useEffect - songUrl:', songUrl, 'songTitle:', songTitle, 'songArtist:', songArtist)
-    
     if (songUrl) {
       // Check if it's a YouTube URL - use iframe player for in-app playback
       const youtubeId = extractYouTubeId(songUrl)
       if (youtubeId) {
-        console.log('YouTube video detected, using iframe player. Video ID:', youtubeId)
         setYoutubeVideoId(youtubeId)
-        setAudioUrl(null) // Don't use audio element for YouTube
+        setAudioUrl(null)
         return
       }
       
-      // Also check if URL contains youtube.com or youtu.be (even if extraction failed)
+      // Check if URL contains youtube.com or youtu.be
       if (songUrl.includes('youtube.com') || songUrl.includes('youtu.be')) {
-        console.log('YouTube URL detected but extraction failed, trying to extract again:', songUrl)
-        // Try one more time with a simpler approach
         const simpleMatch = songUrl.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)
         if (simpleMatch && simpleMatch[1]) {
-          console.log('Successfully extracted YouTube ID on second try:', simpleMatch[1])
           setYoutubeVideoId(simpleMatch[1])
           setAudioUrl(null)
           return
         }
-        console.warn('YouTube URL detected but could not extract video ID')
       }
 
-      // Check if it's a direct audio file URL (common audio extensions)
+      // Check if it's a direct audio file URL
       const audioExtensions = ['.mp3', '.m4a', '.wav', '.ogg', '.aac', '.flac', '.webm']
       const isDirectAudio = audioExtensions.some(ext => songUrl.toLowerCase().endsWith(ext))
       
-      // Spotify preview URLs are typically from p.scdn.co or contain "preview" or are direct MP3s
+      // Spotify preview URLs
       const isSpotifyPreview = songUrl.includes('p.scdn.co') || 
                                songUrl.includes('preview') ||
-                               (songUrl.includes('spotify') && songUrl.endsWith('.mp3')) ||
-                               (songUrl.includes('spotify') && songUrl.includes('preview'))
+                               (songUrl.includes('spotify') && songUrl.endsWith('.mp3'))
       
       // Supabase storage URLs
       const isSupabaseStorage = songUrl.includes('supabase.co') || songUrl.includes('storage')
       
-      if (isDirectAudio) {
-        console.log('Direct audio file detected:', songUrl)
-        setAudioUrl(songUrl)
-        setYoutubeVideoId(null)
-      } else if (isSpotifyPreview) {
-        // Spotify preview URL - these are direct MP3 URLs that can be played
-        console.log('Spotify preview URL detected:', songUrl)
-        setAudioUrl(songUrl)
-        setYoutubeVideoId(null)
-      } else if (isSupabaseStorage) {
-        // Supabase storage URL - try to play it
-        console.log('Supabase storage URL detected:', songUrl)
+      if (isDirectAudio || isSpotifyPreview || isSupabaseStorage) {
         setAudioUrl(songUrl)
         setYoutubeVideoId(null)
       } else if (songUrl.startsWith('http') && !songUrl.includes('open.spotify.com')) {
-        // Try other HTTP URLs (might be direct audio links)
-        console.log('Trying to use URL as audio:', songUrl)
         setAudioUrl(songUrl)
         setYoutubeVideoId(null)
       } else {
-        // Spotify web links or other non-playable URLs
-        console.log('URL not playable in-app:', songUrl)
         setAudioUrl(null)
         setYoutubeVideoId(null)
       }
     } else {
-      console.log('No songUrl provided')
       setAudioUrl(null)
       setYoutubeVideoId(null)
     }
@@ -124,118 +102,114 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     }
   }, [songUrl, spotifyId])
 
-  const handlePlayPause = async () => {
-    console.log('handlePlayPause called - youtubeVideoId:', youtubeVideoId, 'audioUrl:', audioUrl, 'songUrl:', songUrl, 'isPlaying:', isPlaying)
-    
-    // Handle YouTube URLs - use iframe player for in-app playback
-    // Check both youtubeVideoId and songUrl in case extraction failed
-    if (youtubeVideoId || (songUrl && (songUrl.includes('youtube.com') || songUrl.includes('youtu.be')))) {
-      // If we have a YouTube URL but no video ID, try to extract it now
-      if (!youtubeVideoId && songUrl) {
-        const extractedId = extractYouTubeId(songUrl)
-        if (extractedId) {
-          console.log('Extracted YouTube ID on play click:', extractedId)
-          setYoutubeVideoId(extractedId)
-          // Wait a moment for state to update, then toggle
-          setTimeout(() => setIsPlaying(!isPlaying), 100)
-          return
-        }
-      }
-      
-      console.log('Toggling YouTube playback, current state:', isPlaying, 'videoId:', youtubeVideoId)
-      setIsPlaying(!isPlaying)
+  // Play function
+  const startPlayback = async () => {
+    if (youtubeVideoId) {
+      setIsPlaying(true)
       return
     }
 
-    // Handle Spotify URLs without previews - open in Spotify
-    if (songUrl && songUrl.includes('open.spotify.com') && !audioUrl) {
-      window.open(songUrl, '_blank')
-      return
-    }
-
-    // If no audio URL available, show helpful message
-    if (!audioUrl && !youtubeVideoId) {
-      console.log('No audio URL available for playback. songUrl:', songUrl)
-      if (songUrl) {
-        // If it's a Spotify link, open it
-        if (songUrl.includes('open.spotify.com')) {
-          window.open(songUrl, '_blank')
-          return
-        }
-        alert(`Audio URL detected but not playable: ${songUrl}\n\nThis song doesn't have a preview clip. It will open in Spotify when played.`)
-      } else {
-        alert('No audio URL available. Please upload an audio file or provide a direct audio link.')
-      }
-      return
-    }
+    if (!audioUrl) return
 
     try {
-      // If already playing, pause it
-      if (isPlaying && audioRef.current) {
-        audioRef.current.pause()
-        setIsPlaying(false)
-        return
-      }
-
       setLoading(true)
-
-      // Create new audio element
       if (audioRef.current) {
         audioRef.current.pause()
         audioRef.current = null
       }
 
-      console.log('Creating audio element with URL:', audioUrl)
       audioRef.current = new Audio(audioUrl || undefined)
       audioRef.current.volume = 0.7
-      audioRef.current.crossOrigin = 'anonymous' // Help with CORS issues
+      audioRef.current.crossOrigin = 'anonymous'
       
       audioRef.current.onended = () => {
-        console.log('Audio playback ended')
         setIsPlaying(false)
         setLoading(false)
-        if (audioRef.current) {
-          audioRef.current = null
-        }
+        stopCurrentSong()
       }
       
-      audioRef.current.onerror = (e) => {
-        console.error('Audio playback error:', e, 'URL:', audioUrl)
+      audioRef.current.onerror = () => {
         setIsPlaying(false)
         setLoading(false)
-        alert(`Failed to play audio. The URL might not be accessible or might be blocked by CORS.\n\nURL: ${audioUrl}\n\nTry uploading an audio file directly instead of using a link.`)
-        if (audioRef.current) {
-          audioRef.current = null
-        }
-      }
-      
-      audioRef.current.onloadstart = () => {
-        console.log('Audio loading started')
+        stopCurrentSong()
       }
       
       audioRef.current.oncanplay = () => {
-        console.log('Audio can play')
         setLoading(false)
       }
-      
-      audioRef.current.onloadeddata = () => {
-        console.log('Audio data loaded')
-      }
 
-      console.log('Attempting to play audio')
       await audioRef.current.play()
       setIsPlaying(true)
       setLoading(false)
-      console.log('Audio playing successfully')
     } catch (error: any) {
       console.error('Audio playback error:', error)
       setIsPlaying(false)
       setLoading(false)
-      const errorMsg = error.message || 'Unknown error'
-      alert(`Failed to play audio: ${errorMsg}\n\nURL: ${audioUrl}\n\nMake sure:\n1. The URL is a direct link to an audio file\n2. The file is accessible (not blocked by CORS)\n3. Try uploading an audio file directly instead.`)
-      if (audioRef.current) {
-        audioRef.current = null
+      stopCurrentSong()
+    }
+  }
+
+  // Stop function
+  const stopPlayback = () => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+    }
+    setIsPlaying(false)
+    setLoading(false)
+  }
+
+  // Intersection Observer for auto-play (Instagram style)
+  useEffect(() => {
+    if (!containerRef.current || (!youtubeVideoId && !audioUrl)) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            // Post is visible - auto-play if not already playing
+            if (currentPlayingId !== songId) {
+              playSong(songId, startPlayback, stopPlayback)
+            }
+          } else {
+            // Post is not visible - stop if this is the current song
+            if (currentPlayingId === songId) {
+              stopCurrentSong()
+            }
+          }
+        })
+      },
+      {
+        threshold: [0, 0.5, 1],
+        rootMargin: '-20% 0px -20% 0px', // Only play when in center 60% of viewport
       }
+    )
+
+    observer.observe(containerRef.current)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong])
+
+  // Sync with music context
+  useEffect(() => {
+    if (currentPlayingId === songId) {
+      if (!isPlaying) {
+        startPlayback()
+      }
+    } else {
+      if (isPlaying) {
+        stopPlayback()
+      }
+    }
+  }, [currentPlayingId, songId])
+
+  const handlePlayPause = () => {
+    if (currentPlayingId === songId) {
+      stopCurrentSong()
+    } else {
+      playSong(songId, startPlayback, stopPlayback)
     }
   }
 
@@ -245,7 +219,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   }
 
   return (
-    <div className="px-5 py-3 bg-gray-800/40 border-b border-gray-800/40 flex items-center space-x-3">
+    <div ref={containerRef} className="px-5 py-3 bg-gray-800/40 border-b border-gray-800/40 flex items-center space-x-3">
       {albumArt ? (
         <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-2 ring-gray-700">
           <Image
@@ -264,19 +238,13 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       <div className="flex-1 min-w-0">
         <p className="text-white font-bold text-sm truncate">{songTitle || 'Unknown'}</p>
         <p className="text-gray-400 text-xs truncate">{songArtist || 'Unknown'}</p>
-        {songUrl && (
-          <p className="text-gray-500 text-xs truncate mt-1" title={songUrl}>
-            {songUrl.length > 40 ? `${songUrl.substring(0, 40)}...` : songUrl}
-          </p>
-        )}
       </div>
-      {/* Always show play button if we have a song URL, even if we can't detect the type yet */}
       {(audioUrl || youtubeVideoId || songUrl) ? (
         <button
           onClick={handlePlayPause}
           disabled={loading}
           className="p-2 rounded-full bg-primary hover:bg-primary-dark text-white transition-all flex-shrink-0 hover:scale-110 disabled:opacity-50"
-          title={youtubeVideoId ? 'Play YouTube audio' : songUrl?.includes('youtube') ? 'Play YouTube audio' : 'Play audio'}
+          title={isPlaying ? 'Pause' : 'Play'}
         >
           {loading ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -301,6 +269,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
           onError={(error) => {
             console.error('YouTube player error:', error)
             setLoading(false)
+            stopCurrentSong()
           }}
         />
       )}

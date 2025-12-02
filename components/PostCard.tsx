@@ -298,6 +298,7 @@ export function PostCard({ post }: PostCardProps) {
           songUrl={post.song_url}
           spotifyId={post.song_spotify_id}
           albumArt={post.song_album_art_url}
+          postId={post.id}
         />
       )}
 
