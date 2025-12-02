@@ -179,11 +179,34 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     setLoading(false)
   }, [])
 
-  // Intersection Observer for auto-play (Instagram style)
-  // Disable for now to debug issues - will re-enable manual play only
-  // useEffect(() => {
-  //   ... intersection observer code ...
-  // }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong, startPlayback, stopPlayback])
+  // Simple intersection observer - just check if post is visible
+  useEffect(() => {
+    if (!containerRef.current || (!youtubeVideoId && !audioUrl)) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Simple logic: if post is 60%+ visible and not playing, play it
+        // If post is <40% visible and is playing, stop it
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.6 && currentPlayingId !== songId) {
+          console.log('Post visible, auto-playing:', songId, 'ratio:', entry.intersectionRatio)
+          playSong(songId, startPlayback, stopPlayback)
+        } else if (entry.intersectionRatio < 0.4 && currentPlayingId === songId) {
+          console.log('Post not visible, stopping:', songId)
+          stopCurrentSong()
+        }
+      },
+      {
+        threshold: [0, 0.4, 0.6, 1],
+        rootMargin: '-10% 0px -10% 0px',
+      }
+    )
+
+    observer.observe(containerRef.current)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong, startPlayback, stopPlayback])
 
   // Sync with music context
   useEffect(() => {

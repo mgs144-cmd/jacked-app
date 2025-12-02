@@ -171,19 +171,14 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   useEffect(() => {
     // Only auto-play once when we have a valid song
     if ((audioUrl || youtubeVideoId) && !hasAutoPlayedRef.current) {
+      console.log('Profile auto-play effect triggered', { audioUrl, youtubeVideoId, songId })
       hasAutoPlayedRef.current = true
       
-      // For audio, wait a bit for component to mount
-      if (audioUrl) {
-        const timer = setTimeout(() => {
-          console.log('Auto-playing profile song (audio):', songId)
-          playSong(songId, startPlayback, stopPlayback)
-        }, 800)
-        return () => clearTimeout(timer)
-      }
-      
-      // For YouTube, onReady callback will trigger auto-play
-      // So we just mark that we've attempted it
+      const timer = setTimeout(() => {
+        console.log('Profile: Triggering auto-play for', songId)
+        playSong(songId, startPlayback, stopPlayback)
+      }, 1000) // Unified delay for both audio and YouTube
+      return () => clearTimeout(timer)
     }
   }, [audioUrl, youtubeVideoId, songId, playSong, startPlayback, stopPlayback])
 
@@ -289,19 +284,10 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
           startTime={startTime}
           isMuted={isMuted}
           onReady={() => {
-            // YouTube player is ready - mark it and trigger auto-play
+            // YouTube player is ready
             console.log('Profile: YouTube player ready for:', songId)
             youtubePlayerReadyRef.current = true
-            
-            // Only auto-play if we haven't already attempted
-            if (!hasAutoPlayedRef.current) {
-              hasAutoPlayedRef.current = true
-              // Longer delay to ensure player is fully ready
-              setTimeout(() => {
-                console.log('Profile: Auto-playing YouTube song:', songId)
-                playSong(songId, startPlayback, stopPlayback)
-              }, 1000) // Increased to 1 second for reliability
-            }
+            // Don't trigger auto-play here - let the auto-play effect handle it
           }}
           onPlay={() => {
             // Only update if not already playing to prevent loops
