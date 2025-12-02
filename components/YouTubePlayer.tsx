@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Play, Pause, Loader2 } from 'lucide-react'
 
 interface YouTubePlayerProps {
@@ -17,34 +17,7 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    // Load YouTube iframe API script
-    if (!window.YT) {
-      const tag = document.createElement('script')
-      tag.src = 'https://www.youtube.com/iframe_api'
-      const firstScriptTag = document.getElementsByTagName('script')[0]
-      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag)
-
-      // Wait for API to load
-      window.onYouTubeIframeAPIReady = () => {
-        initializePlayer()
-      }
-    } else {
-      initializePlayer()
-    }
-
-    return () => {
-      if (youtubePlayerRef.current) {
-        try {
-          youtubePlayerRef.current.destroy()
-        } catch (e) {
-          // Ignore cleanup errors
-        }
-      }
-    }
-  }, [videoId])
-
-  const initializePlayer = () => {
+  const initializePlayer = useCallback(() => {
     if (!playerRef.current || !window.YT) return
 
     try {
@@ -90,7 +63,34 @@ export function YouTubePlayer({ videoId, isPlaying, onPlay, onPause, onError }: 
       setError(errorMsg)
       onError?.(errorMsg)
     }
-  }
+  }, [videoId, onPlay, onPause, onError])
+
+  useEffect(() => {
+    // Load YouTube iframe API script
+    if (!window.YT) {
+      const tag = document.createElement('script')
+      tag.src = 'https://www.youtube.com/iframe_api'
+      const firstScriptTag = document.getElementsByTagName('script')[0]
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag)
+
+      // Wait for API to load
+      window.onYouTubeIframeAPIReady = () => {
+        initializePlayer()
+      }
+    } else {
+      initializePlayer()
+    }
+
+    return () => {
+      if (youtubePlayerRef.current) {
+        try {
+          youtubePlayerRef.current.destroy()
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
+    }
+  }, [videoId, initializePlayer])
 
   useEffect(() => {
     if (!youtubePlayerRef.current) return

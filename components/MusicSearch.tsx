@@ -10,6 +10,9 @@ interface Track {
   artist: string
   album?: string
   preview_url?: string
+  stream_url?: string
+  permalink_url?: string
+  artwork_url?: string
   external_urls: {
     spotify?: string
     youtube?: string
@@ -160,14 +163,14 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
   const handleSelect = (track: Track) => {
     console.log('Track selected:', track)
     
-    // SoundCloud has stream URLs for in-app playback
+    // YouTube URLs work great for in-app playback via iframe
     // Spotify deprecated preview_url - use external Spotify link
     const selectedSong = {
       title: track.name,
       artist: track.artist,
-      url: track.stream_url || track.preview_url || track.external_urls?.spotify || (track as any).permalink_url || undefined,
+      url: track.stream_url || track.preview_url || track.external_urls?.youtube || track.external_urls?.spotify || track.permalink_url || undefined,
       spotifyId: track.source === 'spotify' ? track.id : undefined,
-      albumArt: track.album_image || (track as any).artwork_url || undefined,
+      albumArt: track.album_image || track.artwork_url || undefined,
     }
     
     console.log('Calling onSelect with:', selectedSong)
