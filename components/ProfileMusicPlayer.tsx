@@ -171,40 +171,36 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
 
   // Auto-play when profile opens (if song is available)
   useEffect(() => {
-    // For audio files, we can auto-play immediately
-    if (audioUrl && !hasAutoPlayedRef.current) {
+    // Only auto-play once when we have a valid song
+    if ((audioUrl || youtubeVideoId) && !hasAutoPlayedRef.current) {
       hasAutoPlayedRef.current = true
-      const timer = setTimeout(() => {
-        console.log('Auto-playing profile song (audio):', songId)
-        playSong(songId, startPlayback, stopPlayback)
-      }, 800) // Delay to ensure component is fully mounted
-      return () => clearTimeout(timer)
-    }
-    
-    // For YouTube, auto-play will be triggered by onReady callback
-    // This effect just ensures we reset the flag when video changes
-    if (youtubeVideoId) {
-      // Reset flag when video ID changes to allow new auto-play
-      if (!hasAutoPlayedRef.current) {
-        // Will be set to true in onReady callback
+      
+      // For audio, wait a bit for component to mount
+      if (audioUrl) {
+        const timer = setTimeout(() => {
+          console.log('Auto-playing profile song (audio):', songId)
+          playSong(songId, startPlayback, stopPlayback)
+        }, 800)
+        return () => clearTimeout(timer)
       }
+      
+      // For YouTube, onReady callback will trigger auto-play
+      // So we just mark that we've attempted it
     }
   }, [audioUrl, youtubeVideoId, songId, playSong, startPlayback, stopPlayback])
 
-  // Sync with music context - prevent rapid toggling
+  // Sync with music context - only sync when global state changes, not local state
   useEffect(() => {
-    // Only sync if there's an actual change
     if (currentPlayingId === songId && !isPlaying) {
-      // This song should be playing but isn't
-      console.log('Sync effect: starting playback for', songId)
+      // Global context says this should be playing but local state disagrees
+      console.log('Profile sync: starting playback for', songId)
       startPlayback()
     } else if (currentPlayingId !== songId && isPlaying) {
-      // A different song is playing, stop this one
-      console.log('Sync effect: stopping playback for', songId)
+      // A different song is playing globally, stop this one
+      console.log('Profile sync: stopping playback for', songId)
       stopPlayback()
     }
-    // Don't do anything if state is already correct
-  }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
+  }, [currentPlayingId, songId, startPlayback, stopPlayback])
 
   // Handle mute changes for audio files while playing
   useEffect(() => {

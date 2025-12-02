@@ -272,25 +272,20 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     }
   }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong, startPlayback, stopPlayback])
 
-  // Sync with music context - prevent rapid toggling
+  // Sync with music context - only sync when global state changes
   useEffect(() => {
-    // Only sync if there's an actual change
-    if (currentPlayingId === songId && !isPlaying) {
-      // This song should be playing but isn't
-      isPlayingRef.current = true // Set flag to prevent intersection observer from triggering again
-      startPlayback()
-    } else if (currentPlayingId !== songId && isPlaying) {
-      // A different song is playing, stop this one
-      isPlayingRef.current = false // Reset flag
-      stopPlayback()
-    } else if (currentPlayingId === songId && isPlaying) {
-      // Song is playing correctly - ensure flag is set
+    if (currentPlayingId === songId && !isPlayingRef.current) {
+      // Global context says this should be playing
+      console.log('Sync: Starting playback for', songId)
       isPlayingRef.current = true
-    } else {
-      // Song is not playing and shouldn't be - reset flag
+      startPlayback()
+    } else if (currentPlayingId !== songId && isPlayingRef.current) {
+      // A different song is playing, stop this one
+      console.log('Sync: Stopping playback for', songId)
       isPlayingRef.current = false
+      stopPlayback()
     }
-  }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
+  }, [currentPlayingId, songId, startPlayback, stopPlayback])
 
   const handlePlayPause = () => {
     // Manual play should work independently of intersection observer
