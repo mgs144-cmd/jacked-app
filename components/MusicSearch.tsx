@@ -30,7 +30,7 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
   const [tracks, setTracks] = useState<Track[]>([])
   const [error, setError] = useState<string | null>(null)
 
-  const [searchSource, setSearchSource] = useState<'spotify' | 'youtube' | 'soundcloud'>('soundcloud')
+  const [searchSource, setSearchSource] = useState<'spotify' | 'youtube'>('spotify')
 
   const searchSongs = async (searchQuery: string) => {
     if (!searchQuery.trim()) return
@@ -40,21 +40,7 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
     setTracks([])
 
     try {
-      // Try SoundCloud first (best for in-app playback)
-      const soundcloudResponse = await fetch(`/api/search-soundcloud?q=${encodeURIComponent(searchQuery)}`)
-      const soundcloudData = await soundcloudResponse.json()
-
-      if (soundcloudData.tracks && soundcloudData.tracks.length > 0) {
-        setSearchSource('soundcloud')
-        setTracks(soundcloudData.tracks)
-        if (soundcloudData.note) {
-          setError(null) // SoundCloud works great!
-        }
-        setSearching(false)
-        return
-      }
-
-      // Fallback to Spotify if SoundCloud has no results
+      // Try Spotify for discovery
       const spotifyResponse = await fetch(`/api/search-music?q=${encodeURIComponent(searchQuery)}`)
       const spotifyData = await spotifyResponse.json()
 
@@ -89,7 +75,7 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
         setSearchSource('spotify')
         setTracks(spotifyData.tracks)
         if (spotifyData.note) {
-          setError(`⚠️ ${spotifyData.note}\n\n💡 Tip: Use the "Upload" tab to upload MP3 files for in-app playback!`)
+          setError(`⚠️ ${spotifyData.note}\n\n💡 Best for in-app playback: Use the "Upload" tab to upload MP3 files directly!`)
         } else {
           setError(null)
         }
@@ -196,11 +182,10 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
         <div className="flex items-center space-x-2 text-xs">
           <span className="text-gray-500">Source:</span>
           <span className={`px-2 py-1 rounded ${
-            searchSource === 'soundcloud' ? 'bg-primary text-white' : 
             searchSource === 'spotify' ? 'bg-green-600 text-white' : 
             'bg-gray-700 text-gray-400'
           }`}>
-            {searchSource === 'soundcloud' ? 'SoundCloud' : searchSource === 'spotify' ? 'Spotify' : 'YouTube'}
+            {searchSource === 'spotify' ? 'Spotify' : 'YouTube'}
           </span>
         </div>
       </div>
