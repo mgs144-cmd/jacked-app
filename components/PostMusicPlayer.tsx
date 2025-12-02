@@ -22,29 +22,54 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
 
   // Extract YouTube video ID from URL
   const extractYouTubeId = (url: string): string | null => {
+    if (!url) return null
+    
+    console.log('Extracting YouTube ID from URL:', url)
+    
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
       /youtube\.com\/.*[?&]v=([^&\n?#]+)/,
+      /youtube\.com\/watch\?.*v=([^&\n?#]+)/,
     ]
     for (const pattern of patterns) {
       const match = url.match(pattern)
       if (match && match[1]) {
-        return match[1]
+        const videoId = match[1]
+        console.log('Extracted YouTube video ID:', videoId)
+        return videoId
       }
     }
+    
+    console.log('No YouTube video ID found in URL')
     return null
   }
 
   useEffect(() => {
     // Determine audio URL for in-app playback
+    console.log('PostMusicPlayer useEffect - songUrl:', songUrl, 'songTitle:', songTitle, 'songArtist:', songArtist)
+    
     if (songUrl) {
       // Check if it's a YouTube URL - use iframe player for in-app playback
       const youtubeId = extractYouTubeId(songUrl)
       if (youtubeId) {
-        console.log('YouTube video detected, using iframe player:', youtubeId)
+        console.log('YouTube video detected, using iframe player. Video ID:', youtubeId)
         setYoutubeVideoId(youtubeId)
         setAudioUrl(null) // Don't use audio element for YouTube
         return
+      }
+      
+      // Also check if URL contains youtube.com or youtu.be (even if extraction failed)
+      if (songUrl.includes('youtube.com') || songUrl.includes('youtu.be')) {
+        console.log('YouTube URL detected but extraction failed, trying to extract again:', songUrl)
+        // Try one more time with a simpler approach
+        const simpleMatch = songUrl.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)
+        if (simpleMatch && simpleMatch[1]) {
+          console.log('Successfully extracted YouTube ID on second try:', simpleMatch[1])
+          setYoutubeVideoId(simpleMatch[1])
+          setAudioUrl(null)
+          return
+        }
+        console.warn('YouTube URL detected but could not extract video ID')
       }
 
       // Check if it's a direct audio file URL (common audio extensions)
@@ -100,9 +125,24 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   }, [songUrl, spotifyId])
 
   const handlePlayPause = async () => {
+    console.log('handlePlayPause called - youtubeVideoId:', youtubeVideoId, 'audioUrl:', audioUrl, 'songUrl:', songUrl, 'isPlaying:', isPlaying)
+    
     // Handle YouTube URLs - use iframe player for in-app playback
-    if (youtubeVideoId) {
-      console.log('Toggling YouTube playback, current state:', isPlaying)
+    // Check both youtubeVideoId and songUrl in case extraction failed
+    if (youtubeVideoId || (songUrl && (songUrl.includes('youtube.com') || songUrl.includes('youtu.be')))) {
+      // If we have a YouTube URL but no video ID, try to extract it now
+      if (!youtubeVideoId && songUrl) {
+        const extractedId = extractYouTubeId(songUrl)
+        if (extractedId) {
+          console.log('Extracted YouTube ID on play click:', extractedId)
+          setYoutubeVideoId(extractedId)
+          // Wait a moment for state to update, then toggle
+          setTimeout(() => setIsPlaying(!isPlaying), 100)
+          return
+        }
+      }
+      
+      console.log('Toggling YouTube playback, current state:', isPlaying, 'videoId:', youtubeVideoId)
       setIsPlaying(!isPlaying)
       return
     }
@@ -230,12 +270,13 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
           </p>
         )}
       </div>
-      {(audioUrl || youtubeVideoId) ? (
+      {/* Always show play button if we have a song URL, even if we can't detect the type yet */}
+      {(audioUrl || youtubeVideoId || songUrl) ? (
         <button
           onClick={handlePlayPause}
           disabled={loading}
           className="p-2 rounded-full bg-primary hover:bg-primary-dark text-white transition-all flex-shrink-0 hover:scale-110 disabled:opacity-50"
-          title={youtubeVideoId ? 'Play YouTube audio' : 'Play audio'}
+          title={youtubeVideoId ? 'Play YouTube audio' : songUrl?.includes('youtube') ? 'Play YouTube audio' : 'Play audio'}
         >
           {loading ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
