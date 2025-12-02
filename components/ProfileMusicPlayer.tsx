@@ -298,17 +298,17 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
           isMuted={isMuted}
           onReady={() => {
             // YouTube player is ready - mark it and trigger auto-play
-            console.log('Profile: YouTube player ready, triggering auto-play for:', songId)
+            console.log('Profile: YouTube player ready for:', songId)
             youtubePlayerReadyRef.current = true
             
-            // Only auto-play if we haven't already attempted and no other song is playing
+            // Only auto-play if we haven't already attempted
             if (!hasAutoPlayedRef.current) {
               hasAutoPlayedRef.current = true
-              // Small delay to ensure everything is set up
+              // Longer delay to ensure player is fully ready
               setTimeout(() => {
                 console.log('Profile: Auto-playing YouTube song:', songId)
                 playSong(songId, startPlayback, stopPlayback)
-              }, 500)
+              }, 1000) // Increased to 1 second for reliability
             }
           }}
           onPlay={() => {

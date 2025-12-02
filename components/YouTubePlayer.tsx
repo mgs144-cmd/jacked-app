@@ -73,77 +73,45 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
         },
         events: {
           onReady: (event: any) => {
-            console.log('YouTube player ready event fired')
-            // Wait a bit for the player methods to actually be available
+            console.log('YouTube player ready event fired', { videoId })
+            // Wait for player methods to be available - use longer delay to ensure reliability
             setTimeout(() => {
-              if (youtubePlayerRef.current && 
-                  typeof youtubePlayerRef.current.playVideo === 'function' &&
+              if (!youtubePlayerRef.current) {
+                console.error('Player ref lost after ready event')
+                return
+              }
+
+              if (typeof youtubePlayerRef.current.playVideo === 'function' &&
                   typeof youtubePlayerRef.current.pauseVideo === 'function') {
                 console.log('YouTube player methods confirmed available')
                 setLoading(false)
                 setError(null)
                 setIsReady(true)
-                setLoading(false) // Player is ready, stop loading
-                isControllingRef.current = false // Reset control flag
+                isControllingRef.current = false
                 // Notify parent that player is ready
                 onReady?.()
-                // If we should be playing, trigger it now that we're ready
-                // This helps with profile auto-play
-                if (isPlaying) {
-                  console.log('Player ready and should be playing, triggering playVideo', { startTime })
-                  // Small delay to ensure everything is set up
-                  setTimeout(() => {
-                    try {
-                      isControllingRef.current = true
-                      // If start time is set, seek to that position first
-                      if (startTime && startTime > 0) {
-                        youtubePlayerRef.current.seekTo(startTime, true)
-                      }
-                      youtubePlayerRef.current.playVideo()
-                    } catch (err) {
-                      console.error('Error playing on ready:', err)
-                    }
-                  }, 100)
-                }
+                // Don't auto-play here - let the parent component control playback
+                // This prevents multiple playback attempts
               } else {
-                console.warn('YouTube player ready but methods not available yet, retrying...')
-                // Retry after another short delay
+                console.warn('YouTube player ready but methods not available, retrying...')
+                // Single retry after a longer delay
                 setTimeout(() => {
-                  if (youtubePlayerRef.current && 
+                  if (youtubePlayerRef.current &&
                       typeof youtubePlayerRef.current.playVideo === 'function' &&
                       typeof youtubePlayerRef.current.pauseVideo === 'function') {
-                    console.log('YouTube player methods now available')
+                    console.log('YouTube player methods now available (after retry)')
                     setLoading(false)
                     setError(null)
                     setIsReady(true)
-                    setLoading(false) // Player is ready, stop loading
                     isControllingRef.current = false
-                    // Notify parent that player is ready
                     onReady?.()
-                    // If we should be playing, trigger it now
-                    if (isPlaying) {
-                      console.log('Player ready (retry) and should be playing, triggering playVideo', { startTime })
-                      // Small delay to ensure everything is set up
-                      setTimeout(() => {
-                        try {
-                          isControllingRef.current = true
-                          // If start time is set, seek to that position first
-                          if (startTime && startTime > 0) {
-                            youtubePlayerRef.current.seekTo(startTime, true)
-                          }
-                          youtubePlayerRef.current.playVideo()
-                        } catch (err) {
-                          console.error('Error playing on ready (retry):', err)
-                        }
-                      }, 100)
-                    }
                   } else {
-                    console.error('YouTube player methods still not available')
-                    setError('YouTube player initialization incomplete')
+                    console.error('YouTube player methods still not available after retry')
+                    setError('Player initialization failed')
                   }
-                }, 500)
+                }, 1000)
               }
-            }, 200)
+            }, 500)
           },
           onError: (event: any) => {
             console.error('YouTube player error:', event.data)
