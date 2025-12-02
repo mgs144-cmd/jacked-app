@@ -120,8 +120,18 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       }
 
       audioRef.current = new Audio(audioUrl || undefined)
-      audioRef.current.volume = 0.7
+      audioRef.current.volume = isMuted ? 0 : 0.7
+      audioRef.current.muted = isMuted
       audioRef.current.crossOrigin = 'anonymous'
+      
+      // Set start time if provided
+      if (startTime && startTime > 0) {
+        audioRef.current.addEventListener('loadedmetadata', () => {
+          if (audioRef.current) {
+            audioRef.current.currentTime = startTime
+          }
+        }, { once: true })
+      }
       
       audioRef.current.onended = () => {
         setIsPlaying(false)
@@ -137,6 +147,10 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       
       audioRef.current.oncanplay = () => {
         setLoading(false)
+        // Set start time after metadata is loaded
+        if (startTime && startTime > 0 && audioRef.current) {
+          audioRef.current.currentTime = startTime
+        }
       }
 
       await audioRef.current.play()
