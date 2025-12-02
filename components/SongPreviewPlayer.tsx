@@ -82,8 +82,10 @@ export function SongPreviewPlayer({ songUrl, spotifyId, startTime, onPreviewEnd 
     }
   }, [songUrl, spotifyId])
 
-  const playAudioPreview = useCallback(async (): Promise<void> => {
-    if (!audioUrl || startTime === null) return
+  const playAudioPreview = useCallback(async () => {
+    if (!audioUrl || startTime === null) {
+      return
+    }
 
     try {
       if (audioRef.current) {
