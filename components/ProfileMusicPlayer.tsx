@@ -23,6 +23,7 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const { currentPlayingId, playSong, stopCurrentSong } = useMusic()
   const songId = `profile-${songUrl || spotifyId || 'unknown'}`
+  const hasAutoPlayedRef = useRef(false) // Track if we've attempted auto-play
 
   // Extract YouTube video ID from URL
   const extractYouTubeId = (url: string): string | null => {
@@ -90,10 +91,10 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
       // For YouTube, set playing state - the YouTubePlayer component will handle actual playback
       // The player's onReady callback will trigger playback when it's actually ready
       setLoading(true)
-      console.log('Profile: Starting YouTube playback, setting isPlaying to true')
+      console.log('Profile: Starting YouTube playback, setting isPlaying to true', { youtubeVideoId, startTime })
       setIsPlaying(true)
-      // Keep loading state until player confirms it's ready
-      // The YouTubePlayer's onReady will handle the actual playback
+      setLoading(false) // Don't keep loading - let YouTube player handle its own loading state
+      // The YouTubePlayer component will handle actual playback via isPlaying prop
       return
     }
 
@@ -162,19 +163,19 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
 
   // Auto-play when profile opens (if song is available)
   useEffect(() => {
-    // Only auto-play once when component mounts with a valid song
-    if ((youtubeVideoId || audioUrl) && currentPlayingId !== songId) {
+    // Only auto-play once when we have a valid song URL and haven't already attempted
+    if ((youtubeVideoId || audioUrl) && !hasAutoPlayedRef.current && currentPlayingId !== songId) {
+      hasAutoPlayedRef.current = true // Mark as attempted
       // Start trying to play - reduced delay for faster response
       const timer = setTimeout(() => {
         if (currentPlayingId !== songId) { // Double check it hasn't changed
-          console.log('Auto-playing profile song:', songId, 'with start time:', startTime)
+          console.log('Auto-playing profile song:', songId, 'with start time:', startTime, 'youtubeVideoId:', youtubeVideoId, 'audioUrl:', audioUrl)
           playSong(songId, startPlayback, stopPlayback)
         }
-      }, 1500) // Reduced to 1.5 seconds for faster auto-play
+      }, 1000) // Reduced to 1 second for faster auto-play
       return () => clearTimeout(timer)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Only run once on mount - don't re-run when song URL changes to prevent re-triggering
+  }, [youtubeVideoId, audioUrl, currentPlayingId, songId, startTime, playSong, startPlayback, stopPlayback])
 
   // Sync with music context - prevent rapid toggling
   useEffect(() => {
@@ -199,15 +200,19 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
     }
   }, [isMuted, youtubeVideoId])
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     console.log('Profile play button clicked', { currentPlayingId, songId, isPlaying, youtubeVideoId, audioUrl })
     if (currentPlayingId === songId && isPlaying) {
       // Currently playing, so stop it
+      console.log('Profile: Stopping playback')
       stopCurrentSong()
     } else {
       // Not playing, so start it
-      console.log('Profile: Calling playSong to start playback')
+      console.log('Profile: Starting playback via playSong')
+      // For immediate feedback, set loading state
+      setLoading(true)
       playSong(songId, startPlayback, stopPlayback)
+      // startPlayback will handle setting loading to false
     }
   }
 
