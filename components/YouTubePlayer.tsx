@@ -8,12 +8,13 @@ interface YouTubePlayerProps {
   isPlaying: boolean
   startTime?: number // Start time in seconds
   isMuted?: boolean // Mute state
+  onReady?: () => void // Callback when player is ready
   onPlay: () => void
   onPause: () => void
   onError?: (error: string) => void
 }
 
-export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, onPlay, onPause, onError }: YouTubePlayerProps) {
+export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, onReady, onPlay, onPause, onError }: YouTubePlayerProps) {
   const playerRef = useRef<HTMLDivElement>(null)
   const youtubePlayerRef = useRef<any>(null)
   const [loading, setLoading] = useState(true)
@@ -78,6 +79,8 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
                 setIsReady(true)
                 setLoading(false) // Player is ready, stop loading
                 isControllingRef.current = false // Reset control flag
+                // Notify parent that player is ready
+                onReady?.()
                 // If we should be playing, trigger it now that we're ready
                 // This helps with profile auto-play
                 if (isPlaying) {
@@ -109,6 +112,8 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
                     setIsReady(true)
                     setLoading(false) // Player is ready, stop loading
                     isControllingRef.current = false
+                    // Notify parent that player is ready
+                    onReady?.()
                     // If we should be playing, trigger it now
                     if (isPlaying) {
                       console.log('Player ready (retry) and should be playing, triggering playVideo', { startTime })
@@ -175,7 +180,7 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
       setError(errorMsg)
       onError?.(errorMsg)
     }
-  }, [videoId, onPlay, onPause, onError])
+  }, [videoId, onReady, onPlay, onPause, onError])
 
   useEffect(() => {
     // Load YouTube iframe API script

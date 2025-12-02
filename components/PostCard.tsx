@@ -133,7 +133,7 @@ export function PostCard({ post }: PostCardProps) {
   const isDeadcemberPost = post.is_deadcember_post
 
   return (
-    <article className={`bg-gray-900/60 rounded-2xl border overflow-hidden card-elevated card-hover backdrop-blur-sm ${
+    <article className={`bg-gray-900/60 rounded-2xl border overflow-hidden card-elevated card-hover backdrop-blur-sm min-h-[300px] ${
       isDeadcemberPost
         ? 'border-primary/80 glow-red-lg bg-gradient-to-br from-red-950/20 via-gray-900/60 to-gray-900/60'
         : isPRPost 

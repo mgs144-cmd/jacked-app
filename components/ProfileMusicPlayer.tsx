@@ -24,6 +24,7 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   const { currentPlayingId, playSong, stopCurrentSong } = useMusic()
   const songId = `profile-${songUrl || spotifyId || 'unknown'}`
   const hasAutoPlayedRef = useRef(false) // Track if we've attempted auto-play
+  const youtubePlayerReadyRef = useRef(false) // Track if YouTube player is ready
 
   // Extract YouTube video ID from URL
   const extractYouTubeId = (url: string): string | null => {
@@ -166,16 +167,28 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
 
   // Auto-play when profile opens (if song is available)
   useEffect(() => {
-    // Only auto-play once when we have a valid song URL and haven't already attempted
-    if ((youtubeVideoId || audioUrl) && !hasAutoPlayedRef.current && currentPlayingId !== songId) {
-      hasAutoPlayedRef.current = true // Mark as attempted
-      // Start trying to play - reduced delay for faster response
+    // For audio files, we can auto-play immediately
+    // For YouTube, we need to wait for the player to be ready
+    if (audioUrl && !hasAutoPlayedRef.current && currentPlayingId !== songId) {
+      hasAutoPlayedRef.current = true
       const timer = setTimeout(() => {
-        if (currentPlayingId !== songId) { // Double check it hasn't changed
-          console.log('Auto-playing profile song:', songId, 'with start time:', startTime, 'youtubeVideoId:', youtubeVideoId, 'audioUrl:', audioUrl)
+        if (currentPlayingId !== songId) {
+          console.log('Auto-playing profile song (audio):', songId)
           playSong(songId, startPlayback, stopPlayback)
         }
-      }, 1000) // Reduced to 1 second for faster auto-play
+      }, 500) // Faster for audio files
+      return () => clearTimeout(timer)
+    }
+    
+    // For YouTube, wait for player to be ready
+    if (youtubeVideoId && !hasAutoPlayedRef.current && currentPlayingId !== songId && youtubePlayerReadyRef.current) {
+      hasAutoPlayedRef.current = true
+      const timer = setTimeout(() => {
+        if (currentPlayingId !== songId) {
+          console.log('Auto-playing profile song (YouTube, player ready):', songId)
+          playSong(songId, startPlayback, stopPlayback)
+        }
+      }, 300) // Small delay even after ready
       return () => clearTimeout(timer)
     }
   }, [youtubeVideoId, audioUrl, currentPlayingId, songId, startTime, playSong, startPlayback, stopPlayback])
@@ -279,6 +292,19 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
           isPlaying={isPlaying}
           startTime={startTime}
           isMuted={isMuted}
+          onReady={() => {
+            // YouTube player is ready - mark it and trigger auto-play if needed
+            youtubePlayerReadyRef.current = true
+            if (!hasAutoPlayedRef.current && currentPlayingId !== songId) {
+              hasAutoPlayedRef.current = true
+              setTimeout(() => {
+                if (currentPlayingId !== songId) {
+                  console.log('Auto-playing profile song (YouTube, onReady callback):', songId)
+                  playSong(songId, startPlayback, stopPlayback)
+                }
+              }, 300)
+            }
+          }}
           onPlay={() => {
             // Only update if not already playing to prevent loops
             if (!isPlaying) {

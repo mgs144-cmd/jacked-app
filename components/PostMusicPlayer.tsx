@@ -176,11 +176,12 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   }, [])
 
   // Intersection Observer for auto-play (Instagram style)
-  // Improved to handle scrolling between posts better
+  // Improved to handle scrolling between posts better, especially on mobile
   useEffect(() => {
     if (!containerRef.current || (!youtubeVideoId && !audioUrl)) return
 
     let timeoutId: NodeJS.Timeout | null = null
+    let lastVisibleRatio = 0
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -193,35 +194,40 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
             timeoutId = null
           }
 
-          // Play if post is sufficiently visible (60%+) and not already playing
-          if (entry.isIntersecting && currentRatio >= 0.6 && currentPlayingId !== songId && !isPlayingRef.current) {
-            // Post is visible - auto-play if not already playing
+          // Only play if post is in the center of viewport (70%+ visible) and more visible than before
+          // This prevents switching between posts when scrolling
+          if (entry.isIntersecting && currentRatio >= 0.7 && currentRatio > lastVisibleRatio && currentPlayingId !== songId && !isPlayingRef.current) {
+            // Post is highly visible and becoming more visible - auto-play if not already playing
             isPlayingRef.current = true // Prevent multiple triggers
+            lastVisibleRatio = currentRatio
             timeoutId = setTimeout(() => {
               // Double-check conditions before playing
-              if (currentPlayingId !== songId && entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+              if (currentPlayingId !== songId && entry.isIntersecting && entry.intersectionRatio >= 0.7) {
+                console.log('Post auto-playing:', songId, 'ratio:', entry.intersectionRatio)
                 playSong(songId, startPlayback, stopPlayback)
               } else {
                 isPlayingRef.current = false // Reset if conditions changed
               }
-            }, 300) // Reduced delay for faster response
-          } else if ((!entry.isIntersecting || currentRatio < 0.3) && currentPlayingId === songId) {
+            }, 400) // Slightly longer delay to prevent rapid switching
+          } else if ((!entry.isIntersecting || currentRatio < 0.2) && currentPlayingId === songId) {
             // Post is not visible or barely visible - stop if this is the current song
             isPlayingRef.current = false // Reset flag
+            lastVisibleRatio = 0
             timeoutId = setTimeout(() => {
               if (currentPlayingId === songId) {
+                console.log('Post stopping (not visible):', songId)
                 stopCurrentSong()
               }
-            }, 300) // Reduced delay
-          } else if (currentRatio < 0.6 && isPlayingRef.current && currentPlayingId !== songId) {
-            // Post became less visible and we're not playing - reset flag
-            isPlayingRef.current = false
+            }, 400) // Slightly longer delay
+          } else if (entry.isIntersecting) {
+            // Update last visible ratio for comparison
+            lastVisibleRatio = currentRatio
           }
         })
       },
       {
-        threshold: [0, 0.3, 0.6, 1], // More granular thresholds
-        rootMargin: '-20% 0px -20% 0px', // Only play when in center 60% of viewport
+        threshold: [0, 0.2, 0.5, 0.7, 1], // More granular thresholds
+        rootMargin: '-30% 0px -30% 0px', // Only play when in center 40% of viewport (stricter)
       }
     )
 
@@ -231,6 +237,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       if (timeoutId) clearTimeout(timeoutId)
       observer.disconnect()
       isPlayingRef.current = false
+      lastVisibleRatio = 0
     }
   }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong, startPlayback, stopPlayback])
 
@@ -255,9 +262,14 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
 
   const handlePlayPause = () => {
-    if (currentPlayingId === songId) {
+    // Manual play should work independently of intersection observer
+    if (currentPlayingId === songId && isPlaying) {
+      console.log('Post: Manual stop')
       stopCurrentSong()
     } else {
+      console.log('Post: Manual play')
+      // Reset intersection observer flag to allow manual play
+      isPlayingRef.current = true
       playSong(songId, startPlayback, stopPlayback)
     }
   }
