@@ -17,7 +17,8 @@ interface PostMusicPlayerProps {
 
 export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, albumArt, postId, startTime }: PostMusicPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
-  const [isMuted, setIsMuted] = useState(false)
+  // Start muted on mobile for autoplay to work
+  const [isMuted, setIsMuted] = useState(typeof window !== 'undefined' && window.innerWidth < 768)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null)
@@ -301,12 +302,14 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   }
 
   const toggleMute = () => {
+    const newMutedState = !isMuted
+    setIsMuted(newMutedState)
+    
     if (audioRef.current) {
-      audioRef.current.muted = !isMuted
-      audioRef.current.volume = !isMuted ? 0.7 : 0
-      setIsMuted(!isMuted)
+      audioRef.current.muted = newMutedState
+      audioRef.current.volume = newMutedState ? 0 : 0.7
     }
-    // Note: YouTube player mute is handled by the YouTubePlayer component
+    // Note: YouTube player mute is handled by the YouTubePlayer component via isMuted prop
   }
 
   // Don't render if no song info
@@ -337,19 +340,17 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
             )}
           </button>
           
-          {isPlaying && (
-            <button
-              onClick={toggleMute}
-              className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-all flex-shrink-0 hover:scale-110"
-              title={isMuted ? 'Unmute' : 'Mute'}
-            >
-              {isMuted ? (
-                <VolumeX className="w-4 h-4" />
-              ) : (
-                <Volume2 className="w-4 h-4" />
-              )}
-            </button>
-          )}
+          <button
+            onClick={toggleMute}
+            className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-all flex-shrink-0 hover:scale-110"
+            title={isMuted ? 'Unmute' : 'Mute'}
+          >
+            {isMuted ? (
+              <VolumeX className="w-4 h-4" />
+            ) : (
+              <Volume2 className="w-4 h-4" />
+            )}
+          </button>
         </div>
       ) : null}
       <audio 

@@ -16,7 +16,8 @@ interface ProfileMusicPlayerProps {
 
 export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, albumArt, startTime }: ProfileMusicPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
-  const [isMuted, setIsMuted] = useState(false)
+  // Start muted on mobile for autoplay to work
+  const [isMuted, setIsMuted] = useState(typeof window !== 'undefined' && window.innerWidth < 768)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null)
@@ -94,12 +95,9 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   const startPlayback = useCallback(async () => {
     if (youtubeVideoId) {
       // For YouTube, set playing state - the YouTubePlayer component will handle actual playback
-      // The player's onReady callback will trigger playback when it's actually ready
-      setLoading(true)
-      console.log('Profile: Starting YouTube playback, setting isPlaying to true', { youtubeVideoId, startTime })
+      console.log('Profile: Starting YouTube playback', { songId, youtubeVideoId, startTime })
       setIsPlaying(true)
-      setLoading(false) // Don't keep loading - let YouTube player handle its own loading state
-      // The YouTubePlayer component will handle actual playback via isPlaying prop
+      setLoading(false)
       return
     }
 
@@ -263,19 +261,17 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
               )}
             </button>
 
-            {isPlaying && (
-              <button
-                onClick={toggleMute}
-                className="w-7 h-7 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all flex-shrink-0"
-                aria-label={isMuted ? 'Unmute' : 'Mute'}
-              >
-                {isMuted ? (
-                  <VolumeX className="w-3.5 h-3.5 text-gray-400" />
-                ) : (
-                  <Volume2 className="w-3.5 h-3.5 text-gray-400" />
-                )}
-              </button>
-            )}
+            <button
+              onClick={toggleMute}
+              className="w-7 h-7 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all flex-shrink-0"
+              aria-label={isMuted ? 'Unmute' : 'Mute'}
+            >
+              {isMuted ? (
+                <VolumeX className="w-3.5 h-3.5 text-gray-400" />
+              ) : (
+                <Volume2 className="w-3.5 h-3.5 text-gray-400" />
+              )}
+            </button>
           </div>
         ) : null}
       </div>
