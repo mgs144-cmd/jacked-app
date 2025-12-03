@@ -25,6 +25,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const isPlayingRef = useRef(false) // Track if we've triggered playback to prevent flashing
+  const isControllingRef = useRef(false) // Track if we're programmatically controlling playback
   const { currentPlayingId, playSong, stopCurrentSong } = useMusic()
   
   // Generate unique song ID for this post
