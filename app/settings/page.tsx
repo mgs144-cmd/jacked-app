@@ -356,8 +356,13 @@ export default function SettingsPage() {
                         min="0"
                         value={songStartTime || ''}
                         onChange={(e) => {
-                          const value = e.target.value ? parseInt(e.target.value) : null
-                          setSongStartTime(value)
+                          const inputValue = e.target.value.trim()
+                          if (inputValue === '') {
+                            setSongStartTime(null)
+                          } else {
+                            const parsed = parseInt(inputValue, 10)
+                            setSongStartTime(isNaN(parsed) ? null : parsed)
+                          }
                         }}
                         className="input-field flex-1"
                         placeholder="0 (start from beginning)"

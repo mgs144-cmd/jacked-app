@@ -83,7 +83,7 @@ export function SongPreviewPlayer({ songUrl, spotifyId, startTime, onPreviewEnd 
   }, [songUrl, spotifyId])
 
   const playAudioPreview = useCallback(async () => {
-    if (!audioUrl || startTime === null) {
+    if (!audioUrl || startTime === null || isNaN(startTime)) {
       return
     }
 
@@ -130,7 +130,7 @@ export function SongPreviewPlayer({ songUrl, spotifyId, startTime, onPreviewEnd 
 
   // Auto-play preview when startTime changes
   useEffect(() => {
-    if (startTime === null || startTime === undefined || startTime < 0) return
+    if (startTime === null || startTime === undefined || isNaN(startTime) || startTime < 0) return
     if (!youtubeVideoId && !audioUrl) return
 
     // Stop any current playback
@@ -166,7 +166,7 @@ export function SongPreviewPlayer({ songUrl, spotifyId, startTime, onPreviewEnd 
   return (
     <div style={{ display: 'none' }}>
       <audio ref={audioRef} src={audioUrl || undefined} />
-      {youtubeVideoId && startTime !== null && startTime >= 0 && (
+      {youtubeVideoId && startTime !== null && !isNaN(startTime) && startTime >= 0 && (
         <YouTubePlayer
           videoId={youtubeVideoId}
           isPlaying={isPlaying}
