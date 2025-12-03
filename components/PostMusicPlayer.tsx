@@ -17,8 +17,8 @@ interface PostMusicPlayerProps {
 
 export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, albumArt, postId, startTime }: PostMusicPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
-  // Start muted on mobile for autoplay to work
-  const [isMuted, setIsMuted] = useState(typeof window !== 'undefined' && window.innerWidth < 768)
+  // Start unmuted - user can mute if needed
+  const [isMuted, setIsMuted] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null)

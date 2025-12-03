@@ -108,13 +108,24 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
     const timeout = setTimeout(() => {
       try {
         if (isPlaying) {
+          console.log('YouTube: Attempting to play', videoId, 'isMuted:', isMuted)
+          // Set mute state first
+          if (isMuted && typeof player.mute === 'function') {
+            player.mute()
+          } else if (!isMuted && typeof player.unMute === 'function') {
+            player.unMute()
+          }
+          
+          // Then seek and play
           if (startTime && startTime > 0 && typeof player.seekTo === 'function') {
             player.seekTo(startTime, true)
           }
           if (typeof player.playVideo === 'function') {
             player.playVideo()
+            console.log('YouTube: playVideo() called')
           }
         } else {
+          console.log('YouTube: Pausing', videoId)
           if (typeof player.pauseVideo === 'function') {
             player.pauseVideo()
           }
@@ -122,30 +133,32 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
       } catch (err) {
         console.error('Error controlling player:', err)
       }
-    }, 100)
+    }, 200)
 
     return () => clearTimeout(timeout)
-  }, [isPlaying, isReady, startTime])
+  }, [isPlaying, isReady, startTime, videoId, isMuted])
 
-  // Handle mute
+  // Handle mute changes (separate from playback to avoid conflicts)
   useEffect(() => {
-    if (!isReady || !youtubePlayerRef.current) return
+    if (!isReady || !youtubePlayerRef.current || !isPlaying) return
 
     const player = youtubePlayerRef.current
     const timeout = setTimeout(() => {
       try {
         if (isMuted && typeof player.mute === 'function') {
+          console.log('YouTube: Muting', videoId)
           player.mute()
         } else if (!isMuted && typeof player.unMute === 'function') {
+          console.log('YouTube: Unmuting', videoId)
           player.unMute()
         }
       } catch (err) {
-        // Ignore mute errors
+        console.error('Error muting/unmuting:', err)
       }
     }, 100)
 
     return () => clearTimeout(timeout)
-  }, [isMuted, isReady])
+  }, [isMuted, isReady, isPlaying, videoId])
 
   return (
     <div 
