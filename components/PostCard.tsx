@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import { Heart, MessageCircle, MoreVertical, Crown, Trash2, Trophy, Globe, Lock, Edit } from 'lucide-react'
+import { Heart, MessageCircle, MoreVertical, Crown, Trash2, Trophy, Globe, Lock, Edit, Archive, ArchiveRestore } from 'lucide-react'
 import { PostMusicPlayer } from './PostMusicPlayer'
 import { WorkoutDetails } from './WorkoutDetails'
 import { formatDistanceToNow } from 'date-fns'
@@ -26,6 +26,8 @@ export function PostCard({ post }: PostCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isPrivate, setIsPrivate] = useState(post.is_private || false)
   const [isUpdatingPrivacy, setIsUpdatingPrivacy] = useState(false)
+  const [isArchived, setIsArchived] = useState(post.is_archived || false)
+  const [isArchiving, setIsArchiving] = useState(false)
 
   // Handle profile data - could be object, array, or null
   // Check both post.profile (normalized) and post.profiles (raw)
@@ -126,6 +128,31 @@ export function PostCard({ post }: PostCardProps) {
       alert('Failed to update privacy setting')
     } finally {
       setIsUpdatingPrivacy(false)
+    }
+  }
+
+  const handleToggleArchive = async () => {
+    if (!isOwner || !user || isArchiving) return
+
+    setIsArchiving(true)
+    const newArchiveState = !isArchived
+
+    try {
+      const { error } = await (supabase.from('posts') as any)
+        .update({ is_archived: newArchiveState })
+        .eq('id', post.id)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      setIsArchived(newArchiveState)
+      setShowMenu(false)
+      router.refresh()
+    } catch (error) {
+      console.error('Error archiving post:', error)
+      alert('Failed to archive post')
+    } finally {
+      setIsArchiving(false)
     }
   }
 
@@ -236,6 +263,29 @@ export function PostCard({ post }: PostCardProps) {
                   </div>
                   <span className="text-xs text-gray-400">
                     {isUpdatingPrivacy ? 'Updating...' : 'Change'}
+                  </span>
+                </button>
+                <div className="h-px bg-gray-800"></div>
+                <button
+                  onClick={handleToggleArchive}
+                  disabled={isArchiving}
+                  className="w-full px-4 py-3 text-left text-white hover:bg-gray-800/60 transition-colors flex items-center justify-between disabled:opacity-50"
+                >
+                  <div className="flex items-center space-x-2">
+                    {isArchived ? (
+                      <>
+                        <ArchiveRestore className="w-4 h-4" />
+                        <span className="font-semibold">Unarchive</span>
+                      </>
+                    ) : (
+                      <>
+                        <Archive className="w-4 h-4" />
+                        <span className="font-semibold">Archive</span>
+                      </>
+                    )}
+                  </div>
+                  <span className="text-xs text-gray-400">
+                    {isArchiving ? 'Updating...' : ''}
                   </span>
                 </button>
                 <div className="h-px bg-gray-800"></div>

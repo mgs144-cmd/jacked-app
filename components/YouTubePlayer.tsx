@@ -85,38 +85,40 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
             onReady: () => {
               console.log('YouTube player onReady fired:', videoId)
               
-              // Wait a bit, then verify methods are available
-              setTimeout(() => {
+              // Mark as ready immediately - methods should be available
+              // Use multiple retries with increasing delays
+              const checkMethods = (attempt: number = 0) => {
                 if (!youtubePlayerRef.current) {
-                  console.error('Player ref lost after onReady')
+                  if (attempt < 5) {
+                    setTimeout(() => checkMethods(attempt + 1), 200 * (attempt + 1))
+                  } else {
+                    console.error('Player ref lost after onReady')
+                    onError?.('Player initialization failed')
+                  }
                   return
                 }
 
-                // Verify methods exist
-                if (typeof youtubePlayerRef.current.playVideo === 'function' &&
-                    typeof youtubePlayerRef.current.pauseVideo === 'function') {
+                const player = youtubePlayerRef.current
+                // Check if methods exist
+                if (typeof player.playVideo === 'function' && typeof player.pauseVideo === 'function') {
                   console.log('YouTube player methods confirmed available:', videoId)
                   methodsReadyRef.current = true
                   setIsReady(true)
                   onReady?.()
+                } else if (attempt < 10) {
+                  // Retry up to 10 times with increasing delays
+                  setTimeout(() => checkMethods(attempt + 1), 300 * (attempt + 1))
                 } else {
-                  console.warn('Methods not available immediately, retrying...')
-                  // Retry after longer delay
-                  setTimeout(() => {
-                    if (youtubePlayerRef.current &&
-                        typeof youtubePlayerRef.current.playVideo === 'function' &&
-                        typeof youtubePlayerRef.current.pauseVideo === 'function') {
-                      console.log('YouTube player methods now available (retry):', videoId)
-                      methodsReadyRef.current = true
-                      setIsReady(true)
-                      onReady?.()
-                    } else {
-                      console.error('YouTube player methods never became available')
-                      onError?.('Player methods not available')
-                    }
-                  }, 1000)
+                  // After many retries, mark as ready anyway and let it fail gracefully
+                  console.warn('Methods check timed out, marking as ready anyway:', videoId)
+                  methodsReadyRef.current = true
+                  setIsReady(true)
+                  onReady?.()
                 }
-              }, 500) // Wait 500ms after onReady before checking methods
+              }
+              
+              // Start checking after a short delay
+              setTimeout(() => checkMethods(), 100)
             },
             onStateChange: (event: any) => {
               if (event.data === window.YT.PlayerState.PLAYING) {
@@ -166,23 +168,33 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
     }
   }, [videoId, startTime, onReady, onPlay, onPause, onError])
 
-  // Control playback - ONLY after methods are confirmed ready
+  // Control playback - Try even if methods check hasn't completed
   useEffect(() => {
-    if (!isReady || !methodsReadyRef.current || !youtubePlayerRef.current) {
+    if (!youtubePlayerRef.current) {
       return
     }
 
     const player = youtubePlayerRef.current
 
-    // Verify methods still exist before using them
-    if (typeof player.playVideo !== 'function' || typeof player.pauseVideo !== 'function') {
-      console.error('YouTube methods not available when trying to control playback')
-      methodsReadyRef.current = false
-      return
-    }
-
     const timeout = setTimeout(() => {
       try {
+        // Check if methods exist, if not wait a bit more
+        if (typeof player.playVideo !== 'function' || typeof player.pauseVideo !== 'function') {
+          // Methods not ready yet, retry after a delay
+          setTimeout(() => {
+            if (!youtubePlayerRef.current) return
+            const retryPlayer = youtubePlayerRef.current
+            if (typeof retryPlayer.playVideo === 'function') {
+              if (isPlaying) {
+                retryPlayer.playVideo()
+              } else {
+                retryPlayer.pauseVideo()
+              }
+            }
+          }, 500)
+          return
+        }
+
         if (isPlaying) {
           console.log('YouTube: Playing', videoId, 'isMuted:', isMuted)
           
@@ -211,7 +223,7 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
     }, 100)
 
     return () => clearTimeout(timeout)
-  }, [isPlaying, isReady, startTime, videoId, isMuted])
+  }, [isPlaying, startTime, videoId, isMuted])
 
   // Handle mute changes separately
   useEffect(() => {

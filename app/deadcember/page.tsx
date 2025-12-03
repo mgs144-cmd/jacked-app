@@ -26,6 +26,7 @@ export default async function DeadcemberPage() {
       workout_exercises(*)
     `)
     .eq('is_deadcember_post', true)
+    .or('is_archived.is.null,is_archived.eq.false')
     .order('deadcember_volume', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false })
     .limit(50)

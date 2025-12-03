@@ -207,14 +207,9 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     setTimeout(() => { isControllingRef.current = false }, 100) // Reset after state update
   }, [])
 
-  // Detect mobile device
-  const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-
   // Intersection observer for auto-play (Instagram style)
-  // DISABLED on mobile - requires user interaction
+  // Note: Autoplay may be blocked by browser policies, but we try anyway
   useEffect(() => {
-    // Don't autoplay on mobile - requires user interaction
-    if (isMobile) return
     
     if (!containerRef.current || (!youtubeVideoId && !audioUrl)) return
 
@@ -271,7 +266,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       lastRatio = 0
       isStable = false
     }
-  }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong, startPlayback, stopPlayback, isMobile])
+  }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong, startPlayback, stopPlayback])
 
   // Sync with music context - actually start/stop playback
   useEffect(() => {

@@ -8,8 +8,9 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(searchParams.get('limit') || '20')
 
   if (!GIPHY_API_KEY) {
+    console.error('GIPHY_API_KEY not set in environment variables')
     return NextResponse.json(
-      { error: 'GIPHY API key not configured' },
+      { error: 'GIPHY API key not configured. Please set GIPHY_API_KEY in your environment variables.' },
       { status: 500 }
     )
   }

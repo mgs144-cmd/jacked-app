@@ -22,7 +22,7 @@ export default async function FeedPage() {
 
   const followingIds = following?.map((f: any) => f.following_id) || []
   
-  // 1. Get posts from followed users (prioritized)
+  // 1. Get posts from followed users (prioritized) - exclude archived
   const { data: followingPosts } = await supabase
     .from('posts')
     .select(`
@@ -33,10 +33,11 @@ export default async function FeedPage() {
       workout_exercises(*)
     `)
     .in('user_id', [...followingIds, session.user.id])
+    .or(`is_archived.is.null,is_archived.eq.false,user_id.eq.${session.user.id}`)
     .order('created_at', { ascending: false })
     .limit(30)
 
-  // 2. Get public posts from non-followed users
+  // 2. Get public posts from non-followed users - exclude archived
   const { data: publicPosts } = await supabase
     .from('posts')
     .select(`
@@ -48,6 +49,7 @@ export default async function FeedPage() {
     `)
     .not('user_id', 'in', `(${[session.user.id, ...followingIds].join(',')})`)
     .eq('is_private', false)
+    .or('is_archived.is.null,is_archived.eq.false')
     .order('created_at', { ascending: false })
     .limit(20)
 

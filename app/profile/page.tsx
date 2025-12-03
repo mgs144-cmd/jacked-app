@@ -38,6 +38,7 @@ export default async function ProfilePage() {
     .select('*', { count: 'exact', head: true })
     .eq('follower_id', session.user.id)
 
+  // Get all posts including archived (user can see their own archived posts)
   const { data: posts } = await supabase
     .from('posts')
     .select(`
@@ -49,6 +50,9 @@ export default async function ProfilePage() {
     `)
     .eq('user_id', session.user.id)
     .order('created_at', { ascending: false })
+  
+  // Filter out archived posts from display (but keep them in data for archive page later)
+  const visiblePosts = posts?.filter((p: any) => !p.is_archived) || []
 
   // Get PRs
   const { data: prs } = await supabase
@@ -80,7 +84,7 @@ export default async function ProfilePage() {
   })
   const hasDeadcemberEntries = deadcemberTotal && deadcemberTotal > 0
 
-  const postsWithCounts = posts?.map((post: any) => ({
+  const postsWithCounts = visiblePosts.map((post: any) => ({
     ...post,
     like_count: Array.isArray(post.likes) ? post.likes.length : 0,
     comment_count: Array.isArray(post.comments) ? post.comments.length : 0,
