@@ -182,15 +182,15 @@ export default async function ProfilePage() {
                 {!(profile as any)?.hide_follower_count && (
                   <>
                     <div className="h-10 w-px bg-gray-800"></div>
-                    <div>
+                    <Link href={`/user/${session.user.id}/followers`} className="hover:opacity-80 transition-opacity">
                       <p className="text-2xl font-black text-white">{followerCount || 0}</p>
                       <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWERS</p>
-                    </div>
+                    </Link>
                     <div className="h-10 w-px bg-gray-800"></div>
-                    <div>
+                    <Link href={`/user/${session.user.id}/following`} className="hover:opacity-80 transition-opacity">
                       <p className="text-2xl font-black text-white">{followingCount || 0}</p>
                       <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWING</p>
-                    </div>
+                    </Link>
                   </>
                 )}
               </div>

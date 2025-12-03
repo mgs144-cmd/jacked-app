@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { Heart, MessageCircle, MoreVertical, Crown, Trash2, Trophy, Globe, Lock, Edit, Archive, ArchiveRestore } from 'lucide-react'
 import { PostMusicPlayer } from './PostMusicPlayer'
 import { WorkoutDetails } from './WorkoutDetails'
+import { LikesModal } from './LikesModal'
 import { formatDistanceToNow } from 'date-fns'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
@@ -28,6 +29,7 @@ export function PostCard({ post }: PostCardProps) {
   const [isUpdatingPrivacy, setIsUpdatingPrivacy] = useState(false)
   const [isArchived, setIsArchived] = useState(post.is_archived || false)
   const [isArchiving, setIsArchiving] = useState(false)
+  const [showLikesModal, setShowLikesModal] = useState(false)
 
   // Handle profile data - could be object, array, or null
   // Check both post.profile (normalized) and post.profiles (raw)
@@ -437,7 +439,7 @@ export function PostCard({ post }: PostCardProps) {
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  // TODO: Show who liked modal
+                  setShowLikesModal(true)
                 }}
                 className="font-bold text-sm hover:underline"
               >
@@ -495,6 +497,13 @@ export function PostCard({ post }: PostCardProps) {
           )}
         </div>
       )}
+
+      {/* Likes Modal */}
+      <LikesModal
+        postId={post.id}
+        isOpen={showLikesModal}
+        onClose={() => setShowLikesModal(false)}
+      />
     </article>
   )
 }

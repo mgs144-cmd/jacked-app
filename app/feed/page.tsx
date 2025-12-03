@@ -33,7 +33,7 @@ export default async function FeedPage() {
       workout_exercises(*)
     `)
     .in('user_id', [...followingIds, session.user.id])
-    .or(`is_archived.is.null,is_archived.eq.false,user_id.eq.${session.user.id}`)
+    .or(`is_archived.is.null,is_archived.eq.false`)
     .order('created_at', { ascending: false })
     .limit(30)
 
