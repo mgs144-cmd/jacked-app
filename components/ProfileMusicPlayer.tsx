@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react'
+import { Play, Pause, Volume2, VolumeX, AlertCircle, RefreshCw } from 'lucide-react'
 import { YouTubePlayer } from './YouTubePlayer'
 import { useMusic } from '@/app/providers/MusicProvider'
 
@@ -20,6 +20,8 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   const [isMuted, setIsMuted] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [youtubeLoading, setYoutubeLoading] = useState(false)
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const { currentPlayingId, playSong, stopCurrentSong } = useMusic()
@@ -93,9 +95,11 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   }, [songUrl, spotifyId])
 
   const startPlayback = useCallback(async () => {
+    setError(null) // Clear any previous errors
     if (youtubeVideoId) {
       console.log('Profile: Starting YouTube playback', { songId, youtubeVideoId, startTime, isMuted })
-      setLoading(false)
+      setLoading(true)
+      setYoutubeLoading(true)
       // For YouTube, set isPlaying to true - YouTube player will handle actual playback via isPlaying prop
       // Wait a bit to ensure player is ready (especially on mobile)
       setTimeout(() => {
@@ -152,6 +156,7 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
         console.error('Profile: Audio error')
         setIsPlaying(false)
         setLoading(false)
+        setError('Failed to load audio. Please try again.')
         stopCurrentSong()
       }
       
@@ -166,7 +171,13 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
         audio.play().catch((err) => {
           console.error('Profile: Play failed:', err)
           setLoading(false)
+          setError('Playback failed. Please tap play again.')
         })
+      }, { once: true })
+      
+      audio.addEventListener('error', () => {
+        setError('Failed to load audio. Please check your connection.')
+        setLoading(false)
       }, { once: true })
       
       // Also try to load immediately
@@ -266,35 +277,70 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
     // Note: YouTube mute is handled by the YouTubePlayer component via isMuted prop
   }
 
+  const handleRetry = () => {
+    setError(null)
+    setLoading(true)
+    if (youtubeVideoId) {
+      setIsPlaying(true)
+    } else if (audioUrl) {
+      startPlayback()
+    }
+  }
+
+  const isLoading = loading || youtubeLoading
+
   return (
     <div className="bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-2.5">
       <div className="flex items-center space-x-3">
         <div className="flex-1 min-w-0">
           <p className="text-white font-semibold text-xs truncate">{songTitle}</p>
           <p className="text-gray-400 text-[10px] truncate">{songArtist}</p>
+          {error && (
+            <div className="mt-1 flex items-center space-x-1.5 text-red-400 text-[10px]">
+              <AlertCircle className="w-2.5 h-2.5 flex-shrink-0" />
+              <span className="truncate">{error}</span>
+            </div>
+          )}
+          {isLoading && !error && (
+            <p className="mt-1 text-gray-500 text-[10px]">Loading...</p>
+          )}
         </div>
 
         {(audioUrl || youtubeVideoId) ? (
           <div className="flex items-center space-x-1.5">
-            <button
-              onClick={togglePlay}
-              disabled={loading}
-              className="w-7 h-7 rounded-lg bg-primary hover:bg-primary-dark flex items-center justify-center transition-all flex-shrink-0 disabled:opacity-50"
-              aria-label={isPlaying ? 'Pause' : 'Play'}
-            >
-              {loading ? (
-                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : isPlaying ? (
-                <Pause className="w-3.5 h-3.5 text-white fill-current" />
-              ) : (
-                <Play className="w-3.5 h-3.5 text-white fill-current" />
-              )}
-            </button>
+            {error ? (
+              <button
+                onClick={handleRetry}
+                className="w-7 h-7 rounded-lg bg-primary hover:bg-primary-dark flex items-center justify-center transition-all flex-shrink-0 active:scale-95"
+                title="Retry playback"
+                aria-label="Retry playback"
+              >
+                <RefreshCw className="w-3 h-3 text-white" />
+              </button>
+            ) : (
+              <button
+                onClick={togglePlay}
+                disabled={isLoading}
+                className="w-7 h-7 rounded-lg bg-primary hover:bg-primary-dark flex items-center justify-center transition-all flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-md shadow-primary/20"
+                aria-label={isPlaying ? 'Pause' : isLoading ? 'Loading...' : 'Play'}
+                title={isPlaying ? 'Pause' : isLoading ? 'Loading...' : 'Play'}
+              >
+                {isLoading ? (
+                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : isPlaying ? (
+                  <Pause className="w-3.5 h-3.5 text-white fill-current" />
+                ) : (
+                  <Play className="w-3.5 h-3.5 text-white fill-current ml-0.5" />
+                )}
+              </button>
+            )}
 
             <button
               onClick={toggleMute}
-              className="w-7 h-7 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all flex-shrink-0"
+              disabled={!!error}
+              className="w-7 h-7 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all flex-shrink-0 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label={isMuted ? 'Unmute' : 'Mute'}
+              title={isMuted ? 'Unmute' : 'Mute'}
             >
               {isMuted ? (
                 <VolumeX className="w-3.5 h-3.5 text-gray-400" />
@@ -318,11 +364,19 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
           isPlaying={isPlaying}
           startTime={startTime}
           isMuted={isMuted}
+          onLoadingChange={(isLoading) => {
+            setYoutubeLoading(isLoading)
+            if (!isLoading) {
+              setLoading(false)
+            }
+          }}
           onReady={() => {
             // YouTube player is ready
             console.log('Profile: YouTube player ready for:', songId)
             youtubePlayerReadyRef.current = true
             setLoading(false)
+            setYoutubeLoading(false)
+            setError(null)
             // If we should be playing, trigger it now
             if (currentPlayingId === songId && !isPlaying) {
               console.log('Profile: Player ready and should be playing, starting playback')
@@ -335,15 +389,19 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
             console.log('Profile: YouTube onPlay event')
             setIsPlaying(true)
             setLoading(false)
+            setYoutubeLoading(false)
+            setError(null)
           }}
           onPause={() => {
             console.log('Profile: YouTube onPause event')
             setIsPlaying(false)
           }}
-          onError={(error) => {
-            console.error('YouTube player error:', error)
+          onError={(errorMsg) => {
+            console.error('YouTube player error:', errorMsg)
             setLoading(false)
+            setYoutubeLoading(false)
             setIsPlaying(false)
+            setError(errorMsg || 'Failed to play video. Please try again.')
             stopCurrentSong()
           }}
         />

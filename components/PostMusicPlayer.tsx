@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback, useRef as useRefAlias } from 'react'
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react'
+import { Play, Pause, Volume2, VolumeX, AlertCircle, RefreshCw } from 'lucide-react'
 import { YouTubePlayer } from './YouTubePlayer'
 import { useMusic } from '@/app/providers/MusicProvider'
 
@@ -21,6 +21,8 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   const [isMuted, setIsMuted] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [youtubeLoading, setYoutubeLoading] = useState(false)
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -108,9 +110,11 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
 
   // Play function - simplified for reliability
   const startPlayback = useCallback(async () => {
+    setError(null) // Clear any previous errors
     if (youtubeVideoId) {
       console.log('Post: Starting YouTube playback', { songId, youtubeVideoId, startTime, isMuted })
-      setLoading(false)
+      setLoading(true)
+      setYoutubeLoading(true)
       // For YouTube, set isPlaying to true - YouTube player will handle actual playback via isPlaying prop
       // Wait a bit to ensure player is ready (especially on mobile)
       setTimeout(() => {
@@ -169,6 +173,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
         console.error('Post: Audio error')
         setIsPlaying(false)
         setLoading(false)
+        setError('Failed to load audio. Please try again.')
         stopCurrentSong()
       }
       
@@ -183,7 +188,13 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
         audio.play().catch((err) => {
           console.error('Post: Play failed:', err)
           setLoading(false)
+          setError('Playback failed. Please tap play again.')
         })
+      }, { once: true })
+      
+      audio.addEventListener('error', () => {
+        setError('Failed to load audio. Please check your connection.')
+        setLoading(false)
       }, { once: true })
       
       // Also try to load immediately
@@ -332,42 +343,79 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     return null
   }
 
+  const handleRetry = () => {
+    setError(null)
+    setLoading(true)
+    if (youtubeVideoId) {
+      setIsPlaying(true)
+    } else if (audioUrl) {
+      startPlayback()
+    }
+  }
+
+  const isLoading = loading || youtubeLoading
+
   return (
-    <div ref={containerRef} className="px-5 py-3 bg-gray-800/40 border-b border-gray-800/40 flex items-center space-x-3">
-      <div className="flex-1 min-w-0">
-        <p className="text-white font-bold text-sm truncate">{songTitle || 'Unknown'}</p>
-        <p className="text-gray-400 text-xs truncate">{songArtist || 'Unknown'}</p>
-      </div>
-      {(audioUrl || youtubeVideoId || songUrl) ? (
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={handlePlayPause}
-            disabled={loading}
-            className="p-2 rounded-full bg-primary hover:bg-primary-dark text-white transition-all flex-shrink-0 hover:scale-110 disabled:opacity-50"
-            title={isPlaying ? 'Pause' : 'Play'}
-          >
-            {loading ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : isPlaying ? (
-              <Pause className="w-4 h-4" />
-            ) : (
-              <Play className="w-4 h-4" />
-            )}
-          </button>
-          
-          <button
-            onClick={toggleMute}
-            className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-all flex-shrink-0 hover:scale-110"
-            title={isMuted ? 'Unmute' : 'Mute'}
-          >
-            {isMuted ? (
-              <VolumeX className="w-4 h-4" />
-            ) : (
-              <Volume2 className="w-4 h-4" />
-            )}
-          </button>
+    <div ref={containerRef} className="px-5 py-3 bg-gray-800/40 border-b border-gray-800/40">
+      <div className="flex items-center space-x-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-white font-bold text-sm truncate">{songTitle || 'Unknown'}</p>
+          <p className="text-gray-400 text-xs truncate">{songArtist || 'Unknown'}</p>
+          {error && (
+            <div className="mt-1.5 flex items-center space-x-2 text-red-400 text-xs">
+              <AlertCircle className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{error}</span>
+            </div>
+          )}
+          {isLoading && !error && (
+            <p className="mt-1.5 text-gray-500 text-xs">Loading...</p>
+          )}
         </div>
-      ) : null}
+        {(audioUrl || youtubeVideoId || songUrl) ? (
+          <div className="flex items-center space-x-2">
+            {error ? (
+              <button
+                onClick={handleRetry}
+                className="p-2 rounded-full bg-primary hover:bg-primary-dark text-white transition-all flex-shrink-0 hover:scale-110 flex items-center space-x-1.5"
+                title="Retry playback"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span className="text-xs font-medium">Retry</span>
+              </button>
+            ) : (
+              <button
+                onClick={handlePlayPause}
+                disabled={isLoading}
+                className="p-2.5 rounded-full bg-primary hover:bg-primary-dark text-white transition-all flex-shrink-0 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-lg shadow-primary/20"
+                title={isPlaying ? 'Pause' : isLoading ? 'Loading...' : 'Play'}
+                aria-label={isPlaying ? 'Pause' : 'Play'}
+              >
+                {isLoading ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : isPlaying ? (
+                  <Pause className="w-4 h-4 fill-current" />
+                ) : (
+                  <Play className="w-4 h-4 fill-current ml-0.5" />
+                )}
+              </button>
+            )}
+            
+            <button
+              onClick={toggleMute}
+              disabled={!!error}
+              className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-all flex-shrink-0 hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              title={isMuted ? 'Unmute' : 'Mute'}
+              aria-label={isMuted ? 'Unmute' : 'Mute'}
+            >
+              {isMuted ? (
+                <VolumeX className="w-4 h-4" />
+              ) : (
+                <Volume2 className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+        ) : null}
+      </div>
       <audio 
         ref={audioRef} 
         src={audioUrl || undefined} 
@@ -381,9 +429,17 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
           isPlaying={isPlaying}
           startTime={startTime}
           isMuted={isMuted}
+          onLoadingChange={(isLoading) => {
+            setYoutubeLoading(isLoading)
+            if (!isLoading) {
+              setLoading(false)
+            }
+          }}
           onReady={() => {
             console.log('Post: YouTube player ready', { songId, youtubeVideoId })
             setLoading(false)
+            setYoutubeLoading(false)
+            setError(null)
             // If we should be playing, trigger it now that player is ready
             if (currentPlayingId === songId && !isPlaying) {
               console.log('Post: Player ready and should be playing, setting isPlaying')
@@ -396,15 +452,19 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
             console.log('Post: YouTube onPlay event')
             setIsPlaying(true)
             setLoading(false)
+            setYoutubeLoading(false)
+            setError(null)
           }}
           onPause={() => {
             console.log('Post: YouTube onPause event')
             setIsPlaying(false)
           }}
-          onError={(error) => {
-            console.error('Post: YouTube player error:', error)
+          onError={(errorMsg) => {
+            console.error('Post: YouTube player error:', errorMsg)
             setLoading(false)
+            setYoutubeLoading(false)
             setIsPlaying(false)
+            setError(errorMsg || 'Failed to play video. Please try again.')
             stopCurrentSong()
           }}
         />

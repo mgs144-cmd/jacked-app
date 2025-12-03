@@ -11,12 +11,14 @@ interface YouTubePlayerProps {
   onPlay: () => void
   onPause: () => void
   onError?: (error: string) => void
+  onLoadingChange?: (isLoading: boolean) => void
 }
 
-export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, onReady, onPlay, onPause, onError }: YouTubePlayerProps) {
+export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, onReady, onPlay, onPause, onError, onLoadingChange }: YouTubePlayerProps) {
   const playerRef = useRef<HTMLDivElement>(null)
   const youtubePlayerRef = useRef<any>(null)
   const [isReady, setIsReady] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const methodsReadyRef = useRef(false) // Track if methods are actually available
 
   useEffect(() => {
@@ -65,7 +67,9 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
 
       // Reset ready states
       setIsReady(false)
+      setIsLoading(true)
       methodsReadyRef.current = false
+      onLoadingChange?.(true)
 
       try {
         youtubePlayerRef.current = new window.YT.Player(containerElement, {
@@ -105,6 +109,8 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
                   console.log('YouTube player methods confirmed available:', videoId)
                   methodsReadyRef.current = true
                   setIsReady(true)
+                  setIsLoading(false)
+                  onLoadingChange?.(false)
                   onReady?.()
                 } else if (attempt < 10) {
                   // Retry up to 10 times with increasing delays
@@ -114,6 +120,8 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
                   console.warn('Methods check timed out, marking as ready anyway:', videoId)
                   methodsReadyRef.current = true
                   setIsReady(true)
+                  setIsLoading(false)
+                  onLoadingChange?.(false)
                   onReady?.()
                 }
               }
@@ -130,12 +138,24 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
             },
             onError: (event: any) => {
               console.error('YouTube error:', event.data)
-              onError?.('Failed to load video')
+              setIsLoading(false)
+              onLoadingChange?.(false)
+              const errorMessages: { [key: number]: string } = {
+                2: 'Invalid video ID',
+                5: 'HTML5 player error',
+                100: 'Video not found',
+                101: 'Video not available in your region',
+                150: 'Video not available for embedding'
+              }
+              const errorMsg = errorMessages[event.data] || 'Failed to load video'
+              onError?.(errorMsg)
             },
           },
         })
       } catch (err) {
         console.error('Error creating player:', err)
+        setIsLoading(false)
+        onLoadingChange?.(false)
         onError?.('Failed to initialize player')
       }
     }
@@ -163,9 +183,11 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
         youtubePlayerRef.current = null
       }
       setIsReady(false)
+      setIsLoading(false)
       methodsReadyRef.current = false
+      onLoadingChange?.(false)
     }
-  }, [videoId, startTime, onReady, onPlay, onPause, onError])
+  }, [videoId, startTime, onReady, onPlay, onPause, onError, onLoadingChange])
 
   // Control playback - Try even if methods check hasn't completed
   useEffect(() => {
