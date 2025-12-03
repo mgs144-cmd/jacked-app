@@ -208,12 +208,10 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   }, [])
 
   // Intersection observer for auto-play (Instagram style)
-  // Only one song should play at a time - be very strict
   useEffect(() => {
     if (!containerRef.current || (!youtubeVideoId && !audioUrl)) return
 
     let debounceTimer: NodeJS.Timeout | null = null
-    let lastAction: 'play' | 'stop' | null = null
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -223,28 +221,26 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
           debounceTimer = null
         }
 
-        // Only act after user stops scrolling (1000ms delay to prevent rapid switching)
+        // Act after user stops scrolling (500ms delay)
         debounceTimer = setTimeout(() => {
           const ratio = entry.intersectionRatio
           const isVisible = entry.isIntersecting
           
-          // Only play if post is 85%+ visible, nothing else is playing, and we haven't just stopped
-          if (isVisible && ratio >= 0.85 && currentPlayingId !== songId && lastAction !== 'stop') {
-            console.log('Post auto-playing:', songId, 'ratio:', ratio)
-            lastAction = 'play'
+          // Play if post is 60%+ visible and nothing else is playing
+          if (isVisible && ratio >= 0.6 && currentPlayingId !== songId) {
+            console.log('Post auto-playing:', songId, 'ratio:', ratio, 'youtubeVideoId:', youtubeVideoId, 'audioUrl:', audioUrl)
             playSong(songId, startPlayback, stopPlayback)
           } 
-          // Stop if post is <20% visible and this is the current song
-          else if (ratio < 0.2 && currentPlayingId === songId) {
+          // Stop if post is <30% visible and this is the current song
+          else if (ratio < 0.3 && currentPlayingId === songId) {
             console.log('Post stopping (not visible):', songId, 'ratio:', ratio)
-            lastAction = 'stop'
             stopCurrentSong()
           }
-        }, 1000) // Longer delay to prevent rapid switching
+        }, 500)
       },
       {
-        threshold: [0, 0.2, 0.85, 1], // Very strict thresholds
-        rootMargin: '-20% 0px -20% 0px', // Only play when in center 60% of viewport
+        threshold: [0, 0.3, 0.6, 1],
+        rootMargin: '-10% 0px -10% 0px',
       }
     )
 
@@ -253,7 +249,6 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     return () => {
       if (debounceTimer) clearTimeout(debounceTimer)
       observer.disconnect()
-      lastAction = null
     }
   }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong, startPlayback, stopPlayback])
 

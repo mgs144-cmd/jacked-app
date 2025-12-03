@@ -193,11 +193,11 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
       console.log('Profile auto-play effect triggered', { audioUrl, youtubeVideoId, songId })
       hasAutoPlayedRef.current = true
       
-      // For YouTube, wait a bit longer for player to initialize
-      const delay = youtubeVideoId ? 1500 : 800
+      // Wait for player to be ready (YouTube needs more time)
+      const delay = youtubeVideoId ? 2000 : 1000
       
       const timer = setTimeout(() => {
-        console.log('Profile: Triggering auto-play for', songId)
+        console.log('Profile: Triggering auto-play for', songId, 'youtubeVideoId:', youtubeVideoId, 'audioUrl:', audioUrl)
         playSong(songId, startPlayback, stopPlayback)
       }, delay)
       return () => clearTimeout(timer)
@@ -208,14 +208,14 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   useEffect(() => {
     if (currentPlayingId === songId && !isPlaying) {
       // Global context says this should be playing but local state disagrees
-      console.log('Profile sync: starting playback for', songId)
+      console.log('Profile sync: starting playback for', songId, 'youtubeVideoId:', youtubeVideoId, 'audioUrl:', audioUrl)
       startPlayback()
     } else if (currentPlayingId !== songId && isPlaying) {
       // A different song is playing globally, stop this one
       console.log('Profile sync: stopping playback for', songId)
       stopPlayback()
     }
-  }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
+  }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback, youtubeVideoId, audioUrl])
 
   // Handle mute changes for audio files while playing
   useEffect(() => {
