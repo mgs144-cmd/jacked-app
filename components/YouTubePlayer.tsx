@@ -20,8 +20,9 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
   const methodsReadyRef = useRef(false) // Track if methods are actually available
 
   useEffect(() => {
-    // Capture ref value at the start of the effect
+    // Capture ref value at the start of the effect for cleanup
     const containerElement = playerRef.current
+    let capturedContainer = containerElement
     
     // Load YouTube iframe API
     if (!window.YT) {
@@ -140,16 +141,14 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
     }
 
     return () => {
-      // Use captured ref value in cleanup
-      const containerElement = playerRef.current
-      
+      // Use captured ref value from start of effect
       if (youtubePlayerRef.current) {
         try {
           // Check if the container still exists in the DOM before destroying
-          if (containerElement && containerElement.parentNode) {
+          if (capturedContainer && capturedContainer.parentNode) {
             // Clear the container's innerHTML instead of destroy() to avoid DOM errors
-            if (containerElement.firstChild) {
-              containerElement.innerHTML = ''
+            if (capturedContainer.firstChild) {
+              capturedContainer.innerHTML = ''
             }
             // Try destroy, but don't fail if it errors
             try {

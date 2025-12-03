@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { X, Crown } from 'lucide-react'
@@ -17,13 +17,7 @@ export function LikesModal({ postId, isOpen, onClose }: LikesModalProps) {
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
-  useEffect(() => {
-    if (isOpen && postId) {
-      loadLikes()
-    }
-  }, [isOpen, postId])
-
-  const loadLikes = async () => {
+  const loadLikes = useCallback(async () => {
     setLoading(true)
     try {
       const { data, error } = await supabase
@@ -54,7 +48,13 @@ export function LikesModal({ postId, isOpen, onClose }: LikesModalProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [postId, supabase])
+
+  useEffect(() => {
+    if (isOpen && postId) {
+      loadLikes()
+    }
+  }, [isOpen, postId, loadLikes])
 
   if (!isOpen) return null
 

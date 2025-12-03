@@ -30,6 +30,8 @@ export default async function FollowingPage({
     redirect('/feed')
   }
 
+  const profileData = profile as any
+
   // Get following
   const { data: following } = await supabase
     .from('follows')
@@ -92,7 +94,7 @@ export default async function FollowingPage({
           <div className="flex items-center space-x-3 mb-3">
             <Users className="w-8 h-8 text-primary" />
             <h1 className="text-4xl font-black text-white tracking-tight">
-              {profile.username || profile.full_name || 'User'}&apos;s Following
+              {profileData.username || profileData.full_name || 'User'}&apos;s Following
             </h1>
           </div>
         </div>
