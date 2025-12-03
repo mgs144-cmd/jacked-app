@@ -109,20 +109,26 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
       try {
         if (isPlaying) {
           console.log('YouTube: Attempting to play', videoId, 'isMuted:', isMuted)
-          // Set mute state first
-          if (isMuted && typeof player.mute === 'function') {
-            player.mute()
-          } else if (!isMuted && typeof player.unMute === 'function') {
+          
+          // Always unmute first to ensure audio plays
+          if (!isMuted && typeof player.unMute === 'function') {
             player.unMute()
+            console.log('YouTube: Unmuted before play')
+          } else if (isMuted && typeof player.mute === 'function') {
+            player.mute()
+            console.log('YouTube: Muted before play')
           }
           
           // Then seek and play
           if (startTime && startTime > 0 && typeof player.seekTo === 'function') {
             player.seekTo(startTime, true)
+            console.log('YouTube: Seeked to', startTime)
           }
           if (typeof player.playVideo === 'function') {
             player.playVideo()
-            console.log('YouTube: playVideo() called')
+            console.log('YouTube: playVideo() called successfully')
+          } else {
+            console.error('YouTube: playVideo method not available')
           }
         } else {
           console.log('YouTube: Pausing', videoId)
