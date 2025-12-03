@@ -182,7 +182,7 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
     }
   }, [audioUrl, youtubeVideoId, songId, playSong, startPlayback, stopPlayback])
 
-  // Sync with music context - only sync when global state changes, not local state
+  // Sync with music context - actually start/stop playback
   useEffect(() => {
     if (currentPlayingId === songId && !isPlaying) {
       // Global context says this should be playing but local state disagrees
@@ -193,7 +193,7 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
       console.log('Profile sync: stopping playback for', songId)
       stopPlayback()
     }
-  }, [currentPlayingId, songId, startPlayback, stopPlayback])
+  }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
 
   // Handle mute changes for audio files while playing
   useEffect(() => {

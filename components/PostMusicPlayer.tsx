@@ -225,21 +225,20 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     }
   }, [youtubeVideoId, audioUrl, songId, currentPlayingId, playSong, stopCurrentSong, startPlayback, stopPlayback])
 
-  // Sync with music context - but ONLY when the global ID changes
-  // Don't sync based on local isPlaying state to avoid loops
+  // Sync with music context - actually start/stop playback
   useEffect(() => {
     // If global says this song should play but we're not playing, start
     if (currentPlayingId === songId && !isPlaying) {
-      console.log('Post sync: Global says play, starting', songId)
-      setIsPlaying(true) // Update state directly to avoid triggering startPlayback which might cause loops
+      console.log('Post sync: Global says play, calling startPlayback', songId)
+      startPlayback()
     } 
     // If global says something else is playing and we are playing, stop
     else if (currentPlayingId !== songId && isPlaying) {
-      console.log('Post sync: Global says stop, stopping', songId)
-      setIsPlaying(false) // Update state directly
+      console.log('Post sync: Global says stop, calling stopPlayback', songId)
+      stopPlayback()
     }
     // If states already match, do nothing
-  }, [currentPlayingId, songId, isPlaying])
+  }, [currentPlayingId, songId, isPlaying, startPlayback, stopPlayback])
 
   const handlePlayPause = () => {
     // Manual play should work independently of intersection observer

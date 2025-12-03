@@ -21,15 +21,27 @@ export default function ForgotPasswordPage() {
     setLoading(true)
 
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      const { data, error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/reset-password`,
       })
 
-      if (resetError) throw resetError
+      if (resetError) {
+        console.error('Password reset error:', resetError)
+        throw resetError
+      }
 
+      console.log('Password reset email sent:', data)
       setSuccess(true)
     } catch (err: any) {
-      setError(err.message || 'Failed to send reset email')
+      console.error('Password reset failed:', err)
+      // Provide more helpful error messages
+      if (err.message?.includes('rate limit')) {
+        setError('Too many requests. Please wait a few minutes and try again.')
+      } else if (err.message?.includes('email')) {
+        setError('Invalid email address. Please check and try again.')
+      } else {
+        setError(err.message || 'Failed to send reset email. Please check your email address and try again.')
+      }
     } finally {
       setLoading(false)
     }
