@@ -156,6 +156,11 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
         if (startTime && startTime > 0 && audioRef.current) {
           audioRef.current.currentTime = startTime
         }
+        // Actually play the audio
+        audioRef.current.play().catch((err) => {
+          console.error('Post: Failed to play audio after canplay:', err)
+          setLoading(false)
+        })
       }
 
       await audioRef.current.play()

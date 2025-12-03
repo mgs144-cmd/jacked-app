@@ -127,13 +127,26 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
         }, { once: true })
       }
       
+      audioRef.current.onplay = () => {
+        console.log('Profile: Audio onplay event fired')
+        setIsPlaying(true)
+        setLoading(false)
+      }
+
+      audioRef.current.onpause = () => {
+        console.log('Profile: Audio onpause event fired')
+        setIsPlaying(false)
+      }
+
       audioRef.current.onended = () => {
+        console.log('Profile: Audio ended')
         setIsPlaying(false)
         setLoading(false)
         stopCurrentSong()
       }
       
-      audioRef.current.onerror = () => {
+      audioRef.current.onerror = (e) => {
+        console.error('Profile: Audio error event:', e)
         setIsPlaying(false)
         setLoading(false)
         stopCurrentSong()
