@@ -227,17 +227,27 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
 
   const togglePlay = async () => {
     console.log('Profile play button clicked', { currentPlayingId, songId, isPlaying, youtubeVideoId, audioUrl })
+    
+    // Reset auto-play flag to allow manual play
+    hasAutoPlayedRef.current = false
+    
     if (currentPlayingId === songId && isPlaying) {
       // Currently playing, so stop it
-      console.log('Profile: Stopping playback')
+      console.log('Profile: Manual stop')
       stopCurrentSong()
     } else {
       // Not playing, so start it
-      console.log('Profile: Starting playback via playSong')
-      // For immediate feedback, set loading state
+      console.log('Profile: Manual play - calling playSong')
       setLoading(true)
       playSong(songId, startPlayback, stopPlayback)
-      // startPlayback will handle setting loading to false
+      
+      // Force playback to start immediately if it doesn't
+      setTimeout(() => {
+        if (currentPlayingId === songId && !isPlaying) {
+          console.log('Profile: Force starting playback after manual play')
+          startPlayback()
+        }
+      }, 200)
     }
   }
 
