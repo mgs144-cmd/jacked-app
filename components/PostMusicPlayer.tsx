@@ -109,13 +109,14 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   // Play function - simplified for reliability
   const startPlayback = useCallback(async () => {
     if (youtubeVideoId) {
-      console.log('Post: Starting YouTube playback', { songId, youtubeVideoId, startTime })
+      console.log('Post: Starting YouTube playback', { songId, youtubeVideoId, startTime, isMuted })
       setLoading(false)
-      // Set isPlaying to true - YouTube player will handle actual playback via isPlaying prop
-      // Give it a moment to ensure player is ready
+      // For YouTube, set isPlaying to true - YouTube player will handle actual playback via isPlaying prop
+      // Wait a bit to ensure player is ready (especially on mobile)
       setTimeout(() => {
         setIsPlaying(true)
-      }, 100)
+        console.log('Post: Set isPlaying to true for YouTube')
+      }, 300)
       return
     }
 
@@ -174,65 +175,19 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       // Store reference and play
       audioRef.current = audio
       
-      // Set up multiple play attempts with better error handling
-      const playAudio = async () => {
-        try {
-          // Load the audio first
-          audio.load()
-          
-          // If already has enough data, play immediately
-          if (audio.readyState >= 2) {
-            if (startTime && startTime > 0) {
-              audio.currentTime = startTime
-            }
-            await audio.play()
-            console.log('Post: Audio playing (immediate)')
-            return
-          }
-          
-          // Wait for canplay event
-          await new Promise<void>((resolve, reject) => {
-            const timeout = setTimeout(() => {
-              audio.removeEventListener('canplay', onCanPlay)
-              audio.removeEventListener('loadeddata', onLoadedData)
-              reject(new Error('Audio load timeout'))
-            }, 5000)
-            
-            const onCanPlay = () => {
-              clearTimeout(timeout)
-              audio.removeEventListener('canplay', onCanPlay)
-              audio.removeEventListener('loadeddata', onLoadedData)
-              resolve()
-            }
-            
-            const onLoadedData = () => {
-              clearTimeout(timeout)
-              audio.removeEventListener('canplay', onCanPlay)
-              audio.removeEventListener('loadeddata', onLoadedData)
-              resolve()
-            }
-            
-            audio.addEventListener('canplay', onCanPlay, { once: true })
-            audio.addEventListener('loadeddata', onLoadedData, { once: true })
-          })
-          
-          // Set start time if needed
-          if (startTime && startTime > 0 && audio) {
-            audio.currentTime = startTime
-          }
-          
-          // Try to play
-          await audio.play()
-          console.log('Post: Audio playing successfully')
-        } catch (err: any) {
+      // Wait for audio to be ready, then play (similar to profile player)
+      audio.addEventListener('canplay', () => {
+        if (startTime && startTime > 0 && audio) {
+          audio.currentTime = startTime
+        }
+        audio.play().catch((err) => {
           console.error('Post: Play failed:', err)
           setLoading(false)
-          // Don't automatically set isPlaying to false - let user retry
-        }
-      }
+        })
+      }, { once: true })
       
-      // Start playing
-      playAudio()
+      // Also try to load immediately
+      audio.load()
       
     } catch (error: any) {
       console.error('Post: Audio playback error:', error)
@@ -426,20 +381,28 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
           isPlaying={isPlaying}
           startTime={startTime}
           isMuted={isMuted}
-          onPlay={() => {
-            // Only update if not already playing to prevent loops
-            if (!isPlaying) {
-              setIsPlaying(true)
+          onReady={() => {
+            console.log('Post: YouTube player ready', { songId, youtubeVideoId })
+            setLoading(false)
+            // If we should be playing, trigger it now that player is ready
+            if (currentPlayingId === songId && !isPlaying) {
+              console.log('Post: Player ready and should be playing, setting isPlaying')
+              setTimeout(() => {
+                setIsPlaying(true)
+              }, 200)
             }
+          }}
+          onPlay={() => {
+            console.log('Post: YouTube onPlay event')
+            setIsPlaying(true)
+            setLoading(false)
           }}
           onPause={() => {
-            // Only update if not already paused to prevent loops
-            if (isPlaying) {
-              setIsPlaying(false)
-            }
+            console.log('Post: YouTube onPause event')
+            setIsPlaying(false)
           }}
           onError={(error) => {
-            console.error('YouTube player error:', error)
+            console.error('Post: YouTube player error:', error)
             setLoading(false)
             setIsPlaying(false)
             stopCurrentSong()
