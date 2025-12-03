@@ -110,9 +110,12 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   const startPlayback = useCallback(async () => {
     if (youtubeVideoId) {
       console.log('Post: Starting YouTube playback', { songId, youtubeVideoId, startTime })
-      setIsPlaying(true)
       setLoading(false)
-      // YouTube player will handle actual playback via isPlaying prop
+      // Set isPlaying to true - YouTube player will handle actual playback via isPlaying prop
+      // Give it a moment to ensure player is ready
+      setTimeout(() => {
+        setIsPlaying(true)
+      }, 100)
       return
     }
 
@@ -314,13 +317,21 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       isPlayingRef.current = true
       playSong(songId, startPlayback, stopPlayback)
       
-      // Force playback to start immediately if it doesn't
+      // Force playback to start immediately - user interaction allows autoplay
       setTimeout(() => {
-        if (currentPlayingId === songId && !isPlaying) {
+        if (currentPlayingId === songId) {
           console.log('Post: Force starting playback after manual play')
           startPlayback()
         }
-      }, 200)
+      }, 100)
+      
+      // Also try again after a longer delay in case player isn't ready
+      setTimeout(() => {
+        if (currentPlayingId === songId && !isPlaying) {
+          console.log('Post: Retry playback after delay')
+          startPlayback()
+        }
+      }, 1000)
     }
   }
 

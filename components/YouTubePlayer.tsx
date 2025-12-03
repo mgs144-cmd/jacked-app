@@ -170,54 +170,106 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
   // Control playback - Try even if methods check hasn't completed
   useEffect(() => {
     if (!youtubePlayerRef.current) {
-      return
+      // Player not created yet, wait a bit
+      const checkPlayer = setTimeout(() => {
+        if (youtubePlayerRef.current && isPlaying) {
+          // Retry the effect
+          const player = youtubePlayerRef.current
+          if (typeof player.playVideo === 'function') {
+            player.playVideo()
+          }
+        }
+      }, 500)
+      return () => clearTimeout(checkPlayer)
     }
 
     const player = youtubePlayerRef.current
 
-    const attemptPlayback = () => {
+    const attemptPlayback = (retries = 0) => {
       try {
         // Check if methods exist
         if (typeof player.playVideo !== 'function' || typeof player.pauseVideo !== 'function') {
-          // Methods not ready yet, retry after a delay
-          setTimeout(attemptPlayback, 200)
+          // Methods not ready yet, retry after a delay (max 10 retries)
+          if (retries < 10) {
+            setTimeout(() => attemptPlayback(retries + 1), 200 * (retries + 1))
+          }
           return
         }
 
         if (isPlaying) {
-          console.log('YouTube: Playing', videoId, 'isMuted:', isMuted)
+          console.log('YouTube: Attempting to play', videoId, 'isMuted:', isMuted, 'retries:', retries)
           
           // Unmute first if needed
-          if (!isMuted && typeof player.unMute === 'function') {
-            player.unMute()
-          } else if (isMuted && typeof player.mute === 'function') {
-            player.mute()
+          try {
+            if (!isMuted && typeof player.unMute === 'function') {
+              player.unMute()
+            } else if (isMuted && typeof player.mute === 'function') {
+              player.mute()
+            }
+          } catch (muteErr) {
+            console.warn('Mute/unmute error:', muteErr)
           }
           
           // Seek if needed
-          if (startTime && startTime > 0 && typeof player.seekTo === 'function') {
-            player.seekTo(startTime, true)
+          try {
+            if (startTime && startTime > 0 && typeof player.seekTo === 'function') {
+              player.seekTo(startTime, true)
+            }
+          } catch (seekErr) {
+            console.warn('Seek error:', seekErr)
           }
           
-          // Play
-          player.playVideo()
-          console.log('YouTube: playVideo() called')
+          // Play - this is the critical call
+          try {
+            player.playVideo()
+            console.log('YouTube: playVideo() called successfully')
+          } catch (playErr) {
+            console.error('playVideo() error:', playErr)
+            // Retry once more
+            if (retries < 5) {
+              setTimeout(() => attemptPlayback(retries + 1), 500)
+            }
+          }
         } else {
           console.log('YouTube: Pausing', videoId)
-          if (typeof player.pauseVideo === 'function') {
-            player.pauseVideo()
+          try {
+            if (typeof player.pauseVideo === 'function') {
+              player.pauseVideo()
+            }
+          } catch (pauseErr) {
+            console.warn('pauseVideo() error:', pauseErr)
           }
         }
       } catch (err) {
         console.error('Error controlling player:', err)
-        // Retry on error
-        setTimeout(attemptPlayback, 500)
+        // Retry on error (max 5 retries)
+        if (retries < 5) {
+          setTimeout(() => attemptPlayback(retries + 1), 500)
+        }
       }
     }
 
-    const timeout = setTimeout(attemptPlayback, 100)
+    // Start immediately, don't delay
+    attemptPlayback(0)
 
-    return () => clearTimeout(timeout)
+    // Also set up a delayed retry in case the first attempt fails
+    const delayedRetry = setTimeout(() => {
+      if (isPlaying && youtubePlayerRef.current) {
+        const player = youtubePlayerRef.current
+        if (typeof player.playVideo === 'function') {
+          try {
+            player.playVideo()
+            console.log('YouTube: Delayed playVideo() call')
+          } catch (err) {
+            console.error('Delayed playVideo() error:', err)
+          }
+        }
+      }
+    }, 1000)
+
+    return () => {
+      clearTimeout(delayedRetry)
+    }
   }, [isPlaying, startTime, videoId, isMuted])
 
   // Handle mute changes separately
