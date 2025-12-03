@@ -58,7 +58,7 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
             modestbranding: 1,
             playsinline: 1,
             rel: 0,
-            origin: window.location.origin,
+            // Don't set origin - let YouTube handle it to avoid postMessage errors
             ...(startTime && startTime > 0 ? { start: startTime } : {}),
           },
           events: {
