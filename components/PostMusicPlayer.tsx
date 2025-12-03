@@ -109,8 +109,10 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   // Play function - simplified for reliability
   const startPlayback = useCallback(async () => {
     if (youtubeVideoId) {
+      console.log('Post: Starting YouTube playback', { songId, youtubeVideoId, startTime })
       setIsPlaying(true)
       setLoading(false)
+      // YouTube player will handle actual playback via isPlaying prop
       return
     }
 

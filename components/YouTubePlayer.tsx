@@ -74,7 +74,7 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
         events: {
           onReady: (event: any) => {
             console.log('YouTube player ready event fired', { videoId })
-            // Wait for player methods to be available - use longer delay to ensure reliability
+            // Wait for player methods to be available
             setTimeout(() => {
               if (!youtubePlayerRef.current) {
                 console.error('Player ref lost after ready event')
@@ -90,11 +90,24 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
                 isControllingRef.current = false
                 // Notify parent that player is ready
                 onReady?.()
-                // Don't auto-play here - let the parent component control playback
-                // This prevents multiple playback attempts
+                
+                // If we should be playing and have a start time, seek and play
+                if (isPlaying && startTime && startTime > 0) {
+                  setTimeout(() => {
+                    if (youtubePlayerRef.current) {
+                      youtubePlayerRef.current.seekTo(startTime, true)
+                      youtubePlayerRef.current.playVideo()
+                    }
+                  }, 100)
+                } else if (isPlaying) {
+                  setTimeout(() => {
+                    if (youtubePlayerRef.current) {
+                      youtubePlayerRef.current.playVideo()
+                    }
+                  }, 100)
+                }
               } else {
                 console.warn('YouTube player ready but methods not available, retrying...')
-                // Single retry after a longer delay
                 setTimeout(() => {
                   if (youtubePlayerRef.current &&
                       typeof youtubePlayerRef.current.playVideo === 'function' &&
@@ -105,13 +118,21 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
                     setIsReady(true)
                     isControllingRef.current = false
                     onReady?.()
+                    
+                    // If we should be playing, play now
+                    if (isPlaying) {
+                      if (startTime && startTime > 0 && youtubePlayerRef.current) {
+                        youtubePlayerRef.current.seekTo(startTime, true)
+                      }
+                      youtubePlayerRef.current.playVideo()
+                    }
                   } else {
                     console.error('YouTube player methods still not available after retry')
                     setError('Player initialization failed')
                   }
                 }, 1000)
               }
-            }, 500)
+            }, 300)
           },
           onError: (event: any) => {
             console.error('YouTube player error:', event.data)
@@ -199,19 +220,13 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
 
   useEffect(() => {
     if (!youtubePlayerRef.current || !isReady) {
-      console.log('YouTube player not ready yet', { hasPlayer: !!youtubePlayerRef.current, isReady })
       return
     }
 
     // Check if player has the methods we need
     if (typeof youtubePlayerRef.current.playVideo !== 'function' || 
         typeof youtubePlayerRef.current.pauseVideo !== 'function') {
-      console.error('YouTube player methods not available', {
-        hasPlayVideo: typeof youtubePlayerRef.current.playVideo,
-        hasPauseVideo: typeof youtubePlayerRef.current.pauseVideo,
-        playerState: youtubePlayerRef.current.getPlayerState?.()
-      })
-      onError?.('YouTube player not properly initialized')
+      console.error('YouTube player methods not available')
       return
     }
 
@@ -224,25 +239,36 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
       // Only control if state doesn't match
       if (shouldBePlaying && !isCurrentlyPlaying) {
         console.log('Playing YouTube video:', videoId, 'with start time:', startTime)
-        isControllingRef.current = true // Set flag before controlling
-        // If start time is set, seek to that position first
-        if (startTime && startTime > 0) {
-          youtubePlayerRef.current.seekTo(startTime, true)
-        }
-        youtubePlayerRef.current.playVideo()
+        isControllingRef.current = true
+        
+        // Small delay to ensure player is ready
+        setTimeout(() => {
+          if (!youtubePlayerRef.current) return
+          
+          try {
+            // If start time is set, seek to that position first
+            if (startTime && startTime > 0) {
+              youtubePlayerRef.current.seekTo(startTime, true)
+            }
+            youtubePlayerRef.current.playVideo()
+          } catch (err) {
+            console.error('Error playing video:', err)
+          }
+        }, 50)
       } else if (!shouldBePlaying && isCurrentlyPlaying) {
         console.log('Pausing YouTube video:', videoId)
-        isControllingRef.current = true // Set flag before controlling
-        youtubePlayerRef.current.pauseVideo()
-      } else {
-        console.log('Player state already matches desired state', { shouldBePlaying, isCurrentlyPlaying })
+        isControllingRef.current = true
+        try {
+          youtubePlayerRef.current.pauseVideo()
+        } catch (err) {
+          console.error('Error pausing video:', err)
+        }
       }
     } catch (err) {
       console.error('Error controlling YouTube player:', err)
       isControllingRef.current = false
-      onError?.(`Failed to control playback: ${err}`)
     }
-  }, [isPlaying, videoId, onError, isReady, startTime])
+  }, [isPlaying, videoId, isReady, startTime])
 
   // Handle mute changes
   useEffect(() => {
