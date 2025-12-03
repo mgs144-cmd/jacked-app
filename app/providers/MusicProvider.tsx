@@ -1,60 +1,48 @@
 'use client'
 
-import { createContext, useContext, useState, useRef, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback } from 'react'
 
 interface MusicContextType {
   currentPlayingId: string | null
-  isPlaying: boolean
-  playSong: (songId: string, playCallback: () => void, stopCallback: () => void) => void
+  playSong: (songId: string, startPlayback: () => void, stopPlayback: () => void) => void
   stopCurrentSong: () => void
 }
 
-const MusicContext = createContext<MusicContextType | undefined>(undefined)
+const MusicContext = createContext<MusicContextType>({
+  currentPlayingId: null,
+  playSong: () => {},
+  stopCurrentSong: () => {},
+})
 
-export function MusicProvider({ children }: { children: ReactNode }) {
+export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const playCallbackRef = useRef<(() => void) | null>(null)
-  const stopCallbackRef = useRef<(() => void) | null>(null)
+  const [stopPlaybackFn, setStopPlaybackFn] = useState<(() => void) | null>(null)
 
-  const playSong = (songId: string, playCallback: () => void, stopCallback: () => void) => {
-    // Stop current song if different
-    if (currentPlayingId && currentPlayingId !== songId) {
-      stopCurrentSong()
+  const playSong = useCallback((songId: string, startPlayback: () => void, stopPlayback: () => void) => {
+    // Stop current song if playing
+    if (currentPlayingId && currentPlayingId !== songId && stopPlaybackFn) {
+      stopPlaybackFn()
     }
-
-    // Set new song
-    setCurrentPlayingId(songId)
-    setIsPlaying(true)
-    playCallbackRef.current = playCallback
-    stopCallbackRef.current = stopCallback
     
-    // Call play callback
-    playCallback()
-  }
+    setCurrentPlayingId(songId)
+    setStopPlaybackFn(() => stopPlayback)
+    startPlayback()
+  }, [currentPlayingId, stopPlaybackFn])
 
-  const stopCurrentSong = () => {
-    if (stopCallbackRef.current) {
-      stopCallbackRef.current()
+  const stopCurrentSong = useCallback(() => {
+    if (stopPlaybackFn) {
+      stopPlaybackFn()
     }
     setCurrentPlayingId(null)
-    setIsPlaying(false)
-    playCallbackRef.current = null
-    stopCallbackRef.current = null
-  }
+    setStopPlaybackFn(null)
+  }, [stopPlaybackFn])
 
   return (
-    <MusicContext.Provider value={{ currentPlayingId, isPlaying, playSong, stopCurrentSong }}>
+    <MusicContext.Provider value={{ currentPlayingId, playSong, stopCurrentSong }}>
       {children}
     </MusicContext.Provider>
   )
 }
 
-export function useMusic() {
-  const context = useContext(MusicContext)
-  if (!context) {
-    throw new Error('useMusic must be used within MusicProvider')
-  }
-  return context
-}
+export const useMusic = () => useContext(MusicContext)
 

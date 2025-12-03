@@ -24,6 +24,25 @@ export default async function DiscoverPage() {
     .order('created_at', { ascending: false })
     .limit(50)
 
+  // Calculate actual follower/following counts for each user
+  const usersWithCounts = await Promise.all((users || []).map(async (user: any) => {
+    const { count: followerCount } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('following_id', user.id)
+
+    const { count: followingCount } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('follower_id', user.id)
+
+    return {
+      ...user,
+      followers_count: followerCount || 0,
+      following_count: followingCount || 0,
+    }
+  }))
+
   // Get users the current user is following
   const { data: following } = await supabase
     .from('follows')
@@ -68,7 +87,7 @@ export default async function DiscoverPage() {
         {/* Search and User Lists */}
         <DiscoverClient
           currentUserId={session.user.id}
-          initialUsers={users || []}
+          initialUsers={usersWithCounts || []}
           suggestedUsers={suggested || []}
           followingIds={followingIds}
           requestStatusMap={requestStatusMap}

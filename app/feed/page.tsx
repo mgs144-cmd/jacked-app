@@ -29,7 +29,7 @@ export default async function FeedPage() {
       *,
       profiles:user_id(username, avatar_url, full_name, is_premium, is_account_private),
       likes(id),
-      comments(id),
+      comments(id, content, created_at, user_id, profiles:user_id(username, avatar_url)),
       workout_exercises(*)
     `)
     .in('user_id', [...followingIds, session.user.id])
@@ -43,7 +43,7 @@ export default async function FeedPage() {
       *,
       profiles:user_id(username, avatar_url, full_name, is_premium, is_account_private),
       likes(id),
-      comments(id),
+      comments(id, content, created_at, user_id, profiles:user_id(username, avatar_url)),
       workout_exercises(*)
     `)
     .not('user_id', 'in', `(${[session.user.id, ...followingIds].join(',')})`)
@@ -61,11 +61,28 @@ export default async function FeedPage() {
       profile = profile[0] || null
     }
     
+    // Get top 3 comments (most recent)
+    const allComments = post.comments || []
+    const topComments = allComments
+      .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 3)
+      .map((comment: any) => {
+        let commentProfile = comment.profiles
+        if (Array.isArray(commentProfile)) {
+          commentProfile = commentProfile[0] || null
+        }
+        return {
+          ...comment,
+          profile: commentProfile || { username: 'unknown', avatar_url: null }
+        }
+      })
+    
     return {
       ...post,
       profile: profile, // Normalize to single object
       like_count: post.likes?.length || 0,
-      comment_count: post.comments?.length || 0,
+      comment_count: allComments.length,
+      top_comments: topComments,
     }
   })
 
@@ -74,11 +91,29 @@ export default async function FeedPage() {
     if (Array.isArray(profile)) {
       profile = profile[0] || null
     }
+    
+    // Get top 3 comments
+    const allComments = post.comments || []
+    const topComments = allComments
+      .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 3)
+      .map((comment: any) => {
+        let commentProfile = comment.profiles
+        if (Array.isArray(commentProfile)) {
+          commentProfile = commentProfile[0] || null
+        }
+        return {
+          ...comment,
+          profile: commentProfile || { username: 'unknown', avatar_url: null }
+        }
+      })
+    
     return {
       ...post,
       profile: profile,
       like_count: Array.isArray(post.likes) ? post.likes.length : 0,
-      comment_count: Array.isArray(post.comments) ? post.comments.length : 0,
+      comment_count: allComments.length,
+      top_comments: topComments,
     }
   }) || []
 
@@ -93,11 +128,29 @@ export default async function FeedPage() {
           if (Array.isArray(profile)) {
             profile = profile[0] || null
           }
+          
+          // Get top 3 comments
+          const allComments = post.comments || []
+          const topComments = allComments
+            .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            .slice(0, 3)
+            .map((comment: any) => {
+              let commentProfile = comment.profiles
+              if (Array.isArray(commentProfile)) {
+                commentProfile = commentProfile[0] || null
+              }
+              return {
+                ...comment,
+                profile: commentProfile || { username: 'unknown', avatar_url: null }
+              }
+            })
+          
           return {
             ...post,
             profile: profile,
             like_count: Array.isArray(post.likes) ? post.likes.length : 0,
-            comment_count: Array.isArray(post.comments) ? post.comments.length : 0,
+            comment_count: allComments.length,
+            top_comments: topComments,
           }
         }) || []}
       />

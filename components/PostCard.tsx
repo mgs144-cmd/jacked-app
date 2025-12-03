@@ -365,7 +365,7 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {/* Engagement Bar */}
-      <div className="px-5 py-4 flex items-center justify-between">
+      <div className="px-5 py-4 flex items-center justify-between border-b border-gray-800/40">
         <div className="flex items-center space-x-6">
           <button
             onClick={handleLike}
@@ -383,7 +383,16 @@ export function PostCard({ post }: PostCardProps) {
               strokeWidth={2.5}
             />
             {likeCount > 0 && (
-              <span className="font-bold text-sm">{likeCount}</span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  // TODO: Show who liked modal
+                }}
+                className="font-bold text-sm hover:underline"
+              >
+                {likeCount}
+              </button>
             )}
           </button>
           <Link
@@ -399,15 +408,43 @@ export function PostCard({ post }: PostCardProps) {
             )}
           </Link>
         </div>
-        {post.comment_count > 0 && (
-          <Link
-            href={`/post/${post.id}`}
-            className="text-sm text-gray-500 hover:text-gray-300 font-medium transition-colors"
-          >
-            View all comments
-          </Link>
-        )}
       </div>
+
+      {/* Top 3 Comments */}
+      {post.top_comments && post.top_comments.length > 0 && (
+        <div className="px-5 py-3 space-y-2">
+          {post.top_comments.map((comment: any) => {
+            const commentProfile = comment.profile || { username: 'unknown', avatar_url: null }
+            const isGIF = comment.content && comment.content.startsWith('http') && (comment.content.includes('giphy.com') || comment.content.includes('.gif'))
+            
+            return (
+              <div key={comment.id} className="flex items-start space-x-2">
+                <span className="font-bold text-sm text-white">{commentProfile.username}</span>
+                {isGIF ? (
+                  <div className="relative w-24 h-24 rounded-lg overflow-hidden">
+                    <Image
+                      src={comment.content}
+                      alt="GIF comment"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <span className="text-sm text-gray-300 flex-1">{comment.content}</span>
+                )}
+              </div>
+            )
+          })}
+          {post.comment_count > 3 && (
+            <Link
+              href={`/post/${post.id}`}
+              className="text-sm text-gray-500 hover:text-gray-300 font-medium transition-colors block mt-2"
+            >
+              View all {post.comment_count} comments
+            </Link>
+          )}
+        </div>
+      )}
     </article>
   )
 }
