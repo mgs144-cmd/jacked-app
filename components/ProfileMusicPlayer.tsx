@@ -190,10 +190,13 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
       console.log('Profile auto-play effect triggered', { audioUrl, youtubeVideoId, songId })
       hasAutoPlayedRef.current = true
       
+      // For YouTube, wait a bit longer for player to initialize
+      const delay = youtubeVideoId ? 1500 : 800
+      
       const timer = setTimeout(() => {
         console.log('Profile: Triggering auto-play for', songId)
         playSong(songId, startPlayback, stopPlayback)
-      }, 1000) // Unified delay for both audio and YouTube
+      }, delay)
       return () => clearTimeout(timer)
     }
   }, [audioUrl, youtubeVideoId, songId, playSong, startPlayback, stopPlayback])

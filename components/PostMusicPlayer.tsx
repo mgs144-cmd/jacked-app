@@ -206,7 +206,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     setTimeout(() => { isControllingRef.current = false }, 100) // Reset after state update
   }, [])
 
-  // Intersection observer with debouncing to prevent rapid switching
+  // Intersection observer for auto-play (Instagram style)
   useEffect(() => {
     if (!containerRef.current || (!youtubeVideoId && !audioUrl)) return
 
@@ -220,11 +220,11 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
           debounceTimer = null
         }
 
-        // Only act after user stops scrolling (800ms delay)
+        // Only act after user stops scrolling (500ms delay)
         debounceTimer = setTimeout(() => {
-          // Play if post is 80%+ visible and nothing else is playing
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.8 && currentPlayingId !== songId) {
-            console.log('Post auto-playing (stable):', songId, 'ratio:', entry.intersectionRatio)
+          // Play if post is 70%+ visible and nothing else is playing
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.7 && currentPlayingId !== songId) {
+            console.log('Post auto-playing:', songId, 'ratio:', entry.intersectionRatio)
             playSong(songId, startPlayback, stopPlayback)
           } 
           // Stop if post is <30% visible and this is the current song
@@ -232,11 +232,11 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
             console.log('Post stopping (not visible):', songId, 'ratio:', entry.intersectionRatio)
             stopCurrentSong()
           }
-        }, 800) // Long delay to ensure user has stopped scrolling
+        }, 500) // Delay to ensure user has stopped scrolling
       },
       {
-        threshold: [0, 0.3, 0.8, 1], // Very strict thresholds
-        rootMargin: '-15% 0px -15% 0px', // Only play when in center 70% of viewport
+        threshold: [0, 0.3, 0.7, 1],
+        rootMargin: '-10% 0px -10% 0px', // Only play when in center 80% of viewport
       }
     )
 
