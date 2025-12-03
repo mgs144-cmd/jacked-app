@@ -309,19 +309,23 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
             // YouTube player is ready
             console.log('Profile: YouTube player ready for:', songId)
             youtubePlayerReadyRef.current = true
-            // Don't trigger auto-play here - let the auto-play effect handle it
+            setLoading(false)
+            // If we should be playing, trigger it now
+            if (currentPlayingId === songId && !isPlaying) {
+              console.log('Profile: Player ready and should be playing, starting playback')
+              setTimeout(() => {
+                startPlayback()
+              }, 200)
+            }
           }}
           onPlay={() => {
-            // Only update if not already playing to prevent loops
-            if (!isPlaying) {
-              setIsPlaying(true)
-            }
+            console.log('Profile: YouTube onPlay event')
+            setIsPlaying(true)
+            setLoading(false)
           }}
           onPause={() => {
-            // Only update if not already paused to prevent loops
-            if (isPlaying) {
-              setIsPlaying(false)
-            }
+            console.log('Profile: YouTube onPause event')
+            setIsPlaying(false)
           }}
           onError={(error) => {
             console.error('YouTube player error:', error)
