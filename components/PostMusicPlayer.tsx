@@ -174,14 +174,50 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       // Store reference and play
       audioRef.current = audio
       
-      // Try to play immediately - browser will handle autoplay restrictions
-      const tryPlay = async () => {
+      // Set up multiple play attempts with better error handling
+      const playAudio = async () => {
         try {
-          // Load first
-          await audio.load()
+          // Load the audio first
+          audio.load()
+          
+          // If already has enough data, play immediately
+          if (audio.readyState >= 2) {
+            if (startTime && startTime > 0) {
+              audio.currentTime = startTime
+            }
+            await audio.play()
+            console.log('Post: Audio playing (immediate)')
+            return
+          }
+          
+          // Wait for canplay event
+          await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              audio.removeEventListener('canplay', onCanPlay)
+              audio.removeEventListener('loadeddata', onLoadedData)
+              reject(new Error('Audio load timeout'))
+            }, 5000)
+            
+            const onCanPlay = () => {
+              clearTimeout(timeout)
+              audio.removeEventListener('canplay', onCanPlay)
+              audio.removeEventListener('loadeddata', onLoadedData)
+              resolve()
+            }
+            
+            const onLoadedData = () => {
+              clearTimeout(timeout)
+              audio.removeEventListener('canplay', onCanPlay)
+              audio.removeEventListener('loadeddata', onLoadedData)
+              resolve()
+            }
+            
+            audio.addEventListener('canplay', onCanPlay, { once: true })
+            audio.addEventListener('loadeddata', onLoadedData, { once: true })
+          })
           
           // Set start time if needed
-          if (startTime && startTime > 0) {
+          if (startTime && startTime > 0 && audio) {
             audio.currentTime = startTime
           }
           
@@ -189,24 +225,14 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
           await audio.play()
           console.log('Post: Audio playing successfully')
         } catch (err: any) {
-          console.error('Post: Play failed (may need user interaction):', err)
-          // If autoplay fails, wait for canplay and try again
-          audio.addEventListener('canplay', async () => {
-            try {
-              if (startTime && startTime > 0 && audio) {
-                audio.currentTime = startTime
-              }
-              await audio.play()
-              console.log('Post: Audio playing after canplay')
-            } catch (retryErr) {
-              console.error('Post: Play failed on retry:', retryErr)
-              setLoading(false)
-            }
-          }, { once: true })
+          console.error('Post: Play failed:', err)
+          setLoading(false)
+          // Don't automatically set isPlaying to false - let user retry
         }
       }
       
-      tryPlay()
+      // Start playing
+      playAudio()
       
     } catch (error: any) {
       console.error('Post: Audio playback error:', error)
