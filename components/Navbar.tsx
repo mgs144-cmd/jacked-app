@@ -25,7 +25,7 @@ export function Navbar() {
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-gradient-metal backdrop-blur-xl border-t border-gray-800/50 z-50 md:top-0 md:bottom-auto md:border-b md:border-t-0 shadow-2xl">
+    <nav className="fixed bottom-0 left-0 right-0 bg-gradient-metal backdrop-blur-xl border-t border-gray-800/50 z-50 md:top-0 md:bottom-auto md:border-b md:border-t-0 shadow-2xl" style={{ position: 'fixed' }}>
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <div className="flex items-center justify-center md:justify-between h-16 md:h-24">
           {/* Logo - Hidden on mobile, shown on desktop */}

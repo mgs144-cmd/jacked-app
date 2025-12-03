@@ -106,10 +106,11 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
     }
   }, [songUrl, spotifyId])
 
-  // Play function
+  // Play function - simplified for reliability
   const startPlayback = useCallback(async () => {
     if (youtubeVideoId) {
       setIsPlaying(true)
+      setLoading(false)
       return
     }
 
@@ -117,69 +118,72 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
 
     try {
       setLoading(true)
+      
+      // Clean up previous audio
       if (audioRef.current) {
         audioRef.current.pause()
         audioRef.current = null
       }
 
-      audioRef.current = new Audio(audioUrl || undefined)
-      audioRef.current.volume = isMuted ? 0 : 0.7
-      audioRef.current.muted = isMuted
-      audioRef.current.crossOrigin = 'anonymous'
-      // Ensure audio plays on mobile
-      audioRef.current.setAttribute('playsinline', 'true')
-      audioRef.current.setAttribute('webkit-playsinline', 'true')
+      // Create new audio element
+      const audio = new Audio(audioUrl)
+      audio.volume = isMuted ? 0 : 0.7
+      audio.muted = isMuted
+      audio.playsInline = true
       
       // Set start time if provided
       if (startTime && startTime > 0) {
-        audioRef.current.addEventListener('loadedmetadata', () => {
-          if (audioRef.current) {
-            audioRef.current.currentTime = startTime
+        audio.addEventListener('loadedmetadata', () => {
+          if (audio) {
+            audio.currentTime = startTime
           }
         }, { once: true })
       }
       
-      audioRef.current.onended = () => {
-        setIsPlaying(false)
-        setLoading(false)
-        stopCurrentSong()
-      }
-      
-      audioRef.current.onerror = () => {
-        setIsPlaying(false)
-        setLoading(false)
-        stopCurrentSong()
-      }
-      
-      audioRef.current.oncanplay = () => {
-        setLoading(false)
-        // Set start time after metadata is loaded
-        if (startTime && startTime > 0 && audioRef.current) {
-          audioRef.current.currentTime = startTime
-        }
-        // Actually play the audio - this is the reliable way on mobile
-        if (audioRef.current) {
-          audioRef.current.play().then(() => {
-            console.log('Post: Audio play() succeeded in oncanplay')
-            setIsPlaying(true)
-          }).catch((err) => {
-            console.error('Post: Failed to play audio after canplay:', err)
-            setLoading(false)
-          })
-        }
-      }
-
-      // Try to play immediately (works on desktop)
-      audioRef.current.play().then(() => {
-        console.log('Post: Audio play() succeeded immediately')
+      // Event handlers
+      audio.onplay = () => {
         setIsPlaying(true)
         setLoading(false)
-      }).catch((err) => {
-        console.log('Post: Immediate play() failed (may need user interaction), will retry in oncanplay:', err)
-        // Don't set error here - oncanplay will handle it
-      })
+      }
+      
+      audio.onpause = () => {
+        if (!isControllingRef.current) {
+          setIsPlaying(false)
+        }
+      }
+      
+      audio.onended = () => {
+        setIsPlaying(false)
+        setLoading(false)
+        stopCurrentSong()
+      }
+      
+      audio.onerror = () => {
+        console.error('Post: Audio error')
+        setIsPlaying(false)
+        setLoading(false)
+        stopCurrentSong()
+      }
+      
+      // Store reference and play
+      audioRef.current = audio
+      
+      // Wait for audio to be ready, then play
+      audio.addEventListener('canplay', () => {
+        if (startTime && startTime > 0 && audio) {
+          audio.currentTime = startTime
+        }
+        audio.play().catch((err) => {
+          console.error('Post: Play failed:', err)
+          setLoading(false)
+        })
+      }, { once: true })
+      
+      // Also try to load immediately
+      audio.load()
+      
     } catch (error: any) {
-      console.error('Audio playback error:', error)
+      console.error('Post: Audio playback error:', error)
       setIsPlaying(false)
       setLoading(false)
       stopCurrentSong()
