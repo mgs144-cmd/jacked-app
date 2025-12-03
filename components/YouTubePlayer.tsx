@@ -121,10 +121,23 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
                     
                     // If we should be playing, play now
                     if (isPlaying) {
-                      if (startTime && startTime > 0 && youtubePlayerRef.current) {
-                        youtubePlayerRef.current.seekTo(startTime, true)
-                      }
-                      youtubePlayerRef.current.playVideo()
+                      setTimeout(() => {
+                        if (!youtubePlayerRef.current) return
+                        
+                        if (typeof youtubePlayerRef.current.playVideo !== 'function') {
+                          console.error('playVideo not available after retry')
+                          return
+                        }
+                        
+                        try {
+                          if (startTime && startTime > 0 && typeof youtubePlayerRef.current.seekTo === 'function') {
+                            youtubePlayerRef.current.seekTo(startTime, true)
+                          }
+                          youtubePlayerRef.current.playVideo()
+                        } catch (err) {
+                          console.error('Error playing after retry:', err)
+                        }
+                      }, 200)
                     }
                   } else {
                     console.error('YouTube player methods still not available after retry')
@@ -241,27 +254,57 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
         console.log('Playing YouTube video:', videoId, 'with start time:', startTime)
         isControllingRef.current = true
         
+        // Check methods exist before calling
+        if (typeof youtubePlayerRef.current.playVideo !== 'function') {
+          console.error('playVideo method not available')
+          isControllingRef.current = false
+          return
+        }
+        
+        if (typeof youtubePlayerRef.current.seekTo !== 'function') {
+          console.error('seekTo method not available')
+          isControllingRef.current = false
+          return
+        }
+        
         // Small delay to ensure player is ready
         setTimeout(() => {
-          if (!youtubePlayerRef.current) return
+          if (!youtubePlayerRef.current) {
+            isControllingRef.current = false
+            return
+          }
           
           try {
             // If start time is set, seek to that position first
-            if (startTime && startTime > 0) {
+            if (startTime && startTime > 0 && typeof youtubePlayerRef.current.seekTo === 'function') {
               youtubePlayerRef.current.seekTo(startTime, true)
             }
-            youtubePlayerRef.current.playVideo()
+            if (typeof youtubePlayerRef.current.playVideo === 'function') {
+              youtubePlayerRef.current.playVideo()
+            } else {
+              console.error('playVideo method not available after delay')
+              isControllingRef.current = false
+            }
           } catch (err) {
             console.error('Error playing video:', err)
+            isControllingRef.current = false
           }
-        }, 50)
+        }, 100)
       } else if (!shouldBePlaying && isCurrentlyPlaying) {
         console.log('Pausing YouTube video:', videoId)
         isControllingRef.current = true
+        
+        if (typeof youtubePlayerRef.current.pauseVideo !== 'function') {
+          console.error('pauseVideo method not available')
+          isControllingRef.current = false
+          return
+        }
+        
         try {
           youtubePlayerRef.current.pauseVideo()
         } catch (err) {
           console.error('Error pausing video:', err)
+          isControllingRef.current = false
         }
       }
     } catch (err) {
@@ -283,10 +326,11 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
           youtubePlayerRef.current.unMute()
         }
       } else {
-        console.warn('YouTube mute/unmute methods not available')
+        // Silently fail - methods may not be available yet
+        // Don't log warning as it's expected during initialization
       }
     } catch (err) {
-      console.error('Error muting/unmuting YouTube player:', err)
+      // Silently fail - player may not be ready
     }
   }, [isMuted, isReady])
 
