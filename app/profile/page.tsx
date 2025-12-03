@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/Navbar'
 import { PostCard } from '@/components/PostCard'
-import { Crown, Settings, TrendingUp } from 'lucide-react'
+import { Crown, Settings, TrendingUp, Trophy } from 'lucide-react'
 import { ProfileMusicPlayer } from '@/components/ProfileMusicPlayer'
 import { PRDisplay } from '@/components/PRDisplay'
 import { BadgeDisplay } from '@/components/BadgeDisplay'
@@ -202,7 +202,7 @@ export default async function ProfilePage() {
         {hasDeadcemberEntries && (
           <div className="mb-10 bg-gradient-to-br from-red-950/30 via-gray-900/60 to-gray-900/60 backdrop-blur-sm rounded-2xl border-2 border-primary/50 p-6 glow-red-sm">
             <div className="flex items-center space-x-3 mb-4">
-              <span className="text-3xl">💀</span>
+              <Trophy className="w-6 h-6 text-primary" />
               <h3 className="text-2xl font-black text-white">Deadcember Total</h3>
             </div>
             <p className="text-4xl font-black text-primary text-center">

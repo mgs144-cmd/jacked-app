@@ -172,7 +172,7 @@ export function PostCard({ post }: PostCardProps) {
       {/* Deadcember Badge */}
       {isDeadcemberPost && (
         <div className="bg-gradient-to-r from-primary via-red-700 to-primary px-5 py-3 flex items-center justify-center space-x-2">
-          <span className="text-2xl">💀</span>
+          <Trophy className="w-5 h-5 text-white" />
           <span className="text-white font-black text-base tracking-wider">DEADCEMBER</span>
         </div>
       )}

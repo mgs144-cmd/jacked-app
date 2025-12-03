@@ -36,7 +36,28 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
           .limit(50)
 
         if (error) throw error
-        setUsers(data || [])
+        
+        // Calculate follower/following counts for search results
+        const usersWithCounts = await Promise.all((data || []).map(async (user: any) => {
+          const [followerResult, followingResult] = await Promise.all([
+            supabase
+              .from('follows')
+              .select('*', { count: 'exact', head: true })
+              .eq('following_id', user.id),
+            supabase
+              .from('follows')
+              .select('*', { count: 'exact', head: true })
+              .eq('follower_id', user.id)
+          ])
+
+          return {
+            ...user,
+            followers_count: followerResult.count || 0,
+            following_count: followingResult.count || 0,
+          }
+        }))
+        
+        setUsers(usersWithCounts)
       } catch (error) {
         console.error('Search error:', error)
         setUsers([])

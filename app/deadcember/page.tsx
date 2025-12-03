@@ -53,7 +53,6 @@ export default async function DeadcemberPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-3">
-            <span className="text-4xl">💀</span>
             <Trophy className="w-8 h-8 text-primary" />
             <h1 className="text-4xl font-black text-white tracking-tight">Deadcember</h1>
           </div>

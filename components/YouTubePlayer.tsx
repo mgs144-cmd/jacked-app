@@ -175,22 +175,12 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
 
     const player = youtubePlayerRef.current
 
-    const timeout = setTimeout(() => {
+    const attemptPlayback = () => {
       try {
-        // Check if methods exist, if not wait a bit more
+        // Check if methods exist
         if (typeof player.playVideo !== 'function' || typeof player.pauseVideo !== 'function') {
           // Methods not ready yet, retry after a delay
-          setTimeout(() => {
-            if (!youtubePlayerRef.current) return
-            const retryPlayer = youtubePlayerRef.current
-            if (typeof retryPlayer.playVideo === 'function') {
-              if (isPlaying) {
-                retryPlayer.playVideo()
-              } else {
-                retryPlayer.pauseVideo()
-              }
-            }
-          }, 500)
+          setTimeout(attemptPlayback, 200)
           return
         }
 
@@ -214,12 +204,18 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
           console.log('YouTube: playVideo() called')
         } else {
           console.log('YouTube: Pausing', videoId)
-          player.pauseVideo()
+          if (typeof player.pauseVideo === 'function') {
+            player.pauseVideo()
+          }
         }
       } catch (err) {
         console.error('Error controlling player:', err)
+        // Retry on error
+        setTimeout(attemptPlayback, 500)
       }
-    }, 100)
+    }
+
+    const timeout = setTimeout(attemptPlayback, 100)
 
     return () => clearTimeout(timeout)
   }, [isPlaying, startTime, videoId, isMuted])

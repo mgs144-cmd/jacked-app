@@ -16,22 +16,18 @@ export function Navbar() {
   // Always show Deadcember for now (can change back to isDecember only later)
   const showDeadcember = true // Change to: isDecember
 
-  // Split nav items - post button goes in middle
-  const leftNavItems = [
+  // All nav items in order - post button in middle
+  const navItems = [
     { href: '/feed', icon: Home, label: 'Feed' },
     { href: '/discover', icon: Users, label: 'Discover' },
-  ]
-  
-  const rightNavItems = [
     ...(showDeadcember ? [{ href: '/deadcember', icon: Trophy, label: 'Deadcember' }] : []),
+    { href: '/create', icon: PlusCircle, label: 'Post', isPrimary: true },
     { href: '/profile', icon: User, label: 'Profile' },
   ]
 
-  const postButton = { href: '/create', icon: PlusCircle, label: 'Post', isPrimary: true }
-
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-gradient-metal backdrop-blur-xl border-t border-gray-800/50 z-50 md:top-0 md:bottom-auto md:border-b md:border-t-0 shadow-2xl" style={{ position: 'fixed' }}>
-      <div className="max-w-7xl mx-auto px-4 md:px-8">
+      <div className="max-w-7xl mx-auto px-2 md:px-8">
         <div className="flex items-center justify-between h-16 md:h-24">
           {/* Logo - Hidden on mobile, shown on desktop */}
           <Link
@@ -46,49 +42,30 @@ export function Navbar() {
             </div>
           </Link>
 
-          {/* Left Nav Items */}
-          <div className="flex items-center space-x-1 md:space-x-2 flex-1 md:flex-initial">
-            {leftNavItems.map((item) => {
+          {/* All Nav Items - Centered on mobile, spread on desktop */}
+          <div className="flex items-center justify-center flex-1 md:flex-initial gap-1 md:gap-2 w-full md:w-auto">
+            {navItems.map((item) => {
               const Icon = item.icon
               const isActive = pathname === item.href
+              
+              if (item.isPrimary) {
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="flex flex-col md:flex-row items-center justify-center space-y-1 md:space-y-0 md:space-x-2 px-3 md:px-4 py-2.5 md:py-2 rounded-xl bg-gradient-primary text-white hover:brightness-110 transition-all duration-300 shadow-lg hover:shadow-red-500/30 hover:scale-105 flex-1 md:flex-initial"
+                  >
+                    <Icon className="w-6 h-6 md:w-5 md:h-5" strokeWidth={2.5} />
+                    <span className="text-[10px] md:text-sm font-bold tracking-wide">{item.label}</span>
+                  </Link>
+                )
+              }
+
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex flex-col md:flex-row items-center justify-center space-y-1 md:space-y-0 md:space-x-2 px-3 md:px-3 py-2.5 md:py-2 rounded-xl transition-all duration-300 flex-shrink-0 ${
-                    isActive
-                      ? 'text-white bg-gray-800/60 shadow-lg'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-800/40'
-                  }`}
-                >
-                  <Icon className="w-6 h-6 md:w-5 md:h-5" strokeWidth={2.5} />
-                  <span className="text-[10px] md:text-sm font-semibold hidden md:inline">{item.label}</span>
-                </Link>
-              )
-            })}
-          </div>
-
-          {/* Post Button - Centered */}
-          <div className="flex items-center justify-center flex-shrink-0 mx-2 md:mx-4">
-            <Link
-              href={postButton.href}
-              className="flex flex-col md:flex-row items-center justify-center space-y-1 md:space-y-0 md:space-x-2 px-4 md:px-4 py-3 md:py-2 rounded-xl bg-gradient-primary text-white hover:brightness-110 transition-all duration-300 shadow-lg hover:shadow-red-500/30 hover:scale-105"
-            >
-              <postButton.icon className="w-7 h-7 md:w-5 md:h-5" strokeWidth={2.5} />
-              <span className="text-xs md:text-sm font-bold tracking-wide">{postButton.label}</span>
-            </Link>
-          </div>
-
-          {/* Right Nav Items */}
-          <div className="flex items-center space-x-1 md:space-x-2 flex-1 md:flex-initial justify-end">
-            {rightNavItems.map((item) => {
-              const Icon = item.icon
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex flex-col md:flex-row items-center justify-center space-y-1 md:space-y-0 md:space-x-2 px-3 md:px-3 py-2.5 md:py-2 rounded-xl transition-all duration-300 flex-shrink-0 ${
+                  className={`flex flex-col md:flex-row items-center justify-center space-y-1 md:space-y-0 md:space-x-2 px-2 md:px-3 py-2.5 md:py-2 rounded-xl transition-all duration-300 flex-1 md:flex-initial ${
                     isActive
                       ? 'text-white bg-gray-800/60 shadow-lg'
                       : 'text-gray-400 hover:text-white hover:bg-gray-800/40'
