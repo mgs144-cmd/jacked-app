@@ -175,7 +175,7 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
       setError(errorMsg)
       onError?.(errorMsg)
     }
-  }, [videoId, isReady, startTime, onReady, onPlay, onPause, onError])
+  }, [videoId, isReady, isPlaying, startTime, onReady, onPlay, onPause, onError])
 
   useEffect(() => {
     // Load YouTube iframe API script

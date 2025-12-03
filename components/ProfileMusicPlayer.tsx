@@ -115,7 +115,8 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
       const audio = new Audio(audioUrl)
       audio.volume = isMuted ? 0 : 0.7
       audio.muted = isMuted
-      audio.playsInline = true
+      audio.setAttribute('playsinline', 'true')
+      audio.setAttribute('webkit-playsinline', 'true')
       
       // Set start time if provided
       if (startTime && startTime > 0) {
