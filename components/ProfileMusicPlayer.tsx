@@ -94,7 +94,9 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
 
   const startPlayback = useCallback(async () => {
     if (youtubeVideoId) {
-      console.log('Profile: Starting YouTube playback', { songId, youtubeVideoId, startTime })
+      console.log('Profile: Starting YouTube playback', { songId, youtubeVideoId, startTime, isMuted })
+      // For YouTube, the YouTubePlayer component handles playback via isPlaying prop
+      // Just set the state - the player will react to it
       setIsPlaying(true)
       setLoading(false)
       return
