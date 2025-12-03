@@ -157,13 +157,15 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
           audioRef.current.currentTime = startTime
         }
         // Actually play the audio - this is the reliable way on mobile
-        audioRef.current.play().then(() => {
-          console.log('Post: Audio play() succeeded in oncanplay')
-          setIsPlaying(true)
-        }).catch((err) => {
-          console.error('Post: Failed to play audio after canplay:', err)
-          setLoading(false)
-        })
+        if (audioRef.current) {
+          audioRef.current.play().then(() => {
+            console.log('Post: Audio play() succeeded in oncanplay')
+            setIsPlaying(true)
+          }).catch((err) => {
+            console.error('Post: Failed to play audio after canplay:', err)
+            setLoading(false)
+          })
+        }
       }
 
       // Try to play immediately (works on desktop)
