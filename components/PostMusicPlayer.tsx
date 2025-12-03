@@ -273,10 +273,18 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       console.log('Post: Manual stop')
       stopCurrentSong()
     } else {
-      console.log('Post: Manual play')
+      console.log('Post: Manual play - calling playSong', { songId, youtubeVideoId, audioUrl })
       // Reset intersection observer flag to allow manual play
       isPlayingRef.current = true
       playSong(songId, startPlayback, stopPlayback)
+      
+      // Force playback to start immediately if it doesn't
+      setTimeout(() => {
+        if (currentPlayingId === songId && !isPlaying) {
+          console.log('Post: Force starting playback after manual play')
+          startPlayback()
+        }
+      }, 200)
     }
   }
 
