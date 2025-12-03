@@ -168,6 +168,7 @@ export function SongPreviewPlayer({ songUrl, spotifyId, startTime, onPreviewEnd 
       <audio ref={audioRef} src={audioUrl || undefined} />
       {youtubeVideoId && startTime !== null && !isNaN(startTime) && startTime >= 0 && (
         <YouTubePlayer
+          key={`${youtubeVideoId}-${startTime}`}
           videoId={youtubeVideoId}
           isPlaying={isPlaying}
           startTime={startTime}

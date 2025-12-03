@@ -40,10 +40,23 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
       // Destroy existing player
       if (youtubePlayerRef.current) {
         try {
-          youtubePlayerRef.current.destroy()
+          // Check if container still exists before destroying
+          if (playerRef.current && playerRef.current.parentNode) {
+            // Clear container first
+            if (playerRef.current.firstChild) {
+              playerRef.current.innerHTML = ''
+            }
+            // Try destroy
+            try {
+              youtubePlayerRef.current.destroy()
+            } catch (destroyError) {
+              // Ignore destroy errors
+            }
+          }
         } catch (e) {
-          // Ignore
+          // Ignore all errors
         }
+        youtubePlayerRef.current = null
       }
 
       // Reset ready states
@@ -124,9 +137,21 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
     return () => {
       if (youtubePlayerRef.current) {
         try {
-          youtubePlayerRef.current.destroy()
+          // Check if the container still exists in the DOM before destroying
+          if (playerRef.current && playerRef.current.parentNode) {
+            // Clear the container's innerHTML instead of destroy() to avoid DOM errors
+            if (playerRef.current.firstChild) {
+              playerRef.current.innerHTML = ''
+            }
+            // Try destroy, but don't fail if it errors
+            try {
+              youtubePlayerRef.current.destroy()
+            } catch (destroyError) {
+              // Ignore destroy errors - container may already be removed
+            }
+          }
         } catch (e) {
-          // Ignore
+          // Ignore all cleanup errors
         }
         youtubePlayerRef.current = null
       }
