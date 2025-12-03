@@ -158,11 +158,25 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
         if (startTime && startTime > 0 && audioRef.current) {
           audioRef.current.currentTime = startTime
         }
+        // Actually play the audio - this is the reliable way on mobile
+        audioRef.current.play().then(() => {
+          console.log('Profile: Audio play() succeeded in oncanplay')
+          setIsPlaying(true)
+        }).catch((err) => {
+          console.error('Profile: Failed to play audio after canplay:', err)
+          setLoading(false)
+        })
       }
 
-      await audioRef.current.play()
-      setIsPlaying(true)
-      setLoading(false)
+      // Try to play immediately (works on desktop)
+      audioRef.current.play().then(() => {
+        console.log('Profile: Audio play() succeeded immediately')
+        setIsPlaying(true)
+        setLoading(false)
+      }).catch((err) => {
+        console.log('Profile: Immediate play() failed (may need user interaction), will retry in oncanplay:', err)
+        // Don't set error here - oncanplay will handle it
+      })
     } catch (error: any) {
       console.error('Audio playback error:', error)
       setIsPlaying(false)
