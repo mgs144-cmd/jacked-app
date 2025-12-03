@@ -26,7 +26,7 @@ export default async function DeadcemberPage() {
       workout_exercises(*)
     `)
     .eq('is_deadcember_post', true)
-    .order('deadcember_volume', { ascending: false, nullsLast: true })
+    .order('deadcember_volume', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false })
     .limit(50)
 
@@ -61,7 +61,11 @@ export default async function DeadcemberPage() {
 
         {/* Posts */}
         {postsWithCounts.length > 0 ? (
-          <FeedClient initialPosts={postsWithCounts} />
+          <FeedClient 
+            allPosts={postsWithCounts}
+            followingPosts={[]}
+            publicPosts={postsWithCounts}
+          />
         ) : (
           <div className="text-center py-12">
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-800/60 rounded-full flex items-center justify-center">

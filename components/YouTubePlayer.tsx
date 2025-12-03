@@ -20,6 +20,9 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
   const methodsReadyRef = useRef(false) // Track if methods are actually available
 
   useEffect(() => {
+    // Capture ref value at the start of the effect
+    const containerElement = playerRef.current
+    
     // Load YouTube iframe API
     if (!window.YT) {
       const tag = document.createElement('script')
@@ -35,16 +38,16 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
     }
 
     function initializePlayer() {
-      if (!playerRef.current || !window.YT) return
+      if (!containerElement || !window.YT) return
 
       // Destroy existing player
       if (youtubePlayerRef.current) {
         try {
           // Check if container still exists before destroying
-          if (playerRef.current && playerRef.current.parentNode) {
+          if (containerElement && containerElement.parentNode) {
             // Clear container first
-            if (playerRef.current.firstChild) {
-              playerRef.current.innerHTML = ''
+            if (containerElement.firstChild) {
+              containerElement.innerHTML = ''
             }
             // Try destroy
             try {
@@ -64,7 +67,7 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
       methodsReadyRef.current = false
 
       try {
-        youtubePlayerRef.current = new window.YT.Player(playerRef.current, {
+        youtubePlayerRef.current = new window.YT.Player(containerElement, {
           videoId: videoId,
           playerVars: {
             autoplay: 0,
@@ -135,13 +138,16 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
     }
 
     return () => {
+      // Use captured ref value in cleanup
+      const containerElement = playerRef.current
+      
       if (youtubePlayerRef.current) {
         try {
           // Check if the container still exists in the DOM before destroying
-          if (playerRef.current && playerRef.current.parentNode) {
+          if (containerElement && containerElement.parentNode) {
             // Clear the container's innerHTML instead of destroy() to avoid DOM errors
-            if (playerRef.current.firstChild) {
-              playerRef.current.innerHTML = ''
+            if (containerElement.firstChild) {
+              containerElement.innerHTML = ''
             }
             // Try destroy, but don't fail if it errors
             try {

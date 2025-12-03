@@ -191,7 +191,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
       setLoading(false)
       stopCurrentSong()
     }
-  }, [youtubeVideoId, audioUrl, stopCurrentSong, isMuted, startTime])
+  }, [youtubeVideoId, audioUrl, stopCurrentSong, isMuted, startTime, songId])
 
   // Stop function
   const stopPlayback = useCallback(() => {
