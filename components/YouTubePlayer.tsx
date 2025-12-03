@@ -236,81 +236,55 @@ export function YouTubePlayer({ videoId, isPlaying, startTime, isMuted = false, 
       return
     }
 
-    // Check if player has the methods we need
-    if (typeof youtubePlayerRef.current.playVideo !== 'function' || 
-        typeof youtubePlayerRef.current.pauseVideo !== 'function') {
-      console.error('YouTube player methods not available')
-      return
-    }
+    // Wait a bit longer to ensure methods are truly available
+    const timeoutId = setTimeout(() => {
+      if (!youtubePlayerRef.current) return
 
-    // Get current player state to avoid unnecessary calls
-    try {
-      const currentState = youtubePlayerRef.current.getPlayerState()
-      const shouldBePlaying = isPlaying
-      const isCurrentlyPlaying = currentState === window.YT.PlayerState.PLAYING
+      // Check if player has the methods we need
+      if (typeof youtubePlayerRef.current.playVideo !== 'function' || 
+          typeof youtubePlayerRef.current.pauseVideo !== 'function') {
+        console.warn('YouTube player methods not available yet, will retry')
+        return
+      }
 
-      // Only control if state doesn't match
-      if (shouldBePlaying && !isCurrentlyPlaying) {
-        console.log('Playing YouTube video:', videoId, 'with start time:', startTime)
-        isControllingRef.current = true
-        
-        // Check methods exist before calling
-        if (typeof youtubePlayerRef.current.playVideo !== 'function') {
-          console.error('playVideo method not available')
-          isControllingRef.current = false
-          return
-        }
-        
-        if (typeof youtubePlayerRef.current.seekTo !== 'function') {
-          console.error('seekTo method not available')
-          isControllingRef.current = false
-          return
-        }
-        
-        // Small delay to ensure player is ready
-        setTimeout(() => {
-          if (!youtubePlayerRef.current) {
-            isControllingRef.current = false
-            return
-          }
+      // Get current player state to avoid unnecessary calls
+      try {
+        const currentState = youtubePlayerRef.current.getPlayerState()
+        const shouldBePlaying = isPlaying
+        const isCurrentlyPlaying = currentState === window.YT.PlayerState.PLAYING
+
+        // Only control if state doesn't match
+        if (shouldBePlaying && !isCurrentlyPlaying) {
+          console.log('Playing YouTube video:', videoId, 'with start time:', startTime)
+          isControllingRef.current = true
           
           try {
             // If start time is set, seek to that position first
-            if (startTime && startTime > 0 && typeof youtubePlayerRef.current.seekTo === 'function') {
+            if (startTime && startTime > 0) {
               youtubePlayerRef.current.seekTo(startTime, true)
             }
-            if (typeof youtubePlayerRef.current.playVideo === 'function') {
-              youtubePlayerRef.current.playVideo()
-            } else {
-              console.error('playVideo method not available after delay')
-              isControllingRef.current = false
-            }
+            youtubePlayerRef.current.playVideo()
           } catch (err) {
             console.error('Error playing video:', err)
             isControllingRef.current = false
           }
-        }, 100)
-      } else if (!shouldBePlaying && isCurrentlyPlaying) {
-        console.log('Pausing YouTube video:', videoId)
-        isControllingRef.current = true
-        
-        if (typeof youtubePlayerRef.current.pauseVideo !== 'function') {
-          console.error('pauseVideo method not available')
-          isControllingRef.current = false
-          return
+        } else if (!shouldBePlaying && isCurrentlyPlaying) {
+          console.log('Pausing YouTube video:', videoId)
+          isControllingRef.current = true
+          try {
+            youtubePlayerRef.current.pauseVideo()
+          } catch (err) {
+            console.error('Error pausing video:', err)
+            isControllingRef.current = false
+          }
         }
-        
-        try {
-          youtubePlayerRef.current.pauseVideo()
-        } catch (err) {
-          console.error('Error pausing video:', err)
-          isControllingRef.current = false
-        }
+      } catch (err) {
+        console.error('Error controlling YouTube player:', err)
+        isControllingRef.current = false
       }
-    } catch (err) {
-      console.error('Error controlling YouTube player:', err)
-      isControllingRef.current = false
-    }
+    }, 300) // Longer delay to ensure player is fully ready
+
+    return () => clearTimeout(timeoutId)
   }, [isPlaying, videoId, isReady, startTime])
 
   // Handle mute changes
