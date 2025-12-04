@@ -437,7 +437,7 @@ export default function SettingsPage() {
               </label>
               <div className="flex items-center space-x-6">
                 <div className="relative">
-                  <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden ring-4 ring-gray-800">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden shadow-xl">
                     {avatarPreview ? (
                       <Image
                         src={avatarPreview}

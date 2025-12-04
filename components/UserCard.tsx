@@ -28,7 +28,7 @@ export function UserCard({
           {/* Avatar */}
           <Link href={`/user/${user.id}`} className="flex-shrink-0">
             <div className="relative">
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden ring-2 ring-gray-800">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden shadow-md">
                 {user.avatar_url ? (
                   <Image
                     src={user.avatar_url}
@@ -44,7 +44,7 @@ export function UserCard({
                 )}
               </div>
               {user.is_premium && (
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-primary rounded-lg flex items-center justify-center ring-2 ring-gray-900">
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-primary rounded-full flex items-center justify-center shadow-md">
                   <Crown className="w-3.5 h-3.5 text-white fill-current" />
                 </div>
               )}

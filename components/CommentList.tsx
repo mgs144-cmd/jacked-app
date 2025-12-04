@@ -68,7 +68,7 @@ export function CommentList({ comments }: CommentListProps) {
         return (
           <div key={comment.id} className="flex items-start space-x-3 group">
             {/* Avatar */}
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden ring-2 ring-gray-800 flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden shadow-md flex-shrink-0">
               {profile.avatar_url ? (
                 <Image
                   src={profile.avatar_url}
