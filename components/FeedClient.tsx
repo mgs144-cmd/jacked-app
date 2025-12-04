@@ -86,16 +86,9 @@ export function FeedClient({ allPosts, followingPosts, publicPosts }: FeedClient
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
+            <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
               Your Feed
             </h1>
-            <p className="text-gray-400 font-medium">
-              See what the community is lifting
-            </p>
-          </div>
-          <div className="flex items-center space-x-2 px-4 py-2 bg-gradient-primary rounded-xl glow-red-sm">
-            <Flame className="w-5 h-5 text-white" />
-            <span className="text-white font-bold text-sm">LIVE</span>
           </div>
         </div>
       </div>
