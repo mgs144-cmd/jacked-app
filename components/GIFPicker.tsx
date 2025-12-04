@@ -84,34 +84,34 @@ export function GIFPicker({ onSelect, onClose }: GIFPickerProps) {
           </button>
         </div>
 
-        {/* Search Bar - More Prominent */}
+        {/* Search Bar - Fully Functional on Mobile */}
         <div className="p-4 md:p-5 border-b border-gray-800 flex-shrink-0 bg-gray-900/50">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10" />
             <input
-              type="text"
+              type="search"
+              inputMode="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search GIFs (e.g., 'funny', 'celebration', 'workout')..."
-              className="w-full pl-12 pr-4 py-3 md:py-4 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-base md:text-lg transition-all"
+              placeholder="Search for GIFs..."
+              className="w-full pl-12 pr-12 py-4 bg-gray-800 border-2 border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-base transition-all touch-manipulation"
               autoComplete="off"
               autoFocus
             />
             {query && (
               <button
+                type="button"
                 onClick={() => setQuery('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-white p-1 active:scale-95"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white p-2 active:scale-95 z-10 touch-manipulation"
                 aria-label="Clear search"
               >
                 <X className="w-5 h-5" />
               </button>
             )}
           </div>
-          {!query && (
-            <p className="text-gray-500 text-xs md:text-sm mt-2 ml-1">
-              Showing trending GIFs
-            </p>
-          )}
+          <p className="text-gray-500 text-xs md:text-sm mt-3 ml-1">
+            {query ? `Searching for "${query}"...` : 'Type to search or browse trending GIFs below'}
+          </p>
         </div>
 
         {/* GIF Grid - Larger viewing area */}
