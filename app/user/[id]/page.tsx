@@ -144,7 +144,7 @@ export default async function UserProfilePage({
           <div className="relative px-4 md:px-8">
             {/* Avatar - Overlapping Banner Bottom */}
             <div className="relative -mt-16 md:-mt-20 mb-4">
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden ring-4 ring-gray-900 shadow-2xl">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden shadow-2xl">
                 {(profile as any)?.avatar_url ? (
                   <Image
                     src={(profile as any).avatar_url}
@@ -160,8 +160,8 @@ export default async function UserProfilePage({
                 )}
               </div>
               {(profile as any)?.is_premium && (
-                <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center ring-4 ring-gray-900 glow-red-sm">
-                  <Crown className="w-6 h-6 text-white fill-current" />
+                <div className="absolute -bottom-2 -right-2 w-9 h-9 bg-gradient-primary rounded-full flex items-center justify-center shadow-lg">
+                  <Crown className="w-5 h-5 text-white fill-current" />
                 </div>
               )}
             </div>
@@ -199,15 +199,13 @@ export default async function UserProfilePage({
                   
                   {/* Profile Song */}
                   {(profile as any)?.profile_song_title && (profile as any)?.profile_song_artist && (
-                    <div className="mb-4 scale-90 origin-left">
-                      <ProfileMusicPlayer
-                        songTitle={(profile as any).profile_song_title}
-                        songArtist={(profile as any).profile_song_artist}
-                        songUrl={(profile as any).profile_song_url || undefined}
-                        spotifyId={(profile as any).profile_song_spotify_id || undefined}
-                        albumArt={(profile as any).profile_song_album_art_url || undefined}
-                        startTime={(profile as any).profile_song_start_time || undefined}
-                      />
+                    <div className="mb-3 opacity-70 hover:opacity-100 transition-opacity">
+                      <div className="text-xs text-gray-400 flex items-center space-x-2">
+                        <span>🎵</span>
+                        <span className="font-medium">{(profile as any).profile_song_title}</span>
+                        <span className="text-gray-600">•</span>
+                        <span>{(profile as any).profile_song_artist}</span>
+                      </div>
                     </div>
                   )}
 
