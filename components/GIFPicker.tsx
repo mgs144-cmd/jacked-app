@@ -70,32 +70,34 @@ export function GIFPicker({ onSelect, onClose }: GIFPickerProps) {
   }, [query])
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-2xl max-h-[80vh] flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-gray-800">
-          <h3 className="text-white font-bold text-lg">Select a GIF</h3>
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+      <div className="bg-gray-900 rounded-t-2xl md:rounded-2xl border-t md:border border-gray-800 w-full max-w-2xl h-[85vh] md:max-h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between p-3 md:p-4 border-b border-gray-800 flex-shrink-0">
+          <h3 className="text-white font-bold text-base md:text-lg">Select a GIF</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
+            className="text-gray-400 hover:text-white transition-colors p-2 -mr-2"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-4 border-b border-gray-800">
+        <div className="p-3 md:p-4 border-b border-gray-800 flex-shrink-0">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-500" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search GIFs..."
-              className="input-field w-full pl-10"
+              className="input-field w-full pl-9 md:pl-10 text-sm md:text-base"
+              autoComplete="off"
             />
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-3 md:p-4 overscroll-contain">
           {loading && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -110,7 +112,7 @@ export function GIFPicker({ onSelect, onClose }: GIFPickerProps) {
           )}
 
           {!loading && !error && gifs.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
               {gifs.map((gif) => (
                 <button
                   key={gif.id}
@@ -118,13 +120,15 @@ export function GIFPicker({ onSelect, onClose }: GIFPickerProps) {
                     onSelect(gif.url)
                     onClose()
                   }}
-                  className="relative aspect-square rounded-lg overflow-hidden hover:ring-2 ring-primary transition-all group"
+                  type="button"
+                  className="relative aspect-square rounded-lg overflow-hidden active:scale-95 md:hover:ring-2 ring-primary transition-all group touch-manipulation"
                 >
                   <Image
                     src={gif.preview || gif.url}
                     alt={gif.title || 'GIF'}
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform"
+                    className="object-cover group-active:scale-95 md:group-hover:scale-105 transition-transform"
+                    unoptimized
                   />
                 </button>
               ))}
