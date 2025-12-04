@@ -158,17 +158,10 @@ export default function SettingsPage() {
 
     try {
       let avatarUrl = avatarPreview
-      let bannerUrl: string | null = null
+      let bannerUrl = bannerPreview
 
-      // If we have a banner file, we need to upload it
-      // Otherwise, use the existing preview (which is the current saved value)
-      if (bannerFile) {
-        // Will be set after upload
-        bannerUrl = null // Will be set below
-      } else if (bannerPreview) {
-        // Use existing preview (already saved banner)
-        bannerUrl = bannerPreview
-      }
+      // Upload avatar if changed
+      if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop()
         const fileName = `${user.id}-avatar-${Date.now()}.${fileExt}`
         const { error: uploadError } = await supabase.storage
