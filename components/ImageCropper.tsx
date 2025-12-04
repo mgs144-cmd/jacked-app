@@ -1,9 +1,25 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, ErrorInfo } from 'react'
 import Cropper from 'react-easy-crop'
 import { X, Check } from 'lucide-react'
 import 'react-easy-crop/react-easy-crop.css'
+
+// Suppress react-easy-crop cleanup errors globally
+if (typeof window !== 'undefined') {
+  const originalRemoveChild = Node.prototype.removeChild
+  Node.prototype.removeChild = function(child: Node) {
+    try {
+      if (this.contains(child)) {
+        return originalRemoveChild.call(this, child)
+      }
+    } catch (e) {
+      // Ignore errors when node is already removed
+      return child
+    }
+    return child
+  }
+}
 
 interface ImageCropperProps {
   image: string
