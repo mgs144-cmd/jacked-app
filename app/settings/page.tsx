@@ -215,14 +215,9 @@ export default function SettingsPage() {
         profile_song_start_time: songStartTime || null,
       }
       
-      // Only add banner_url if we have a value AND column exists
-      // We'll try to include it, but handle gracefully if column doesn't exist
-      if (bannerUrl && bannerUrl !== bannerPreview) {
-        // Only update if it's a new upload (not just the preview)
+      // Add banner_url if we have a value
+      if (bannerUrl) {
         updateData.banner_url = bannerUrl
-      } else if (bannerPreview && !bannerFile) {
-        // If we have a preview but no file, it means it's already saved
-        updateData.banner_url = bannerPreview
       }
       
       // Only include album_art_url if column exists (check by trying to include it conditionally)
