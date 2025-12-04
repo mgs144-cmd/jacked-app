@@ -99,9 +99,6 @@ export function FeedClient({ allPosts, followingPosts, publicPosts }: FeedClient
       {/* Posts */}
       {!displayedPosts || displayedPosts.length === 0 ? (
         <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-12 text-center card-elevated">
-          <div className="w-20 h-20 mx-auto mb-4 bg-gray-800 rounded-full flex items-center justify-center">
-            <Flame className="w-10 h-10 text-gray-600" />
-          </div>
           <p className="text-gray-400 text-lg font-semibold mb-2">
             {view === 'friends' ? 'No posts from friends yet' : 'No posts yet'}
           </p>
