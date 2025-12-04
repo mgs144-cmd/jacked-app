@@ -476,7 +476,7 @@ export function PostCard({ post }: PostCardProps) {
             postId={post.id} 
             userId={user.id}
             onCommentAdded={() => {
-              setCommentCount((prev) => prev + 1)
+              setCommentCount((prev: number) => prev + 1)
               router.refresh()
             }}
           />

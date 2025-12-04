@@ -304,7 +304,7 @@ export default function SettingsPage() {
                 <Upload className="w-5 h-5" />
                 <span>BANNER IMAGE</span>
               </label>
-              <p className="text-xs text-gray-500 mb-3">This image appears at the top of your profile (like YouTube/LinkedIn)</p>
+              <p className="text-xs text-gray-500 mb-3">This image appears at the top of your profile</p>
               <div className="relative w-full h-48 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden border-2 border-gray-700 mb-3">
                 {bannerPreview ? (
                   <Image
