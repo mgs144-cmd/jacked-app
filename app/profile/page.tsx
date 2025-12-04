@@ -95,36 +95,39 @@ export default async function ProfilePage() {
     <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
       <Navbar />
       
-      <div className="max-w-5xl mx-auto px-4 py-6 md:py-8">
-        {/* Banner */}
-        {(profile as any)?.banner_url && (
-          <div className="relative w-full h-64 md:h-80 rounded-2xl overflow-hidden mb-6 border border-gray-800/60">
-            <Image
-              src={(profile as any).banner_url}
-              alt="Profile banner"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        )}
-
-        {/* Profile Header */}
-        <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-6 md:p-8 mb-6 card-elevated">
-          <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">
-            {/* Avatar - Much Larger */}
-            <div className="relative">
-              <div className="w-40 h-40 md:w-48 md:h-48 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden ring-4 ring-gray-800">
+      <div className="max-w-5xl mx-auto">
+        {/* Banner Section - YouTube/LinkedIn Style */}
+        <div className="relative w-full">
+          {/* Banner Image */}
+          {(profile as any)?.banner_url ? (
+            <div className="relative w-full h-48 md:h-64 bg-gradient-to-br from-gray-800 to-gray-900">
+              <Image
+                src={(profile as any).banner_url}
+                alt="Profile banner"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          ) : (
+            <div className="w-full h-48 md:h-64 bg-gradient-to-br from-gray-800 via-gray-850 to-gray-900"></div>
+          )}
+          
+          {/* Profile Header Container - Overlapping Banner */}
+          <div className="relative px-4 md:px-8">
+            {/* Avatar - Overlapping Banner Bottom */}
+            <div className="relative -mt-16 md:-mt-20 mb-4">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden ring-4 ring-gray-900 shadow-2xl">
                 {(profile as any)?.avatar_url ? (
                   <Image
                     src={(profile as any).avatar_url}
                     alt={(profile as any).username || 'Profile'}
-                    width={192}
-                    height={192}
+                    width={160}
+                    height={160}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-white text-6xl md:text-7xl font-black">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-white text-5xl md:text-6xl font-black">
                     {(profile as any)?.username?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || 'U'}
                   </div>
                 )}
@@ -136,29 +139,40 @@ export default async function ProfilePage() {
               )}
             </div>
 
-            {/* Profile Info */}
-            <div className="flex-1 w-full">
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex-1">
-                  {/* Username - Much Larger */}
-                  <div className="flex items-center space-x-3 mb-3">
-                    <h1 className="text-4xl md:text-5xl font-black text-white">
-                      {(profile as any)?.username || (profile as any)?.full_name || 'User'}
-                    </h1>
-                    {(profile as any)?.is_premium && (
-                      <span className="badge-premium text-xs">JACKED+</span>
-                    )}
+            {/* Profile Info Section */}
+            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-6 md:p-8 mb-6 card-elevated">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="flex-1 w-full">
+                  {/* Username and Edit Button */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <h1 className="text-3xl md:text-4xl font-black text-white">
+                          {(profile as any)?.username || (profile as any)?.full_name || 'User'}
+                        </h1>
+                        {(profile as any)?.is_premium && (
+                          <span className="badge-premium text-xs">JACKED+</span>
+                        )}
+                      </div>
+                      {(profile as any)?.full_name && (profile as any).full_name !== (profile as any).username && (
+                        <p className="text-gray-400 font-medium mb-3 text-base">{(profile as any).full_name}</p>
+                      )}
+                      {(profile as any)?.bio && (
+                        <p className="text-gray-300 leading-relaxed mb-4 max-w-2xl text-sm md:text-base">{(profile as any).bio}</p>
+                      )}
+                    </div>
+                    <Link
+                      href="/settings"
+                      className="btn-secondary px-4 py-2 flex items-center space-x-2 flex-shrink-0"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span className="hidden md:inline">Edit Profile</span>
+                    </Link>
                   </div>
-                  {(profile as any)?.full_name && (profile as any).full_name !== (profile as any).username && (
-                    <p className="text-gray-400 font-medium mb-3 text-lg">{(profile as any).full_name}</p>
-                  )}
-                  {(profile as any)?.bio && (
-                    <p className="text-gray-300 leading-relaxed mb-4 max-w-2xl">{(profile as any).bio}</p>
-                  )}
                   
-                  {/* Profile Song - Smaller */}
+                  {/* Profile Song */}
                   {(profile as any)?.profile_song_title && (profile as any)?.profile_song_artist && (
-                    <div className="mb-3 scale-90 origin-left">
+                    <div className="mb-4 scale-90 origin-left">
                       <ProfileMusicPlayer
                         songTitle={(profile as any).profile_song_title}
                         songArtist={(profile as any).profile_song_artist}
@@ -176,40 +190,37 @@ export default async function ProfilePage() {
                       <FitnessGoalIndicator goal={(profile as any).fitness_goal} size="md" />
                     </div>
                   )}
-                </div>
-                <Link
-                  href="/settings"
-                  className="btn-secondary px-4 py-2 flex items-center space-x-2 flex-shrink-0"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span className="hidden md:inline">Edit Profile</span>
-                </Link>
-              </div>
 
-              {/* Stats - Removed Join Date */}
-              <div className="flex items-center space-x-8">
-                <div>
-                  <p className="text-2xl font-black text-white">{postsWithCounts?.length || 0}</p>
-                  <p className="text-xs text-gray-500 font-semibold tracking-wide">POSTS</p>
+                  {/* Stats */}
+                  <div className="flex items-center space-x-8 pt-4 border-t border-gray-800/60">
+                    <div>
+                      <p className="text-2xl font-black text-white">{postsWithCounts?.length || 0}</p>
+                      <p className="text-xs text-gray-500 font-semibold tracking-wide">POSTS</p>
+                    </div>
+                    {!(profile as any)?.hide_follower_count && (
+                      <>
+                        <div className="h-10 w-px bg-gray-800"></div>
+                        <Link href={`/user/${session.user.id}/followers`} className="hover:opacity-80 transition-opacity">
+                          <p className="text-2xl font-black text-white">{followerCount || 0}</p>
+                          <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWERS</p>
+                        </Link>
+                        <div className="h-10 w-px bg-gray-800"></div>
+                        <Link href={`/user/${session.user.id}/following`} className="hover:opacity-80 transition-opacity">
+                          <p className="text-2xl font-black text-white">{followingCount || 0}</p>
+                          <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWING</p>
+                        </Link>
+                      </>
+                    )}
+                  </div>
                 </div>
-                {!(profile as any)?.hide_follower_count && (
-                  <>
-                    <div className="h-10 w-px bg-gray-800"></div>
-                    <Link href={`/user/${session.user.id}/followers`} className="hover:opacity-80 transition-opacity">
-                      <p className="text-2xl font-black text-white">{followerCount || 0}</p>
-                      <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWERS</p>
-                    </Link>
-                    <div className="h-10 w-px bg-gray-800"></div>
-                    <Link href={`/user/${session.user.id}/following`} className="hover:opacity-80 transition-opacity">
-                      <p className="text-2xl font-black text-white">{followingCount || 0}</p>
-                      <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWING</p>
-                    </Link>
-                  </>
-                )}
               </div>
             </div>
           </div>
         </div>
+
+        {/* Content Below Profile Header */}
+        <div className="px-4 md:px-8 pb-6 md:pb-8">
+
 
         {/* Deadcember Total */}
         {hasDeadcemberEntries && (
