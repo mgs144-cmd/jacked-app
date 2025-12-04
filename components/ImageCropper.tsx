@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Cropper from 'react-easy-crop'
 import { X, Check } from 'lucide-react'
 import 'react-easy-crop/react-easy-crop.css'
@@ -16,6 +16,26 @@ export function ImageCropper({ image, onCropComplete, onCancel, aspectRatio = 1 
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const isMountedRef = useRef(true)
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+      // Give react-easy-crop time to clean up before React removes the DOM
+      setTimeout(() => {
+        // Clear any remaining DOM references
+        if (containerRef.current) {
+          try {
+            // Let React handle cleanup
+          } catch (e) {
+            // Ignore cleanup errors
+          }
+        }
+      }, 100)
+    }
+  }, [])
 
   const createImage = (url: string): Promise<HTMLImageElement> =>
     new Promise((resolve, reject) => {
@@ -74,26 +94,49 @@ export function ImageCropper({ image, onCropComplete, onCancel, aspectRatio = 1 
   }
 
   const handleCropComplete = async () => {
-    if (!croppedAreaPixels) return
+    if (!croppedAreaPixels || !isMountedRef.current) return
 
     try {
       const croppedImage = await getCroppedImg(image, croppedAreaPixels)
-      onCropComplete(croppedImage)
+      if (isMountedRef.current) {
+        onCropComplete(croppedImage)
+      }
     } catch (error) {
       console.error('Error cropping image:', error)
-      alert('Failed to crop image')
+      if (isMountedRef.current) {
+        alert('Failed to crop image')
+      }
+    }
+  }
+
+  const handleCancel = () => {
+    if (isMountedRef.current) {
+      onCancel()
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <div 
+      ref={containerRef}
+      className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={(e) => {
+        // Close on backdrop click
+        if (e.target === e.currentTarget) {
+          handleCancel()
+        }
+      }}
+    >
+      <div 
+        className="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-2xl max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-800">
           <h3 className="text-white font-bold text-lg">Crop Your Photo</h3>
           <button
-            onClick={onCancel}
+            onClick={handleCancel}
             className="text-gray-400 hover:text-white transition-colors"
+            type="button"
           >
             <X className="w-5 h-5" />
           </button>
@@ -101,24 +144,28 @@ export function ImageCropper({ image, onCropComplete, onCancel, aspectRatio = 1 
 
         {/* Cropper */}
         <div className="relative w-full" style={{ height: '400px' }}>
-          <Cropper
-            image={image}
-            crop={crop}
-            zoom={zoom}
-            aspect={aspectRatio}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={(_, croppedAreaPixels) => {
-              setCroppedAreaPixels(croppedAreaPixels)
-            }}
-            style={{
-              containerStyle: {
-                width: '100%',
-                height: '100%',
-                position: 'relative',
-              },
-            }}
-          />
+          {isMountedRef.current && (
+            <Cropper
+              image={image}
+              crop={crop}
+              zoom={zoom}
+              aspect={aspectRatio}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={(_, croppedAreaPixels) => {
+                if (isMountedRef.current) {
+                  setCroppedAreaPixels(croppedAreaPixels)
+                }
+              }}
+              style={{
+                containerStyle: {
+                  width: '100%',
+                  height: '100%',
+                  position: 'relative',
+                },
+              }}
+            />
+          )}
         </div>
 
         {/* Controls */}
@@ -140,14 +187,16 @@ export function ImageCropper({ image, onCropComplete, onCancel, aspectRatio = 1 
 
           <div className="flex space-x-3">
             <button
-              onClick={onCancel}
+              onClick={handleCancel}
               className="flex-1 btn-secondary py-3 font-bold"
+              type="button"
             >
               CANCEL
             </button>
             <button
               onClick={handleCropComplete}
               className="flex-1 btn-primary py-3 font-bold flex items-center justify-center space-x-2"
+              type="button"
             >
               <Check className="w-5 h-5" />
               <span>APPLY CROP</span>
