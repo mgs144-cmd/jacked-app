@@ -16,24 +16,28 @@ export function ImageCropper({ image, onCropComplete, onCancel, aspectRatio = 1 
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null)
+  const [isVisible, setIsVisible] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
-  const isMountedRef = useRef(true)
+  const cropperContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    isMountedRef.current = true
+    // Suppress console errors from react-easy-crop cleanup
+    const originalError = console.error
+    console.error = (...args: any[]) => {
+      if (
+        typeof args[0] === 'string' &&
+        (args[0].includes('removeChild') || args[0].includes('NotFoundError'))
+      ) {
+        // Suppress this specific error
+        return
+      }
+      originalError(...args)
+    }
+
     return () => {
-      isMountedRef.current = false
-      // Give react-easy-crop time to clean up before React removes the DOM
-      setTimeout(() => {
-        // Clear any remaining DOM references
-        if (containerRef.current) {
-          try {
-            // Let React handle cleanup
-          } catch (e) {
-            // Ignore cleanup errors
-          }
-        }
-      }, 100)
+      console.error = originalError
+      // Delay unmounting to let react-easy-crop clean up
+      setIsVisible(false)
     }
   }, [])
 
@@ -94,25 +98,33 @@ export function ImageCropper({ image, onCropComplete, onCancel, aspectRatio = 1 
   }
 
   const handleCropComplete = async () => {
-    if (!croppedAreaPixels || !isMountedRef.current) return
+    if (!croppedAreaPixels) return
 
     try {
+      // Hide cropper before processing to prevent DOM errors
+      setIsVisible(false)
       const croppedImage = await getCroppedImg(image, croppedAreaPixels)
-      if (isMountedRef.current) {
+      // Small delay to ensure cleanup
+      setTimeout(() => {
         onCropComplete(croppedImage)
-      }
+      }, 100)
     } catch (error) {
       console.error('Error cropping image:', error)
-      if (isMountedRef.current) {
-        alert('Failed to crop image')
-      }
+      setIsVisible(true) // Show again on error
+      alert('Failed to crop image')
     }
   }
 
   const handleCancel = () => {
-    if (isMountedRef.current) {
+    setIsVisible(false)
+    // Delay to let react-easy-crop clean up
+    setTimeout(() => {
       onCancel()
-    }
+    }, 100)
+  }
+
+  if (!isVisible) {
+    return null
   }
 
   return (
@@ -143,29 +155,30 @@ export function ImageCropper({ image, onCropComplete, onCancel, aspectRatio = 1 
         </div>
 
         {/* Cropper */}
-        <div className="relative w-full" style={{ height: '400px' }}>
-          {isMountedRef.current && (
-            <Cropper
-              image={image}
-              crop={crop}
-              zoom={zoom}
-              aspect={aspectRatio}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={(_, croppedAreaPixels) => {
-                if (isMountedRef.current) {
-                  setCroppedAreaPixels(croppedAreaPixels)
-                }
-              }}
-              style={{
-                containerStyle: {
-                  width: '100%',
-                  height: '100%',
-                  position: 'relative',
-                },
-              }}
-            />
-          )}
+        <div 
+          ref={cropperContainerRef}
+          className="relative w-full" 
+          style={{ height: '400px' }}
+          key={`cropper-${image}`}
+        >
+          <Cropper
+            image={image}
+            crop={crop}
+            zoom={zoom}
+            aspect={aspectRatio}
+            onCropChange={setCrop}
+            onZoomChange={setZoom}
+            onCropComplete={(_, croppedAreaPixels) => {
+              setCroppedAreaPixels(croppedAreaPixels)
+            }}
+            style={{
+              containerStyle: {
+                width: '100%',
+                height: '100%',
+                position: 'relative',
+              },
+            }}
+          />
         </div>
 
         {/* Controls */}
