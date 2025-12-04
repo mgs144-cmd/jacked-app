@@ -8,10 +8,10 @@ import 'react-easy-crop/react-easy-crop.css'
 // Suppress react-easy-crop cleanup errors globally
 if (typeof window !== 'undefined') {
   const originalRemoveChild = Node.prototype.removeChild
-  Node.prototype.removeChild = function(child: Node) {
+  Node.prototype.removeChild = function<T extends Node>(child: T): T {
     try {
       if (this.contains(child)) {
-        return originalRemoveChild.call(this, child)
+        return originalRemoveChild.call(this, child) as T
       }
     } catch (e) {
       // Ignore errors when node is already removed
