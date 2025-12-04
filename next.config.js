@@ -30,6 +30,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'i.ytimg.com', // YouTube thumbnails
       },
+      {
+        protocol: 'https',
+        hostname: 'media*.giphy.com', // Giphy GIFs (all subdomains)
+      },
+      {
+        protocol: 'https',
+        hostname: '**.giphy.com', // All Giphy domains
+      },
     ],
   },
   async headers() {
