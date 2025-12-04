@@ -179,11 +179,26 @@ export default function SettingsPage() {
       if (bannerFile) {
         const fileExt = bannerFile.name.split('.').pop()
         const fileName = `${user.id}-banner-${Date.now()}.${fileExt}`
-        const { error: uploadError } = await supabase.storage
+        
+        console.log('Attempting to upload banner to storage:', fileName)
+        const { error: uploadError, data: uploadData } = await supabase.storage
           .from('media')
-          .upload(fileName, bannerFile)
+          .upload(fileName, bannerFile, {
+            cacheControl: '3600',
+            upsert: false
+          })
 
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          console.error('=== STORAGE UPLOAD ERROR ===')
+          console.error('Error:', JSON.stringify(uploadError, null, 2))
+          console.error('File name:', fileName)
+          console.error('File size:', bannerFile.size)
+          console.error('Bucket:', 'media')
+          console.error('==========================')
+          throw new Error(`Storage upload failed: ${uploadError.message}. Please check storage bucket permissions.`)
+        }
+        
+        console.log('Banner uploaded successfully:', uploadData?.path)
 
         const {
           data: { publicUrl },
