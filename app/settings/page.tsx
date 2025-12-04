@@ -18,8 +18,11 @@ export default function SettingsPage() {
   const [bio, setBio] = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [bannerFile, setBannerFile] = useState<File | null>(null)
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null)
   const [showCropper, setShowCropper] = useState(false)
   const [imageToCrop, setImageToCrop] = useState<string | null>(null)
+  const [croppingMode, setCroppingMode] = useState<'avatar' | 'banner'>('avatar')
   const [profileSong, setProfileSong] = useState<{ title: string; artist: string; url?: string; spotifyId?: string; albumArt?: string } | null>(null)
   const [songStartTime, setSongStartTime] = useState<number | null>(null)
   const [previewStartTime, setPreviewStartTime] = useState<number | null>(null) // Debounced value for preview
@@ -52,6 +55,7 @@ export default function SettingsPage() {
         setFullName(data.full_name || '')
         setBio(data.bio || '')
         setAvatarPreview(data.avatar_url)
+        setBannerPreview(data.banner_url)
         if (data.profile_song_title && data.profile_song_artist) {
           setProfileSong({
             title: data.profile_song_title,
@@ -88,6 +92,22 @@ export default function SettingsPage() {
     const file = e.target.files?.[0]
     if (file) {
       setAvatarFile(file)
+      setCroppingMode('avatar')
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const imageUrl = reader.result as string
+        setImageToCrop(imageUrl)
+        setShowCropper(true)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setBannerFile(file)
+      setCroppingMode('banner')
       const reader = new FileReader()
       reader.onloadend = () => {
         const imageUrl = reader.result as string
@@ -99,17 +119,27 @@ export default function SettingsPage() {
   }
 
   const handleCropComplete = (croppedImage: string) => {
-    setAvatarPreview(croppedImage)
+    if (croppingMode === 'avatar') {
+      setAvatarPreview(croppedImage)
+      // Convert cropped image to File for upload
+      fetch(croppedImage)
+        .then(res => res.blob())
+        .then(blob => {
+          const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
+          setAvatarFile(file)
+        })
+    } else {
+      setBannerPreview(croppedImage)
+      // Convert cropped image to File for upload
+      fetch(croppedImage)
+        .then(res => res.blob())
+        .then(blob => {
+          const file = new File([blob], 'banner.jpg', { type: 'image/jpeg' })
+          setBannerFile(file)
+        })
+    }
     setShowCropper(false)
     setImageToCrop(null)
-    
-    // Convert cropped image to File for upload
-    fetch(croppedImage)
-      .then(res => res.blob())
-      .then(blob => {
-        const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
-        setAvatarFile(file)
-      })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,10 +152,11 @@ export default function SettingsPage() {
 
     try {
       let avatarUrl = avatarPreview
+      let bannerUrl = bannerPreview
 
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop()
-        const fileName = `${user.id}-${Date.now()}.${fileExt}`
+        const fileName = `${user.id}-avatar-${Date.now()}.${fileExt}`
         const { error: uploadError } = await supabase.storage
           .from('avatars')
           .upload(fileName, avatarFile)
@@ -138,12 +169,28 @@ export default function SettingsPage() {
         avatarUrl = publicUrl
       }
 
+      if (bannerFile) {
+        const fileExt = bannerFile.name.split('.').pop()
+        const fileName = `${user.id}-banner-${Date.now()}.${fileExt}`
+        const { error: uploadError } = await supabase.storage
+          .from('media')
+          .upload(fileName, bannerFile)
+
+        if (uploadError) throw uploadError
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from('media').getPublicUrl(fileName)
+        bannerUrl = publicUrl
+      }
+
       // Build update object conditionally to avoid errors if columns don't exist
       const updateData: any = {
         username: username || null,
         full_name: fullName || null,
         bio: bio || null,
         avatar_url: avatarUrl,
+        banner_url: bannerUrl,
         profile_song_title: profileSong?.title || null,
         profile_song_artist: profileSong?.artist || null,
         profile_song_url: profileSong?.url || null,
@@ -183,6 +230,7 @@ export default function SettingsPage() {
             full_name: fullName || null,
             bio: bio || null,
             avatar_url: avatarUrl,
+            banner_url: bannerUrl,
             profile_song_title: profileSong?.title || null,
             profile_song_artist: profileSong?.artist || null,
             profile_song_url: profileSong?.url || null,
@@ -250,6 +298,42 @@ export default function SettingsPage() {
           )}
 
           <form onSubmit={handleSubmit} className="p-8 space-y-8">
+            {/* Banner Section */}
+            <div>
+              <label className="block text-sm font-bold text-gray-300 mb-4 tracking-wide flex items-center space-x-2">
+                <Upload className="w-5 h-5" />
+                <span>BANNER IMAGE</span>
+              </label>
+              <p className="text-xs text-gray-500 mb-3">This image appears at the top of your profile (like YouTube/LinkedIn)</p>
+              <div className="relative w-full h-48 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden border-2 border-gray-700 mb-3">
+                {bannerPreview ? (
+                  <Image
+                    src={bannerPreview}
+                    alt="Banner"
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <Upload className="w-8 h-8 mx-auto mb-2" />
+                      <p className="text-sm">No banner image</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <label className="btn-secondary px-6 py-3 cursor-pointer inline-flex items-center space-x-2">
+                <Upload className="w-5 h-5" />
+                <span>{bannerPreview ? 'Change Banner' : 'Upload Banner'}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleBannerChange}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
             {/* Avatar Section */}
             <div>
               <label className="block text-sm font-bold text-gray-300 mb-4 tracking-wide flex items-center space-x-2">
@@ -483,9 +567,13 @@ export default function SettingsPage() {
           onCancel={() => {
             setShowCropper(false)
             setImageToCrop(null)
-            setAvatarFile(null)
+            if (croppingMode === 'avatar') {
+              setAvatarFile(null)
+            } else {
+              setBannerFile(null)
+            }
           }}
-          aspectRatio={1}
+          aspectRatio={croppingMode === 'avatar' ? 1 : 16 / 9}
         />
       )}
     </div>

@@ -121,6 +121,19 @@ export default async function UserProfilePage({
           <span>Back to Discover</span>
         </Link>
 
+        {/* Banner */}
+        {(profile as any)?.banner_url && (
+          <div className="relative w-full h-64 md:h-80 rounded-2xl overflow-hidden mb-6 border border-gray-800/60">
+            <Image
+              src={(profile as any).banner_url}
+              alt="Profile banner"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        )}
+
         {/* Profile Header */}
         <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-6 md:p-8 mb-6 card-elevated">
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">
