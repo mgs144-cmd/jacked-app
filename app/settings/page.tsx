@@ -300,9 +300,11 @@ export default function SettingsPage() {
         setBannerPreview(bannerUrl)
         setBannerFile(null) // Clear the file since it's now saved
       }
-
-      // Redirect to profile page instead of showing success message
-      router.push('/profile')
+      
+      setSuccess(true)
+      setTimeout(() => {
+        router.push('/profile')
+      }, 1000)
     } catch (err: any) {
       setError(err.message || 'Failed to update profile')
     } finally {
@@ -362,12 +364,23 @@ export default function SettingsPage() {
               <p className="text-xs text-gray-500 mb-3">This image appears at the top of your profile</p>
               <div className="relative w-full h-48 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden border-2 border-gray-700 mb-3">
                 {bannerPreview ? (
-                  <Image
-                    src={bannerPreview}
-                    alt="Banner"
-                    fill
-                    className="object-cover"
-                  />
+                  <>
+                    <img
+                      src={bannerPreview}
+                      alt="Banner"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error('Banner image failed to load:', bannerPreview)
+                        // Fallback to div if image fails
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                    {bannerFile && (
+                      <div className="absolute top-2 right-2 text-xs text-white/90 bg-green-600/80 px-2 py-1 rounded">
+                        Ready to upload
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-500">
                     <div className="text-center">
@@ -377,6 +390,9 @@ export default function SettingsPage() {
                   </div>
                 )}
               </div>
+              {bannerFile && (
+                <p className="text-xs text-green-400 mb-2">✓ Banner ready to upload ({Math.round(bannerFile.size / 1024)} KB)</p>
+              )}
               <label className="btn-secondary px-6 py-3 cursor-pointer inline-flex items-center space-x-2">
                 <Upload className="w-5 h-5" />
                 <span>{bannerPreview ? 'Change Banner' : 'Upload Banner'}</span>
@@ -634,3 +650,4 @@ export default function SettingsPage() {
     </div>
   )
 }
+
