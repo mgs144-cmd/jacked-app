@@ -151,8 +151,8 @@ export function PaymentRequiredClient({ userId }: PaymentRequiredClientProps) {
           <div className="bg-yellow-950/30 border border-yellow-700/50 rounded-xl p-4 mb-6 text-left">
             <p className="text-yellow-400 text-sm font-semibold mb-2">⚠️ Important</p>
             <p className="text-yellow-200/80 text-xs leading-relaxed">
-              <strong>Only pay once.</strong> If you don't immediately receive access after payment, please don't pay again. 
-              Contact us at <a href="mailto:jackedapp@gmail.com" className="text-yellow-400 underline hover:text-yellow-300">jackedapp@gmail.com</a> and we'll resolve the issue and grant you access right away.
+              <strong>Only pay once.</strong> If you do not immediately receive access after payment, please do not pay again. 
+              Contact us at <a href="mailto:jackedapp@gmail.com" className="text-yellow-400 underline hover:text-yellow-300">jackedapp@gmail.com</a> and we will resolve the issue and grant you access right away.
             </p>
           </div>
 
