@@ -128,15 +128,17 @@ export default function SettingsPage() {
         const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
         setAvatarFile(file)
       } else {
-        // Set preview immediately for banner
-        setBannerPreview(croppedImage)
+        // Set preview immediately for banner - use state updater function to ensure update
+        setBannerPreview((prev) => {
+          console.log('Setting banner preview from:', prev, 'to:', croppedImage.substring(0, 50) + '...')
+          return croppedImage
+        })
         // Convert cropped image to File for upload
         const response = await fetch(croppedImage)
         const blob = await response.blob()
         const file = new File([blob], 'banner.jpg', { type: 'image/jpeg' })
         setBannerFile(file)
-        // Force a re-render to show the preview
-        console.log('Banner preview set:', croppedImage.substring(0, 50) + '...')
+        console.log('Banner file set:', file.name, file.size, 'bytes')
       }
       setShowCropper(false)
       setImageToCrop(null)
@@ -194,10 +196,14 @@ export default function SettingsPage() {
         full_name: fullName || null,
         bio: bio || null,
         avatar_url: avatarUrl,
-        banner_url: bannerUrl,
         profile_song_title: profileSong?.title || null,
         profile_song_artist: profileSong?.artist || null,
         profile_song_url: profileSong?.url || null,
+      }
+      
+      // Only add banner_url if we have a value (don't include if null to avoid errors)
+      if (bannerUrl) {
+        updateData.banner_url = bannerUrl
       }
       
       // Only include album_art_url if column exists (check by trying to include it conditionally)
@@ -226,19 +232,13 @@ export default function SettingsPage() {
 
       if (updateError) {
         console.error('Update error:', updateError)
+        console.error('Update data attempted:', updateData)
         
-        // If error is about RLS policy, provide helpful message
-        if (updateError.message?.includes('row-level security') || 
-            updateError.message?.includes('RLS') ||
-            updateError.message?.includes('policy')) {
-          throw new Error('Permission denied. Please make sure you are logged in and try again. If the issue persists, the database may need the banner_url column added.')
-        }
-        
-        // If error is about missing column, try without that column
-        if (updateError.message?.includes('profile_song_album_art_url') || 
-            updateError.message?.includes('profile_song_spotify_id') ||
-            updateError.message?.includes('banner_url')) {
-          console.log('Some columns missing, trying without them...')
+        // If error is about missing column (especially banner_url), try without it
+        if (updateError.message?.includes('banner_url') || 
+            updateError.message?.includes('column') ||
+            updateError.message?.includes('does not exist')) {
+          console.log('banner_url column may not exist, trying without it...')
           const fallbackData: any = {
             username: username || null,
             full_name: fullName || null,
@@ -250,28 +250,47 @@ export default function SettingsPage() {
             fitness_goal: fitnessGoal || null,
             profile_song_start_time: songStartTime || null,
           }
-          // Only include banner_url if column exists (check by trying)
-          try {
-            const { error: bannerTestError } = await (supabase
-              .from('profiles') as any)
-              .update({ banner_url: bannerUrl })
-              .eq('id', user.id)
-              .select('banner_url')
-              .limit(0) // Don't actually fetch, just test
-            
-            if (!bannerTestError || !bannerTestError.message?.includes('column') && !bannerTestError.message?.includes('does not exist')) {
-              fallbackData.banner_url = bannerUrl
+          
+          // Only include optional columns if they exist
+          if (profileSong?.albumArt) {
+            try {
+              fallbackData.profile_song_album_art_url = profileSong.albumArt
+            } catch (e) {
+              // Column doesn't exist, skip it
             }
-          } catch (e) {
-            // Column doesn't exist, skip it
-            console.log('banner_url column not available')
+          }
+          if (profileSong?.spotifyId) {
+            try {
+              fallbackData.profile_song_spotify_id = profileSong.spotifyId
+            } catch (e) {
+              // Column doesn't exist, skip it
+            }
           }
           
           const { error: fallbackError } = await (supabase
             .from('profiles') as any)
             .update(fallbackData)
             .eq('id', user.id)
-          if (fallbackError) throw fallbackError
+          
+          if (fallbackError) {
+            // If still failing, check if it's RLS
+            if (fallbackError.message?.includes('row-level security') || 
+                fallbackError.message?.includes('RLS') ||
+                fallbackError.message?.includes('policy')) {
+              throw new Error('Database permission error. Please run the SQL migration to add the banner_url column: ADD_BANNER_COLUMN.sql')
+            }
+            throw fallbackError
+          }
+          
+          // If banner was uploaded but column doesn't exist, show helpful message
+          if (bannerUrl && bannerFile) {
+            setError('Banner uploaded but could not be saved. Please run ADD_BANNER_COLUMN.sql in Supabase SQL Editor to add the banner_url column.')
+          }
+        } else if (updateError.message?.includes('row-level security') || 
+                   updateError.message?.includes('RLS') ||
+                   updateError.message?.includes('policy') ||
+                   updateError.message?.includes('new row')) {
+          throw new Error('Database permission error. Please run FIX_BANNER_RLS.sql in Supabase SQL Editor to fix the permissions.')
         } else {
           throw updateError
         }
