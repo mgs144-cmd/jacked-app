@@ -234,8 +234,16 @@ export default function SettingsPage() {
       // Try to update
       console.log('Updating profile with data:', { 
         ...updateData, 
-        banner_url: updateData.banner_url ? `SET (${updateData.banner_url.substring(0, 50)}...)` : 'NOT SET' 
+        banner_url: updateData.banner_url ? `SET (${updateData.banner_url.substring(0, 50)}...)` : 'NOT SET',
+        user_id: user.id,
+        auth_uid: (await supabase.auth.getUser()).data.user?.id
       })
+      
+      // Verify user is authenticated
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+      if (authError || !authUser || authUser.id !== user.id) {
+        throw new Error('Authentication error. Please log out and log back in.')
+      }
       
       const { error: updateError, data } = await (supabase
         .from('profiles') as any)
@@ -244,10 +252,16 @@ export default function SettingsPage() {
         .select()
 
       if (updateError) {
-        console.error('Update error:', updateError)
+        console.error('=== UPDATE ERROR DETAILS ===')
+        console.error('Error object:', JSON.stringify(updateError, null, 2))
         console.error('Error code:', updateError.code)
         console.error('Error message:', updateError.message)
-        console.error('Update data attempted:', updateData)
+        console.error('Error details:', updateError.details)
+        console.error('Error hint:', updateError.hint)
+        console.error('User ID:', user.id)
+        console.error('Auth UID:', authUser?.id)
+        console.error('Update data:', JSON.stringify(updateData, null, 2))
+        console.error('===========================')
         
         // Check if it's a column missing error
         const isColumnError = updateError.message?.includes('banner_url') || 
