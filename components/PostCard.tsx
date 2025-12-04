@@ -7,6 +7,7 @@ import { Heart, MessageCircle, MoreVertical, Crown, Trash2, Trophy, Globe, Lock,
 import { PostMusicPlayer } from './PostMusicPlayer'
 import { WorkoutDetails } from './WorkoutDetails'
 import { LikesModal } from './LikesModal'
+import { CommentForm } from './CommentForm'
 import { formatDistanceToNow } from 'date-fns'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
@@ -30,6 +31,8 @@ export function PostCard({ post }: PostCardProps) {
   const [isArchived, setIsArchived] = useState(post.is_archived || false)
   const [isArchiving, setIsArchiving] = useState(false)
   const [showLikesModal, setShowLikesModal] = useState(false)
+  const [showCommentForm, setShowCommentForm] = useState(false)
+  const [commentCount, setCommentCount] = useState(post.comment_count || 0)
 
   // Handle profile data - could be object, array, or null
   // Check both post.profile (normalized) and post.profiles (raw)
@@ -447,20 +450,38 @@ export function PostCard({ post }: PostCardProps) {
               </button>
             )}
           </button>
-          <Link
-            href={`/post/${post.id}`}
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setShowCommentForm(!showCommentForm)
+            }}
             className="flex items-center space-x-2 text-gray-400 hover:text-white transition-all duration-300 group"
           >
             <MessageCircle 
-              className="w-6 h-6 group-hover:scale-110 transition-all duration-300" 
+              className={`w-6 h-6 group-hover:scale-110 transition-all duration-300 ${showCommentForm ? 'text-primary' : ''}`}
               strokeWidth={2.5}
             />
-            {post.comment_count > 0 && (
-              <span className="font-bold text-sm">{post.comment_count}</span>
+            {commentCount > 0 && (
+              <span className="font-bold text-sm">{commentCount}</span>
             )}
-          </Link>
+          </button>
         </div>
       </div>
+
+      {/* Inline Comment Form */}
+      {showCommentForm && user && (
+        <div className="px-5 py-3 border-t border-gray-800/40">
+          <CommentForm 
+            postId={post.id} 
+            userId={user.id}
+            onCommentAdded={() => {
+              setCommentCount((prev) => prev + 1)
+              router.refresh()
+            }}
+          />
+        </div>
+      )}
 
       {/* Top 3 Comments */}
       {post.top_comments && post.top_comments.length > 0 && (
@@ -487,12 +508,12 @@ export function PostCard({ post }: PostCardProps) {
               </div>
             )
           })}
-          {post.comment_count > 3 && (
+          {commentCount > 3 && (
             <Link
               href={`/post/${post.id}`}
               className="text-sm text-gray-500 hover:text-gray-300 font-medium transition-colors block mt-2"
             >
-              View all {post.comment_count} comments
+              View all {commentCount} comments
             </Link>
           )}
         </div>
@@ -507,3 +528,4 @@ export function PostCard({ post }: PostCardProps) {
     </article>
   )
 }
+

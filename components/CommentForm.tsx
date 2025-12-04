@@ -10,9 +10,10 @@ import Image from 'next/image'
 interface CommentFormProps {
   postId: string
   userId: string
+  onCommentAdded?: () => void
 }
 
-export function CommentForm({ postId, userId }: CommentFormProps) {
+export function CommentForm({ postId, userId, onCommentAdded }: CommentFormProps) {
   const [content, setContent] = useState('')
   const [selectedGIF, setSelectedGIF] = useState<string | null>(null)
   const [showGIFPicker, setShowGIFPicker] = useState(false)
@@ -42,7 +43,14 @@ export function CommentForm({ postId, userId }: CommentFormProps) {
 
       setContent('')
       setSelectedGIF(null)
-      router.refresh()
+      
+      // Call the callback if provided (for inline updates)
+      if (onCommentAdded) {
+        onCommentAdded()
+      } else {
+        // Otherwise, refresh the page (for post detail page)
+        router.refresh()
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to post comment')
     } finally {
@@ -51,7 +59,7 @@ export function CommentForm({ postId, userId }: CommentFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 mb-6">
+    <form onSubmit={handleSubmit} className="space-y-3">
       {error && (
         <div className="bg-red-950/50 border border-primary/50 text-red-400 px-4 py-3 rounded-xl text-sm font-medium backdrop-blur-sm">
           {error}
