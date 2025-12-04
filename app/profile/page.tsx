@@ -220,9 +220,7 @@ export default async function ProfilePage() {
 
         {/* Content Below Profile Header */}
         <div className="px-4 md:px-8 pb-6 md:pb-8">
-
-
-        {/* Deadcember Total */}
+          {/* Deadcember Total */}
         {hasDeadcemberEntries && (
           <div className="mb-10 bg-gradient-to-br from-red-950/30 via-gray-900/60 to-gray-900/60 backdrop-blur-sm rounded-2xl border-2 border-primary/50 p-6 glow-red-sm">
             <div className="flex items-center space-x-3 mb-4">
@@ -270,6 +268,7 @@ export default async function ProfilePage() {
               ))}
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>
