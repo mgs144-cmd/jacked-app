@@ -243,8 +243,12 @@ export default function SettingsPage() {
         updateData.profile_song_spotify_id = profileSong.spotifyId
       }
       
-      // Try to update, but handle missing columns gracefully
-      console.log('Updating profile with data:', { ...updateData, banner_url: updateData.banner_url ? 'SET' : 'NOT SET' })
+      // Try to update
+      console.log('Updating profile with data:', { 
+        ...updateData, 
+        banner_url: updateData.banner_url ? `SET (${updateData.banner_url.substring(0, 50)}...)` : 'NOT SET' 
+      })
+      
       const { error: updateError, data } = await (supabase
         .from('profiles') as any)
         .update(updateData)
@@ -253,40 +257,28 @@ export default function SettingsPage() {
 
       if (updateError) {
         console.error('Update error:', updateError)
+        console.error('Error code:', updateError.code)
+        console.error('Error message:', updateError.message)
         console.error('Update data attempted:', updateData)
         
-        // If error is about missing column (especially banner_url), try without it
-        if (updateError.message?.includes('banner_url') || 
-            updateError.message?.includes('column') ||
-            updateError.message?.includes('does not exist')) {
-          console.log('banner_url column may not exist, trying without it...')
-          const fallbackData: any = {
-            username: username || null,
-            full_name: fullName || null,
-            bio: bio || null,
-            avatar_url: avatarUrl,
-            profile_song_title: profileSong?.title || null,
-            profile_song_artist: profileSong?.artist || null,
-            profile_song_url: profileSong?.url || null,
-            fitness_goal: fitnessGoal || null,
-            profile_song_start_time: songStartTime || null,
-          }
-          
-          // Only include optional columns if they exist
-          if (profileSong?.albumArt) {
-            try {
-              fallbackData.profile_song_album_art_url = profileSong.albumArt
-            } catch (e) {
-              // Column doesn't exist, skip it
-            }
-          }
-          if (profileSong?.spotifyId) {
-            try {
-              fallbackData.profile_song_spotify_id = profileSong.spotifyId
-            } catch (e) {
-              // Column doesn't exist, skip it
-            }
-          }
+        // Check if it's a column missing error
+        const isColumnError = updateError.message?.includes('banner_url') || 
+                              updateError.message?.includes('column') ||
+                              updateError.message?.includes('does not exist') ||
+                              updateError.code === 'PGRST116'
+        
+        // Check if it's an RLS error
+        const isRLSError = updateError.message?.includes('row-level security') || 
+                          updateError.message?.includes('RLS') ||
+                          updateError.message?.includes('policy') ||
+                          updateError.message?.includes('new row') ||
+                          updateError.code === '42501'
+        
+        if (isColumnError) {
+          // Column doesn't exist - try without banner_url
+          console.log('banner_url column does not exist, trying without it...')
+          const fallbackData = { ...updateData }
+          delete fallbackData.banner_url
           
           const { error: fallbackError } = await (supabase
             .from('profiles') as any)
@@ -294,27 +286,26 @@ export default function SettingsPage() {
             .eq('id', user.id)
           
           if (fallbackError) {
-            // If still failing, check if it's RLS
-            if (fallbackError.message?.includes('row-level security') || 
-                fallbackError.message?.includes('RLS') ||
-                fallbackError.message?.includes('policy')) {
-              throw new Error('Database permission error. Please run the SQL migration to add the banner_url column: ADD_BANNER_COLUMN.sql')
-            }
-            throw fallbackError
+            throw new Error(`Failed to update profile. Please run SETUP_BANNER.sql in Supabase SQL Editor. Error: ${fallbackError.message}`)
           }
           
-          // If banner was uploaded but column doesn't exist, show helpful message
+          // Show warning that banner couldn't be saved
           if (bannerUrl && bannerFile) {
-            setError('Banner uploaded but could not be saved. Please run ADD_BANNER_COLUMN.sql in Supabase SQL Editor to add the banner_url column.')
+            setError('Profile updated, but banner could not be saved. Please run SETUP_BANNER.sql in Supabase SQL Editor to add the banner_url column, then try uploading again.')
+            setSaving(false)
+            return
           }
-        } else if (updateError.message?.includes('row-level security') || 
-                   updateError.message?.includes('RLS') ||
-                   updateError.message?.includes('policy') ||
-                   updateError.message?.includes('new row')) {
-          throw new Error('Database permission error. Please run FIX_BANNER_RLS.sql in Supabase SQL Editor to fix the permissions.')
+        } else if (isRLSError) {
+          throw new Error('Database permission error. Please run SETUP_BANNER.sql in Supabase SQL Editor to fix the permissions.')
         } else {
-          throw updateError
+          throw new Error(`Failed to update profile: ${updateError.message}`)
         }
+      }
+      
+      // Success - update local state
+      if (bannerUrl) {
+        setBannerPreview(bannerUrl)
+        setBannerFile(null) // Clear the file since it's now saved
       }
 
       // Redirect to profile page instead of showing success message
