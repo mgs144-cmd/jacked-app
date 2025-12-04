@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { PaymentRequiredClient } from '@/components/PaymentRequiredClient'
-import { Navbar } from '@/components/Navbar'
 
 export default async function PaymentRequiredPage() {
   const supabase = await createClient()
@@ -27,8 +26,7 @@ export default async function PaymentRequiredPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
-      <Navbar />
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
       <PaymentRequiredClient userId={session.user.id} />
     </div>
   )
