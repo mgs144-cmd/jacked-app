@@ -111,35 +111,40 @@ export default async function UserProfilePage({
     <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
       <Navbar />
       
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="max-w-5xl mx-auto">
         {/* Back Button */}
-        <Link
-          href="/discover"
-          className="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors mb-6 font-semibold"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back to Discover</span>
-        </Link>
+        <div className="px-4 md:px-8 pt-6 md:pt-8">
+          <Link
+            href="/discover"
+            className="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors mb-6 font-semibold"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Back to Discover</span>
+          </Link>
+        </div>
 
-        {/* Banner */}
-        {(profile as any)?.banner_url && (
-          <div className="relative w-full h-64 md:h-80 rounded-2xl overflow-hidden mb-6 border border-gray-800/60">
-            <Image
-              src={(profile as any).banner_url}
-              alt="Profile banner"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        )}
-
-        {/* Profile Header */}
-        <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-6 md:p-8 mb-6 card-elevated">
-          <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">
-            {/* Avatar */}
-            <div className="relative">
-              <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden ring-4 ring-gray-800">
+        {/* Banner Section - YouTube/LinkedIn Style */}
+        <div className="relative w-full">
+          {/* Banner Image */}
+          {(profile as any)?.banner_url ? (
+            <div className="relative w-full h-48 md:h-64 bg-gradient-to-br from-gray-800 to-gray-900">
+              <Image
+                src={(profile as any).banner_url}
+                alt="Profile banner"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          ) : (
+            <div className="w-full h-48 md:h-64 bg-gradient-to-br from-gray-800 via-gray-850 to-gray-900"></div>
+          )}
+          
+          {/* Profile Header Container - Overlapping Banner */}
+          <div className="relative px-4 md:px-8">
+            {/* Avatar - Overlapping Banner Bottom */}
+            <div className="relative -mt-16 md:-mt-20 mb-4">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden ring-4 ring-gray-900 shadow-2xl">
                 {(profile as any)?.avatar_url ? (
                   <Image
                     src={(profile as any).avatar_url}
@@ -161,81 +166,88 @@ export default async function UserProfilePage({
               )}
             </div>
 
-            {/* Profile Info */}
-            <div className="flex-1">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h1 className="text-3xl font-black text-white">
-                      {(profile as any)?.username || (profile as any)?.full_name || 'User'}
-                    </h1>
-                    {(profile as any)?.is_premium && (
-                      <span className="badge-premium text-xs">JACKED+</span>
-                    )}
+            {/* Profile Info Section */}
+            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-6 md:p-8 mb-6 card-elevated">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="flex-1 w-full">
+                  {/* Username and Follow Button */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <h1 className="text-3xl md:text-4xl font-black text-white">
+                          {(profile as any)?.username || (profile as any)?.full_name || 'User'}
+                        </h1>
+                        {(profile as any)?.is_premium && (
+                          <span className="badge-premium text-xs">JACKED+</span>
+                        )}
+                      </div>
+                      {(profile as any)?.full_name && (profile as any).full_name !== (profile as any).username && (
+                        <p className="text-gray-400 font-medium mb-3 text-base">{(profile as any).full_name}</p>
+                      )}
+                      {(profile as any)?.bio && (
+                        <p className="text-gray-300 leading-relaxed mb-4 max-w-2xl text-sm md:text-base">{(profile as any).bio}</p>
+                      )}
+                    </div>
+                    <FollowButton
+                      userId={params.id}
+                      currentUserId={session.user.id}
+                      initialIsFollowing={isFollowing}
+                      isPrivateAccount={(profile as any)?.is_account_private || false}
+                      initialRequestStatus={requestStatus as any}
+                    />
                   </div>
-                  {(profile as any)?.full_name && (profile as any).full_name !== (profile as any).username && (
-                    <p className="text-gray-400 font-medium mb-2">{(profile as any).full_name}</p>
-                  )}
-                  {(profile as any)?.bio && (
-                    <p className="text-gray-300 leading-relaxed mb-3 max-w-2xl">{(profile as any).bio}</p>
-                  )}
                   
                   {/* Profile Song */}
                   {(profile as any)?.profile_song_title && (profile as any)?.profile_song_artist && (
-                    <div className="mb-4">
+                    <div className="mb-4 scale-90 origin-left">
                       <ProfileMusicPlayer
                         songTitle={(profile as any).profile_song_title}
                         songArtist={(profile as any).profile_song_artist}
                         songUrl={(profile as any).profile_song_url || undefined}
                         spotifyId={(profile as any).profile_song_spotify_id || undefined}
+                        albumArt={(profile as any).profile_song_album_art_url || undefined}
+                        startTime={(profile as any).profile_song_start_time || undefined}
                       />
                     </div>
                   )}
-                </div>
-              </div>
 
-              {/* Stats */}
-              <div className="flex items-center space-x-8 mb-4">
-                <div>
-                  <p className="text-2xl font-black text-white">{visiblePosts?.length || 0}</p>
-                  <p className="text-xs text-gray-500 font-semibold tracking-wide">POSTS</p>
-                </div>
-                {!(profile as any)?.hide_follower_count && (
-                  <>
+                  {/* Stats */}
+                  <div className="flex items-center space-x-8 pt-4 border-t border-gray-800/60">
+                    <div>
+                      <p className="text-2xl font-black text-white">{visiblePosts?.length || 0}</p>
+                      <p className="text-xs text-gray-500 font-semibold tracking-wide">POSTS</p>
+                    </div>
+                    {!(profile as any)?.hide_follower_count && (
+                      <>
+                        <div className="h-10 w-px bg-gray-800"></div>
+                        <Link href={`/user/${params.id}/followers`} className="hover:opacity-80 transition-opacity">
+                          <p className="text-2xl font-black text-white">{followerCount || 0}</p>
+                          <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWERS</p>
+                        </Link>
+                        <div className="h-10 w-px bg-gray-800"></div>
+                        <Link href={`/user/${params.id}/following`} className="hover:opacity-80 transition-opacity">
+                          <p className="text-2xl font-black text-white">{followingCount || 0}</p>
+                          <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWING</p>
+                        </Link>
+                      </>
+                    )}
                     <div className="h-10 w-px bg-gray-800"></div>
                     <div>
-                      <p className="text-2xl font-black text-white">{followerCount || 0}</p>
-                      <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWERS</p>
+                      <p className="text-2xl font-black text-primary">{totalLikes}</p>
+                      <p className="text-xs text-gray-500 font-semibold tracking-wide">TOTAL LIKES</p>
                     </div>
-                    <div className="h-10 w-px bg-gray-800"></div>
-                    <div>
-                      <p className="text-2xl font-black text-white">{followingCount || 0}</p>
-                      <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWING</p>
-                    </div>
-                  </>
-                )}
-                <div className="h-10 w-px bg-gray-800"></div>
-                <div>
-                  <p className="text-2xl font-black text-primary">{totalLikes}</p>
-                  <p className="text-xs text-gray-500 font-semibold tracking-wide">TOTAL LIKES</p>
+                  </div>
                 </div>
               </div>
-
-              {/* Follow Button */}
-              <FollowButton
-                userId={params.id}
-                currentUserId={session.user.id}
-                initialIsFollowing={isFollowing}
-                isPrivateAccount={(profile as any)?.is_account_private || false}
-                initialRequestStatus={requestStatus as any}
-              />
             </div>
           </div>
         </div>
 
-        {/* Posts Section */}
-        <div>
-          <h2 className="text-2xl font-black text-white tracking-tight mb-6">Posts</h2>
+        {/* Content Below Profile Header */}
+        <div className="px-4 md:px-8 pb-6 md:pb-8">
+          {/* Posts Section */}
+          <div>
+            <h2 className="text-2xl font-black text-white tracking-tight mb-6">Posts</h2>
 
           {visiblePosts && visiblePosts.length === 0 ? (
             <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-12 text-center card-elevated">
@@ -253,6 +265,7 @@ export default async function UserProfilePage({
               ))}
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>
