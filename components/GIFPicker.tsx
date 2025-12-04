@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { Search, X, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -14,6 +15,12 @@ export function GIFPicker({ onSelect, onClose }: GIFPickerProps) {
   const [gifs, setGifs] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
 
   useEffect(() => {
     // Load trending GIFs on mount
@@ -69,8 +76,12 @@ export function GIFPicker({ onSelect, onClose }: GIFPickerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query])
 
-  return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+  // Don't render until mounted (client-side only)
+  if (!mounted) return null
+
+  // Render modal at document body level using portal
+  const modalContent = (
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[9999] flex items-end md:items-center justify-center p-0 md:p-4" style={{ position: 'fixed' }}>
       <div className="bg-gray-900 rounded-t-3xl md:rounded-2xl border-t md:border border-gray-800 w-full md:max-w-4xl h-[90vh] md:max-h-[85vh] flex flex-col shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-5 border-b border-gray-800 flex-shrink-0">
@@ -166,5 +177,8 @@ export function GIFPicker({ onSelect, onClose }: GIFPickerProps) {
       </div>
     </div>
   )
+
+  // Use portal to render at document body level
+  return createPortal(modalContent, document.body)
 }
 
