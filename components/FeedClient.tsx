@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { PostCard } from '@/components/PostCard'
 import { FeedToggle } from '@/components/FeedToggle'
-import { CheckCircle, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 interface FeedClientProps {
   allPosts: any[]

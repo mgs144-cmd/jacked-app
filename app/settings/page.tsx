@@ -389,15 +389,12 @@ export default function SettingsPage() {
               <div className="relative w-full h-48 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden border-2 border-gray-700 mb-3">
                 {bannerPreview ? (
                   <>
-                    <img
+                    <Image
                       src={bannerPreview}
                       alt="Banner"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        console.error('Banner image failed to load:', bannerPreview)
-                        // Fallback to div if image fails
-                        e.currentTarget.style.display = 'none'
-                      }}
+                      fill
+                      className="object-cover"
+                      unoptimized
                     />
                     {bannerFile && (
                       <div className="absolute top-2 right-2 text-xs text-white/90 bg-green-600/80 px-2 py-1 rounded">
