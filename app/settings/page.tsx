@@ -118,28 +118,32 @@ export default function SettingsPage() {
     }
   }
 
-  const handleCropComplete = (croppedImage: string) => {
-    if (croppingMode === 'avatar') {
-      setAvatarPreview(croppedImage)
-      // Convert cropped image to File for upload
-      fetch(croppedImage)
-        .then(res => res.blob())
-        .then(blob => {
-          const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
-          setAvatarFile(file)
-        })
-    } else {
-      setBannerPreview(croppedImage)
-      // Convert cropped image to File for upload
-      fetch(croppedImage)
-        .then(res => res.blob())
-        .then(blob => {
-          const file = new File([blob], 'banner.jpg', { type: 'image/jpeg' })
-          setBannerFile(file)
-        })
+  const handleCropComplete = async (croppedImage: string) => {
+    try {
+      if (croppingMode === 'avatar') {
+        setAvatarPreview(croppedImage)
+        // Convert cropped image to File for upload
+        const response = await fetch(croppedImage)
+        const blob = await response.blob()
+        const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
+        setAvatarFile(file)
+      } else {
+        // Set preview immediately for banner
+        setBannerPreview(croppedImage)
+        // Convert cropped image to File for upload
+        const response = await fetch(croppedImage)
+        const blob = await response.blob()
+        const file = new File([blob], 'banner.jpg', { type: 'image/jpeg' })
+        setBannerFile(file)
+        // Force a re-render to show the preview
+        console.log('Banner preview set:', croppedImage.substring(0, 50) + '...')
+      }
+      setShowCropper(false)
+      setImageToCrop(null)
+    } catch (error) {
+      console.error('Error processing cropped image:', error)
+      setError('Failed to process image. Please try again.')
     }
-    setShowCropper(false)
-    setImageToCrop(null)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -221,21 +225,48 @@ export default function SettingsPage() {
         .select()
 
       if (updateError) {
+        console.error('Update error:', updateError)
+        
+        // If error is about RLS policy, provide helpful message
+        if (updateError.message?.includes('row-level security') || 
+            updateError.message?.includes('RLS') ||
+            updateError.message?.includes('policy')) {
+          throw new Error('Permission denied. Please make sure you are logged in and try again. If the issue persists, the database may need the banner_url column added.')
+        }
+        
         // If error is about missing column, try without that column
         if (updateError.message?.includes('profile_song_album_art_url') || 
-            updateError.message?.includes('profile_song_spotify_id')) {
-          console.log('Some profile song columns missing, trying without them...')
+            updateError.message?.includes('profile_song_spotify_id') ||
+            updateError.message?.includes('banner_url')) {
+          console.log('Some columns missing, trying without them...')
           const fallbackData: any = {
             username: username || null,
             full_name: fullName || null,
             bio: bio || null,
             avatar_url: avatarUrl,
-            banner_url: bannerUrl,
             profile_song_title: profileSong?.title || null,
             profile_song_artist: profileSong?.artist || null,
             profile_song_url: profileSong?.url || null,
             fitness_goal: fitnessGoal || null,
+            profile_song_start_time: songStartTime || null,
           }
+          // Only include banner_url if column exists (check by trying)
+          try {
+            const { error: bannerTestError } = await (supabase
+              .from('profiles') as any)
+              .update({ banner_url: bannerUrl })
+              .eq('id', user.id)
+              .select('banner_url')
+              .limit(0) // Don't actually fetch, just test
+            
+            if (!bannerTestError || !bannerTestError.message?.includes('column') && !bannerTestError.message?.includes('does not exist')) {
+              fallbackData.banner_url = bannerUrl
+            }
+          } catch (e) {
+            // Column doesn't exist, skip it
+            console.log('banner_url column not available')
+          }
+          
           const { error: fallbackError } = await (supabase
             .from('profiles') as any)
             .update(fallbackData)
