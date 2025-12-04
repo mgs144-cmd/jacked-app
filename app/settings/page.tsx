@@ -158,9 +158,17 @@ export default function SettingsPage() {
 
     try {
       let avatarUrl = avatarPreview
-      let bannerUrl = bannerPreview
+      let bannerUrl: string | null = null
 
-      if (avatarFile) {
+      // If we have a banner file, we need to upload it
+      // Otherwise, use the existing preview (which is the current saved value)
+      if (bannerFile) {
+        // Will be set after upload
+        bannerUrl = null // Will be set below
+      } else if (bannerPreview) {
+        // Use existing preview (already saved banner)
+        bannerUrl = bannerPreview
+      }
         const fileExt = avatarFile.name.split('.').pop()
         const fileName = `${user.id}-avatar-${Date.now()}.${fileExt}`
         const { error: uploadError } = await supabase.storage
@@ -190,6 +198,17 @@ export default function SettingsPage() {
         bannerUrl = publicUrl
       }
 
+      // First, check if profile exists
+      const { data: existingProfile } = await (supabase
+        .from('profiles') as any)
+        .select('id')
+        .eq('id', user.id)
+        .single()
+
+      if (!existingProfile) {
+        throw new Error('Profile not found. Please contact support.')
+      }
+
       // Build update object conditionally to avoid errors if columns don't exist
       const updateData: any = {
         username: username || null,
@@ -199,11 +218,18 @@ export default function SettingsPage() {
         profile_song_title: profileSong?.title || null,
         profile_song_artist: profileSong?.artist || null,
         profile_song_url: profileSong?.url || null,
+        fitness_goal: fitnessGoal || null,
+        profile_song_start_time: songStartTime || null,
       }
       
-      // Only add banner_url if we have a value (don't include if null to avoid errors)
-      if (bannerUrl) {
+      // Only add banner_url if we have a value AND column exists
+      // We'll try to include it, but handle gracefully if column doesn't exist
+      if (bannerUrl && bannerUrl !== bannerPreview) {
+        // Only update if it's a new upload (not just the preview)
         updateData.banner_url = bannerUrl
+      } else if (bannerPreview && !bannerFile) {
+        // If we have a preview but no file, it means it's already saved
+        updateData.banner_url = bannerPreview
       }
       
       // Only include album_art_url if column exists (check by trying to include it conditionally)
@@ -217,13 +243,8 @@ export default function SettingsPage() {
         updateData.profile_song_spotify_id = profileSong.spotifyId
       }
       
-      // Add fitness goal
-      updateData.fitness_goal = fitnessGoal || null
-      
-      // Add song start time
-      updateData.profile_song_start_time = songStartTime || null
-
       // Try to update, but handle missing columns gracefully
+      console.log('Updating profile with data:', { ...updateData, banner_url: updateData.banner_url ? 'SET' : 'NOT SET' })
       const { error: updateError, data } = await (supabase
         .from('profiles') as any)
         .update(updateData)
