@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
 import { Navbar } from '@/components/Navbar'
@@ -39,6 +39,8 @@ export default function CreatePage() {
   const [isPRPost, setIsPRPost] = useState(false)
   const [isDeadcemberPost, setIsDeadcemberPost] = useState(false)
   const [deadcemberVolume, setDeadcemberVolume] = useState('')
+  const [deadliftVariation, setDeadliftVariation] = useState('')
+  const [deadliftSets, setDeadliftSets] = useState<Array<{ weight: number; reps: number }>>([{ weight: 0, reps: 0 }])
   const [prExercise, setPRExercise] = useState('')
   const [prWeight, setPRWeight] = useState('')
   const [prReps, setPRReps] = useState('')
@@ -46,8 +48,17 @@ export default function CreatePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
   const { user } = useAuth()
+
+  // Check if coming from Deadcember page
+  useEffect(() => {
+    const isDeadcemberParam = searchParams.get('deadcember')
+    if (isDeadcemberParam === 'true') {
+      setIsDeadcemberPost(true)
+    }
+  }, [searchParams])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -68,6 +79,32 @@ export default function CreatePage() {
     setMediaFile(null)
     setMediaPreview(null)
     setMediaType(null)
+  }
+
+  // Auto-calculate Deadcember volume from sets
+  useEffect(() => {
+    if (isDeadcemberPost && deadliftSets.length > 0) {
+      const totalVolume = deadliftSets.reduce((sum, set) => {
+        return sum + (set.weight * set.reps)
+      }, 0)
+      setDeadcemberVolume(totalVolume.toString())
+    }
+  }, [deadliftSets, isDeadcemberPost])
+
+  const addDeadliftSet = () => {
+    setDeadliftSets([...deadliftSets, { weight: 0, reps: 0 }])
+  }
+
+  const removeDeadliftSet = (index: number) => {
+    if (deadliftSets.length > 1) {
+      setDeadliftSets(deadliftSets.filter((_, i) => i !== index))
+    }
+  }
+
+  const updateDeadliftSet = (index: number, field: 'weight' | 'reps', value: number) => {
+    const newSets = [...deadliftSets]
+    newSets[index][field] = value
+    setDeadliftSets(newSets)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -299,20 +336,87 @@ export default function CreatePage() {
             <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-yellow-600/30 p-6 space-y-4">
               <div className="flex items-center space-x-2 mb-4">
                 <Trophy className="w-6 h-6 text-yellow-500" />
-                <h3 className="text-white font-bold text-lg">Deadcember Volume</h3>
+                <h3 className="text-white font-bold text-lg">Deadcember Details</h3>
               </div>
+              
+              {/* Deadlift Variation */}
               <div>
-                <label className="block text-sm font-bold text-gray-300 mb-2">TOTAL VOLUME (lbs)</label>
-                <p className="text-xs text-gray-500 mb-3">Total weight lifted (sets × reps × weight). Example: 5 sets of 3 reps at 315 lbs = 4,725 lbs</p>
-                <input
-                  type="number"
-                  value={deadcemberVolume}
-                  onChange={(e) => setDeadcemberVolume(e.target.value)}
-                  placeholder="4725"
-                  min="0"
-                  step="1"
+                <label className="block text-sm font-bold text-gray-300 mb-2">DEADLIFT VARIATION</label>
+                <select
+                  value={deadliftVariation}
+                  onChange={(e) => setDeadliftVariation(e.target.value)}
                   className="input-field w-full"
-                />
+                >
+                  <option value="">Select variation...</option>
+                  <option value="Conventional Deadlift">Conventional Deadlift</option>
+                  <option value="Sumo Deadlift">Sumo Deadlift</option>
+                  <option value="Trap Bar Deadlift">Trap Bar Deadlift</option>
+                  <option value="Romanian Deadlift">Romanian Deadlift (RDL)</option>
+                  <option value="Stiff-Leg Deadlift">Stiff-Leg Deadlift</option>
+                  <option value="Deficit Deadlift">Deficit Deadlift</option>
+                  <option value="Rack Pull">Rack Pull</option>
+                  <option value="Snatch Grip Deadlift">Snatch Grip Deadlift</option>
+                </select>
+              </div>
+
+              {/* Sets Tracker */}
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-3">SETS</label>
+                <div className="space-y-3">
+                  {deadliftSets.map((set, index) => (
+                    <div key={index} className="flex items-center gap-3 bg-gray-800/50 p-3 rounded-lg">
+                      <span className="text-gray-400 font-bold min-w-[60px]">Set {index + 1}</span>
+                      <input
+                        type="number"
+                        value={set.weight || ''}
+                        onChange={(e) => updateDeadliftSet(index, 'weight', parseFloat(e.target.value) || 0)}
+                        placeholder="Weight"
+                        min="0"
+                        step="5"
+                        className="input-field flex-1 py-2"
+                      />
+                      <span className="text-gray-500">lbs ×</span>
+                      <input
+                        type="number"
+                        value={set.reps || ''}
+                        onChange={(e) => updateDeadliftSet(index, 'reps', parseInt(e.target.value) || 0)}
+                        placeholder="Reps"
+                        min="1"
+                        className="input-field flex-1 py-2"
+                      />
+                      <span className="text-gray-500">reps</span>
+                      {deadliftSets.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeDeadliftSet(index)}
+                          className="text-red-400 hover:text-red-300 p-2"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={addDeadliftSet}
+                    className="w-full btn-secondary py-3 text-sm font-bold"
+                  >
+                    + ADD SET
+                  </button>
+                </div>
+              </div>
+
+              {/* Auto-calculated Volume Display */}
+              <div className="bg-yellow-950/20 border border-yellow-600/50 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300 font-semibold">Total Volume:</span>
+                  <span className="text-yellow-400 text-2xl font-black">
+                    {deadcemberVolume ? parseFloat(deadcemberVolume).toLocaleString() : '0'} lbs
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Calculated automatically from your sets
+                </p>
               </div>
             </div>
           )}

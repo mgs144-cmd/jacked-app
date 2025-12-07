@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/Navbar'
 import { FeedClient } from '@/components/FeedClient'
+import Link from 'next/link'
+import { PlusCircle } from 'lucide-react'
 import { Trophy } from 'lucide-react'
 
 export default async function DeadcemberPage() {
