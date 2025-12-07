@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
@@ -13,7 +13,7 @@ import { ExerciseAutocomplete } from '@/components/ExerciseAutocomplete'
 import Image from 'next/image'
 import { Loader2, Upload, X, Image as ImageIcon, Video, Trophy } from 'lucide-react'
 
-export default function CreatePage() {
+function CreatePage() {
   const [content, setContent] = useState('')
   const [mediaFile, setMediaFile] = useState<File | null>(null)
   const [mediaPreview, setMediaPreview] = useState<string | null>(null)
@@ -572,5 +572,21 @@ export default function CreatePage() {
         </form>
       </div>
     </div>
+  )
+}
+
+// Wrapper component with Suspense boundary
+export default function CreatePageWithSuspense() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen pb-20 md:pb-0 md:pt-24 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <CreatePage />
+    </Suspense>
   )
 }
