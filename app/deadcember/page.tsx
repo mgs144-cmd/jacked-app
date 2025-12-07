@@ -104,6 +104,15 @@ export default async function DeadcemberPage() {
           </div>
         )}
       </div>
+
+      {/* Floating Action Button for Creating Deadcember Post */}
+      <Link
+        href="/create?deadcember=true"
+        className="fixed bottom-24 right-4 md:bottom-8 md:right-8 w-16 h-16 bg-gradient-to-br from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white rounded-full flex items-center justify-center shadow-2xl hover:shadow-3xl transition-all z-40 group hover:scale-110 active:scale-95"
+        aria-label="Create Deadcember Post"
+      >
+        <PlusCircle className="w-8 h-8 group-hover:rotate-90 transition-transform duration-300" />
+      </Link>
     </div>
   )
 }
