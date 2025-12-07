@@ -37,6 +37,8 @@ export default function CreatePage() {
   }, [songStartTime])
   const [isPrivate, setIsPrivate] = useState(false)
   const [isPRPost, setIsPRPost] = useState(false)
+  const [isDeadcemberPost, setIsDeadcemberPost] = useState(false)
+  const [deadcemberVolume, setDeadcemberVolume] = useState('')
   const [prExercise, setPRExercise] = useState('')
   const [prWeight, setPRWeight] = useState('')
   const [prReps, setPRReps] = useState('')
@@ -114,6 +116,8 @@ export default function CreatePage() {
         pr_exercise: isPRPost ? prExercise.trim() : null,
         pr_weight: isPRPost && prWeight ? parseFloat(prWeight) : null,
         pr_reps: isPRPost && prReps ? parseInt(prReps) : null,
+        is_deadcember_post: isDeadcemberPost,
+        deadcember_volume: isDeadcemberPost && deadcemberVolume ? parseFloat(deadcemberVolume) : null,
       }
 
       // Only include spotify_id if it exists and column exists in database
@@ -272,6 +276,46 @@ export default function CreatePage() {
             </label>
             <p className="text-xs text-gray-500 mt-2 ml-8">PR posts will be highlighted in the feed</p>
           </div>
+
+          {/* Deadcember Post Toggle */}
+          <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-4">
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isDeadcemberPost}
+                onChange={(e) => setIsDeadcemberPost(e.target.checked)}
+                className="w-5 h-5 rounded border-gray-700 bg-gray-800 text-primary focus:ring-primary focus:ring-offset-0"
+              />
+              <div className="flex items-center space-x-2">
+                <Trophy className="w-5 h-5 text-yellow-500" />
+                <span className="text-white font-bold">This is a Deadcember Post</span>
+              </div>
+            </label>
+            <p className="text-xs text-gray-500 mt-2 ml-8">Track your December deadlift volume</p>
+          </div>
+
+          {/* Deadcember Volume - Only show if Deadcember post */}
+          {isDeadcemberPost && (
+            <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-yellow-600/30 p-6 space-y-4">
+              <div className="flex items-center space-x-2 mb-4">
+                <Trophy className="w-6 h-6 text-yellow-500" />
+                <h3 className="text-white font-bold text-lg">Deadcember Volume</h3>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2">TOTAL VOLUME (lbs)</label>
+                <p className="text-xs text-gray-500 mb-3">Total weight lifted (sets × reps × weight). Example: 5 sets of 3 reps at 315 lbs = 4,725 lbs</p>
+                <input
+                  type="number"
+                  value={deadcemberVolume}
+                  onChange={(e) => setDeadcemberVolume(e.target.value)}
+                  placeholder="4725"
+                  min="0"
+                  step="1"
+                  className="input-field w-full"
+                />
+              </div>
+            </div>
+          )}
 
           {/* PR Details - Only show if PR post */}
           {isPRPost && (
