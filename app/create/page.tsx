@@ -118,7 +118,7 @@ function CreatePage() {
     }
     
     // For public posts, require content or media
-    if (deadcemberVisibility !== 'private' && !user || (!content.trim() && !mediaFile)) {
+    if (deadcemberVisibility !== 'private' && (!user || (!content.trim() && !mediaFile))) {
       setError('Please add some content or media')
       return
     }
