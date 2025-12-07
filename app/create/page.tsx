@@ -129,7 +129,7 @@ function CreatePage() {
     try {
       let mediaUrl = null
 
-      if (mediaFile) {
+      if (mediaFile && user) {
         const fileExt = mediaFile.name.split('.').pop()
         const fileName = `${user.id}-${Date.now()}.${fileExt}`
         const bucket = mediaType === 'video' ? 'videos' : 'images'
