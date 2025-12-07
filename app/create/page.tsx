@@ -127,6 +127,11 @@ function CreatePage() {
     setLoading(true)
 
     try {
+      if (!user) {
+        setError('User not authenticated')
+        return
+      }
+
       let mediaUrl = null
 
       if (mediaFile && user) {
