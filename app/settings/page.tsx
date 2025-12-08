@@ -725,19 +725,19 @@ export default function SettingsPage() {
                       <span>Select from PRs</span>
                     </button>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 md:gap-3">
-                    <div>
+                  <div className="grid grid-cols-[2fr_1.5fr_1fr] md:grid-cols-3 gap-2 md:gap-3">
+                    <div className="min-w-0">
                       <label className="block text-xs text-gray-500 mb-1">Exercise</label>
                       <input
                         type="text"
                         value={topLift1.exercise}
                         onChange={(e) => setTopLift1({ ...topLift1, exercise: e.target.value })}
-                        placeholder="e.g., Deadlift"
-                        className="input-field text-sm"
+                        placeholder="Deadlift"
+                        className="input-field text-xs md:text-sm w-full"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Weight (lbs)</label>
+                    <div className="min-w-0">
+                      <label className="block text-xs text-gray-500 mb-1">Weight</label>
                       <input
                         type="number"
                         min="0"
@@ -745,10 +745,10 @@ export default function SettingsPage() {
                         value={topLift1.weight}
                         onChange={(e) => setTopLift1({ ...topLift1, weight: e.target.value })}
                         placeholder="405"
-                        className="input-field text-sm"
+                        className="input-field text-xs md:text-sm w-full"
                       />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <label className="block text-xs text-gray-500 mb-1">Reps</label>
                       <input
                         type="number"
@@ -756,7 +756,7 @@ export default function SettingsPage() {
                         value={topLift1.reps}
                         onChange={(e) => setTopLift1({ ...topLift1, reps: e.target.value })}
                         placeholder="3"
-                        className="input-field text-sm"
+                        className="input-field text-xs md:text-sm w-full"
                       />
                     </div>
                   </div>
@@ -778,19 +778,19 @@ export default function SettingsPage() {
                       <span>Select from PRs</span>
                     </button>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 md:gap-3">
-                    <div>
+                  <div className="grid grid-cols-[2fr_1.5fr_1fr] md:grid-cols-3 gap-2 md:gap-3">
+                    <div className="min-w-0">
                       <label className="block text-xs text-gray-500 mb-1">Exercise</label>
                       <input
                         type="text"
                         value={topLift2.exercise}
                         onChange={(e) => setTopLift2({ ...topLift2, exercise: e.target.value })}
-                        placeholder="e.g., Squat"
-                        className="input-field text-sm"
+                        placeholder="Squat"
+                        className="input-field text-xs md:text-sm w-full"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Weight (lbs)</label>
+                    <div className="min-w-0">
+                      <label className="block text-xs text-gray-500 mb-1">Weight</label>
                       <input
                         type="number"
                         min="0"
@@ -798,10 +798,10 @@ export default function SettingsPage() {
                         value={topLift2.weight}
                         onChange={(e) => setTopLift2({ ...topLift2, weight: e.target.value })}
                         placeholder="315"
-                        className="input-field text-sm"
+                        className="input-field text-xs md:text-sm w-full"
                       />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <label className="block text-xs text-gray-500 mb-1">Reps</label>
                       <input
                         type="number"
@@ -809,7 +809,7 @@ export default function SettingsPage() {
                         value={topLift2.reps}
                         onChange={(e) => setTopLift2({ ...topLift2, reps: e.target.value })}
                         placeholder="5"
-                        className="input-field text-sm"
+                        className="input-field text-xs md:text-sm w-full"
                       />
                     </div>
                   </div>
@@ -831,19 +831,19 @@ export default function SettingsPage() {
                       <span>Select from PRs</span>
                     </button>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 md:gap-3">
-                    <div>
+                  <div className="grid grid-cols-[2fr_1.5fr_1fr] md:grid-cols-3 gap-2 md:gap-3">
+                    <div className="min-w-0">
                       <label className="block text-xs text-gray-500 mb-1">Exercise</label>
                       <input
                         type="text"
                         value={topLift3.exercise}
                         onChange={(e) => setTopLift3({ ...topLift3, exercise: e.target.value })}
-                        placeholder="e.g., Bench Press"
-                        className="input-field text-sm"
+                        placeholder="Bench Press"
+                        className="input-field text-xs md:text-sm w-full"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Weight (lbs)</label>
+                    <div className="min-w-0">
+                      <label className="block text-xs text-gray-500 mb-1">Weight</label>
                       <input
                         type="number"
                         min="0"
@@ -851,10 +851,10 @@ export default function SettingsPage() {
                         value={topLift3.weight}
                         onChange={(e) => setTopLift3({ ...topLift3, weight: e.target.value })}
                         placeholder="225"
-                        className="input-field text-sm"
+                        className="input-field text-xs md:text-sm w-full"
                       />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <label className="block text-xs text-gray-500 mb-1">Reps</label>
                       <input
                         type="number"
@@ -862,7 +862,7 @@ export default function SettingsPage() {
                         value={topLift3.reps}
                         onChange={(e) => setTopLift3({ ...topLift3, reps: e.target.value })}
                         placeholder="8"
-                        className="input-field text-sm"
+                        className="input-field text-xs md:text-sm w-full"
                       />
                     </div>
                   </div>

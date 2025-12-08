@@ -96,23 +96,23 @@ export function CommentForm({ postId, userId, onCommentAdded }: CommentFormProps
         <button
           type="button"
           onClick={() => setShowGIFPicker(true)}
-          className="btn-secondary w-10 h-10 p-0 flex items-center justify-center shrink-0"
+          className="btn-secondary w-10 h-10 p-2 flex items-center justify-center shrink-0"
           disabled={loading || !!selectedGIF}
           aria-label="Add GIF"
         >
-          <ImageIcon className="w-5 h-5" />
+          <ImageIcon className="w-6 h-6" />
         </button>
         <button
           type="submit"
           disabled={loading || (!content.trim() && !selectedGIF)}
-          className="btn-primary w-10 md:w-auto md:px-6 h-10 p-0 md:py-2 flex items-center justify-center md:space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+          className="btn-primary w-10 md:w-auto md:px-6 h-10 p-2 md:py-2 flex items-center justify-center md:space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
           aria-label="Post comment"
         >
           {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Loader2 className="w-6 h-6 animate-spin" />
           ) : (
             <>
-              <Send className="w-4 h-4 md:w-5 md:h-5" />
+              <Send className="w-6 h-6 md:w-5 md:h-5" />
               <span className="hidden md:inline font-bold">POST</span>
             </>
           )}

@@ -117,9 +117,15 @@ function CreatePage() {
       return
     }
     
-    // For public posts, require content or media
-    if (deadcemberVisibility !== 'private' && (!user || (!content.trim() && !mediaFile))) {
+    // For public posts, require content or media (unless it's a Deadcember post with volume)
+    if (deadcemberVisibility !== 'private' && !isDeadcemberPost && (!user || (!content.trim() && !mediaFile))) {
       setError('Please add some content or media')
+      return
+    }
+    
+    // For Deadcember posts, require deadlift data
+    if (isDeadcemberPost && !deadcemberVolume && deadliftSets.every(set => set.weight === 0 && set.reps === 0)) {
+      setError('Please add deadlift data for your Deadcember post')
       return
     }
 
