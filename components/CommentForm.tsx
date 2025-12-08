@@ -96,23 +96,32 @@ export function CommentForm({ postId, userId, onCommentAdded }: CommentFormProps
         <button
           type="button"
           onClick={() => setShowGIFPicker(true)}
-          className="btn-secondary w-12 h-12 flex items-center justify-center shrink-0 rounded-xl"
+          className="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-12 h-12 flex items-center justify-center shrink-0 rounded-xl transition-colors"
           disabled={loading || !!selectedGIF}
           aria-label="Add GIF"
         >
-          <ImageIcon className="w-6 h-6" strokeWidth={2} />
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300">
+            <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+            <circle cx="9" cy="9" r="2"/>
+            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+          </svg>
         </button>
         <button
           type="submit"
           disabled={loading || (!content.trim() && !selectedGIF)}
-          className="btn-primary w-12 md:w-auto md:px-6 h-12 flex items-center justify-center md:space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 rounded-xl"
+          className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 w-12 md:w-auto md:px-6 h-12 flex items-center justify-center md:space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 rounded-xl transition-all text-white"
           aria-label="Post comment"
         >
           {loading ? (
-            <Loader2 className="w-6 h-6 animate-spin" strokeWidth={2} />
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
           ) : (
             <>
-              <Send className="w-6 h-6 md:w-5 md:h-5" strokeWidth={2} />
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                <line x1="22" x2="11" y1="2" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
               <span className="hidden md:inline font-bold">POST</span>
             </>
           )}

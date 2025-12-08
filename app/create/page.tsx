@@ -552,7 +552,8 @@ function CreatePage() {
           {/* Workout Details */}
           <WorkoutForm exercises={workoutExercises} onChange={setWorkoutExercises} />
 
-          {/* Music Selector */}
+          {/* Music Selector - Temporarily hidden for presentation */}
+          {false && (
           <div>
             <label className="block text-sm font-bold text-gray-300 mb-3 tracking-wide">
               WORKOUT SONG
@@ -607,6 +608,7 @@ function CreatePage() {
                   </div>
                 )}
           </div>
+          )}
 
           {/* Privacy Toggle */}
           <PrivacyToggle isPrivate={isPrivate} onChange={setIsPrivate} />
