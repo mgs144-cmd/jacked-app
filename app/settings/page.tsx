@@ -622,11 +622,11 @@ export default function SettingsPage() {
                   FITNESS GOAL
                 </label>
                 <p className="text-xs text-gray-500 mb-3">Display your current fitness phase</p>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2 md:gap-3">
                   <button
                     type="button"
                     onClick={() => setFitnessGoal('bulk')}
-                    className={`py-3 px-4 rounded-xl border-2 transition-all font-bold ${
+                    className={`py-2.5 md:py-3 px-2 md:px-4 rounded-xl border-2 transition-all font-bold text-xs md:text-sm ${
                       fitnessGoal === 'bulk'
                         ? 'border-green-600 bg-green-950/30 text-green-400'
                         : 'border-gray-700 bg-gray-800/40 text-gray-400 hover:border-gray-600'
@@ -637,7 +637,7 @@ export default function SettingsPage() {
                   <button
                     type="button"
                     onClick={() => setFitnessGoal('cut')}
-                    className={`py-3 px-4 rounded-xl border-2 transition-all font-bold ${
+                    className={`py-2.5 md:py-3 px-2 md:px-4 rounded-xl border-2 transition-all font-bold text-xs md:text-sm ${
                       fitnessGoal === 'cut'
                         ? 'border-red-600 bg-red-950/30 text-red-400'
                         : 'border-gray-700 bg-gray-800/40 text-gray-400 hover:border-gray-600'
@@ -648,13 +648,14 @@ export default function SettingsPage() {
                   <button
                     type="button"
                     onClick={() => setFitnessGoal('maintenance')}
-                    className={`py-3 px-4 rounded-xl border-2 transition-all font-bold ${
+                    className={`py-2.5 md:py-3 px-1 md:px-4 rounded-xl border-2 transition-all font-bold text-[10px] md:text-sm ${
                       fitnessGoal === 'maintenance'
                         ? 'border-gray-600 bg-gray-800/30 text-gray-400'
                         : 'border-gray-700 bg-gray-800/40 text-gray-400 hover:border-gray-600'
                     }`}
                   >
-                    MAINTENANCE
+                    <span className="hidden sm:inline">MAINTENANCE</span>
+                    <span className="sm:hidden">MAINT</span>
                   </button>
                 </div>
                 <button
@@ -674,9 +675,9 @@ export default function SettingsPage() {
                 <p className="text-xs text-gray-500 mb-4">Showcase your best lifts on your profile. 1RM will be calculated automatically for reps &gt; 1 using the Epley formula.</p>
                 
                 {/* Lift 1 */}
-                <div className="space-y-3 mb-4 p-4 bg-gray-800/40 rounded-xl border border-gray-700">
-                  <div className="text-sm font-bold text-gray-400 mb-2">LIFT #1</div>
-                  <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-3 mb-4 p-3 md:p-4 bg-gray-800/40 rounded-xl border border-gray-700">
+                  <div className="text-xs md:text-sm font-bold text-gray-400 mb-2">LIFT #1</div>
+                  <div className="grid grid-cols-3 gap-2 md:gap-3">
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">Exercise</label>
                       <input
@@ -714,9 +715,9 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Lift 2 */}
-                <div className="space-y-3 mb-4 p-4 bg-gray-800/40 rounded-xl border border-gray-700">
-                  <div className="text-sm font-bold text-gray-400 mb-2">LIFT #2</div>
-                  <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-3 mb-4 p-3 md:p-4 bg-gray-800/40 rounded-xl border border-gray-700">
+                  <div className="text-xs md:text-sm font-bold text-gray-400 mb-2">LIFT #2</div>
+                  <div className="grid grid-cols-3 gap-2 md:gap-3">
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">Exercise</label>
                       <input
@@ -754,9 +755,9 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Lift 3 */}
-                <div className="space-y-3 p-4 bg-gray-800/40 rounded-xl border border-gray-700">
-                  <div className="text-sm font-bold text-gray-400 mb-2">LIFT #3</div>
-                  <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-3 p-3 md:p-4 bg-gray-800/40 rounded-xl border border-gray-700">
+                  <div className="text-xs md:text-sm font-bold text-gray-400 mb-2">LIFT #3</div>
+                  <div className="grid grid-cols-3 gap-2 md:gap-3">
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">Exercise</label>
                       <input
