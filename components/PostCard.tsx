@@ -459,7 +459,7 @@ export function PostCard({ post }: PostCardProps) {
             className="flex items-center space-x-2 text-gray-400 hover:text-white transition-all duration-300 group"
           >
             <MessageCircle 
-              className={`w-6 h-6 group-hover:scale-110 transition-all duration-300 ${showCommentForm ? 'text-primary' : ''}`}
+              className={`w-7 h-7 md:w-6 md:h-6 group-hover:scale-110 transition-all duration-300 ${showCommentForm ? 'text-primary' : ''}`}
               strokeWidth={2.5}
             />
             {commentCount > 0 && (
