@@ -84,19 +84,19 @@ export function CommentForm({ postId, userId, onCommentAdded }: CommentFormProps
         </div>
       )}
 
-      <div className="flex space-x-3">
+      <div className="flex space-x-2">
         <input
           type="text"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder={selectedGIF ? "Add a caption (optional)..." : "Add a comment..."}
-          className="input-field flex-1 py-3"
+          className="input-field flex-1 py-2.5 text-sm"
           disabled={loading || !!selectedGIF}
         />
         <button
           type="button"
           onClick={() => setShowGIFPicker(true)}
-          className="btn-secondary px-4 py-3 flex items-center justify-center"
+          className="btn-secondary px-3 py-2.5 flex items-center justify-center shrink-0"
           disabled={loading || !!selectedGIF}
         >
           <ImageIcon className="w-5 h-5" />
@@ -104,13 +104,13 @@ export function CommentForm({ postId, userId, onCommentAdded }: CommentFormProps
         <button
           type="submit"
           disabled={loading || (!content.trim() && !selectedGIF)}
-          className="btn-primary px-6 py-3 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn-primary px-4 md:px-6 py-2.5 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
         >
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
             <>
-              <Send className="w-5 h-5" />
+              <Send className="w-4 h-4 md:w-5 md:h-5" />
               <span className="hidden md:inline font-bold">POST</span>
             </>
           )}
