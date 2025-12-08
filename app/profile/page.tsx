@@ -9,6 +9,7 @@ import { ProfileMusicPlayer } from '@/components/ProfileMusicPlayer'
 import { PRDisplay } from '@/components/PRDisplay'
 import { BadgeDisplay } from '@/components/BadgeDisplay'
 import { FitnessGoalIndicator } from '@/components/FitnessGoalIndicator'
+import { TopLiftsDisplay } from '@/components/TopLiftsDisplay'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -217,6 +218,15 @@ export default async function ProfilePage() {
 
         {/* Content Section */}
         <div className="px-4 md:px-6 pb-6">
+          {/* Top Lifts Display */}
+          <div className="mb-6">
+            <TopLiftsDisplay 
+              topLift1={(profile as any)?.top_lift_1}
+              topLift2={(profile as any)?.top_lift_2}
+              topLift3={(profile as any)?.top_lift_3}
+            />
+          </div>
+
           {/* Compact Info Cards */}
           {(hasDeadcemberEntries || (prs && prs.length > 0) || badges.length > 0) && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">

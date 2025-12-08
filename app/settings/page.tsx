@@ -27,6 +27,9 @@ export default function SettingsPage() {
   const [songStartTime, setSongStartTime] = useState<number | null>(null)
   const [previewStartTime, setPreviewStartTime] = useState<number | null>(null) // Debounced value for preview
   const [fitnessGoal, setFitnessGoal] = useState<'bulk' | 'cut' | 'maintenance' | null>(null)
+  const [topLift1, setTopLift1] = useState<{ exercise: string; weight: string; reps: string }>({ exercise: '', weight: '', reps: '' })
+  const [topLift2, setTopLift2] = useState<{ exercise: string; weight: string; reps: string }>({ exercise: '', weight: '', reps: '' })
+  const [topLift3, setTopLift3] = useState<{ exercise: string; weight: string; reps: string }>({ exercise: '', weight: '', reps: '' })
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -67,6 +70,29 @@ export default function SettingsPage() {
         }
         setFitnessGoal(data.fitness_goal || null)
         setSongStartTime(data.profile_song_start_time || null)
+        
+        // Load top lifts
+        if (data.top_lift_1) {
+          setTopLift1({
+            exercise: data.top_lift_1.exercise || '',
+            weight: data.top_lift_1.weight?.toString() || '',
+            reps: data.top_lift_1.reps?.toString() || ''
+          })
+        }
+        if (data.top_lift_2) {
+          setTopLift2({
+            exercise: data.top_lift_2.exercise || '',
+            weight: data.top_lift_2.weight?.toString() || '',
+            reps: data.top_lift_2.reps?.toString() || ''
+          })
+        }
+        if (data.top_lift_3) {
+          setTopLift3({
+            exercise: data.top_lift_3.exercise || '',
+            weight: data.top_lift_3.weight?.toString() || '',
+            reps: data.top_lift_3.reps?.toString() || ''
+          })
+        }
       }
       setLoading(false)
     }
@@ -228,6 +254,37 @@ export default function SettingsPage() {
         profile_song_url: profileSong?.url || null,
         fitness_goal: fitnessGoal || null,
         profile_song_start_time: songStartTime || null,
+      }
+
+      // Add top lifts if filled out
+      if (topLift1.exercise && topLift1.weight && topLift1.reps) {
+        updateData.top_lift_1 = {
+          exercise: topLift1.exercise,
+          weight: parseFloat(topLift1.weight),
+          reps: parseInt(topLift1.reps)
+        }
+      } else {
+        updateData.top_lift_1 = null
+      }
+
+      if (topLift2.exercise && topLift2.weight && topLift2.reps) {
+        updateData.top_lift_2 = {
+          exercise: topLift2.exercise,
+          weight: parseFloat(topLift2.weight),
+          reps: parseInt(topLift2.reps)
+        }
+      } else {
+        updateData.top_lift_2 = null
+      }
+
+      if (topLift3.exercise && topLift3.weight && topLift3.reps) {
+        updateData.top_lift_3 = {
+          exercise: topLift3.exercise,
+          weight: parseFloat(topLift3.weight),
+          reps: parseInt(topLift3.reps)
+        }
+      } else {
+        updateData.top_lift_3 = null
       }
       
       // Add banner_url if we have a value
@@ -607,6 +664,134 @@ export default function SettingsPage() {
                 >
                   Clear selection
                 </button>
+              </div>
+
+              {/* Top 3 Lifts Section */}
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+                  TOP 3 LIFTS
+                </label>
+                <p className="text-xs text-gray-500 mb-4">Showcase your best lifts on your profile. 1RM will be calculated automatically for reps &gt; 1 using the Epley formula.</p>
+                
+                {/* Lift 1 */}
+                <div className="space-y-3 mb-4 p-4 bg-gray-800/40 rounded-xl border border-gray-700">
+                  <div className="text-sm font-bold text-gray-400 mb-2">LIFT #1</div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Exercise</label>
+                      <input
+                        type="text"
+                        value={topLift1.exercise}
+                        onChange={(e) => setTopLift1({ ...topLift1, exercise: e.target.value })}
+                        placeholder="e.g., Deadlift"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Weight (lbs)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={topLift1.weight}
+                        onChange={(e) => setTopLift1({ ...topLift1, weight: e.target.value })}
+                        placeholder="405"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Reps</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={topLift1.reps}
+                        onChange={(e) => setTopLift1({ ...topLift1, reps: e.target.value })}
+                        placeholder="3"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lift 2 */}
+                <div className="space-y-3 mb-4 p-4 bg-gray-800/40 rounded-xl border border-gray-700">
+                  <div className="text-sm font-bold text-gray-400 mb-2">LIFT #2</div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Exercise</label>
+                      <input
+                        type="text"
+                        value={topLift2.exercise}
+                        onChange={(e) => setTopLift2({ ...topLift2, exercise: e.target.value })}
+                        placeholder="e.g., Squat"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Weight (lbs)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={topLift2.weight}
+                        onChange={(e) => setTopLift2({ ...topLift2, weight: e.target.value })}
+                        placeholder="315"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Reps</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={topLift2.reps}
+                        onChange={(e) => setTopLift2({ ...topLift2, reps: e.target.value })}
+                        placeholder="5"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lift 3 */}
+                <div className="space-y-3 p-4 bg-gray-800/40 rounded-xl border border-gray-700">
+                  <div className="text-sm font-bold text-gray-400 mb-2">LIFT #3</div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Exercise</label>
+                      <input
+                        type="text"
+                        value={topLift3.exercise}
+                        onChange={(e) => setTopLift3({ ...topLift3, exercise: e.target.value })}
+                        placeholder="e.g., Bench Press"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Weight (lbs)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={topLift3.weight}
+                        onChange={(e) => setTopLift3({ ...topLift3, weight: e.target.value })}
+                        placeholder="225"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Reps</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={topLift3.reps}
+                        onChange={(e) => setTopLift3({ ...topLift3, reps: e.target.value })}
+                        placeholder="8"
+                        className="input-field text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
