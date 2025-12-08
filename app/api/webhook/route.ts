@@ -56,6 +56,20 @@ export async function POST(request: Request) {
 
   const supabase = await createClient()
 
+  // IMPORTANT: Webhook needs to bypass RLS to update user profiles
+  // Use service role client instead of regular client
+  const { createClient: createServiceClient } = await import('@supabase/supabase-js')
+  const supabaseAdmin = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  )
+
   // Handle checkout session completed
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
@@ -93,7 +107,7 @@ export async function POST(request: Request) {
       // Try to find user by email as fallback
       if (session.customer_email) {
         console.log('🔍 Attempting to find user by email:', session.customer_email)
-        const { data: profileByEmail } = await (supabase
+        const { data: profileByEmail } = await (supabaseAdmin
           .from('profiles') as any)
           .select('id')
           .eq('email', session.customer_email)
@@ -103,7 +117,7 @@ export async function POST(request: Request) {
           console.log('✅ Found user by email:', profileByEmail.id)
           const foundUserId = profileByEmail.id
           
-          const { error } = await (supabase
+          const { error } = await (supabaseAdmin
             .from('profiles') as any)
             .update({ 
               has_paid_onboarding: true,
