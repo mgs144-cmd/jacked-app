@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Public pages that don't require payment
-  const publicPages = ['/auth', '/api', '/terms', '/privacy', '/refund', '/payment-required']
+  const publicPages = ['/auth', '/api', '/terms', '/privacy', '/refund', '/payment-required', '/demo']
   const isPublicPage = publicPages.some(page => request.nextUrl.pathname.startsWith(page))
 
   // Check if user is admin (for /admin access) - admins can access without payment
@@ -95,6 +95,7 @@ export async function middleware(request: NextRequest) {
     const isAdmin = (adminEmail && user.email === adminEmail) || 
                     user.email === 'jackedapp@gmail.com' ||
                     user.email === 'chippersnyder0227@gmail.com' ||
+                    user.email === 'demo@jackedlifting.com' || // Demo account bypass
                     (profile as any)?.is_admin === true
 
     if (isAdmin) {
