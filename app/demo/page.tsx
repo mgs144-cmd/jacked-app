@@ -84,7 +84,7 @@ export default function DemoPage() {
           {/* Info Box */}
           <div className="mt-8 bg-gray-800/50 rounded-lg p-4 text-left">
             <p className="text-gray-400 text-xs leading-relaxed">
-              <strong className="text-white">Note:</strong> You're accessing a shared demo account. 
+              <strong className="text-white">Note:</strong> You are accessing a shared demo account. 
               Posts and changes you make will be visible to all demo users. 
               Sign up for your own account at <span className="text-primary">jackedlifting.com</span>
             </p>
