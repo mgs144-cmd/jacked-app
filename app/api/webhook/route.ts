@@ -171,7 +171,7 @@ export async function POST(request: Request) {
       console.log('Current profile status:', existingProfile)
       
       // Update payment status
-      const { error, data } = await (supabase
+      const { error, data } = await (supabaseAdmin
         .from('profiles') as any)
         .update({ 
           has_paid_onboarding: true,
@@ -191,7 +191,7 @@ export async function POST(request: Request) {
       }
       
       // Verify the update worked
-      const { data: verifyProfile } = await (supabase
+      const { data: verifyProfile } = await (supabaseAdmin
         .from('profiles') as any)
         .select('has_paid_onboarding, onboarding_payment_id')
         .eq('id', userId)
