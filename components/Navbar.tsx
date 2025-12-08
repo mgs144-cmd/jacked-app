@@ -71,10 +71,10 @@ export function Navbar() {
             {/* Post Button - Middle */}
             <Link
               href={postButton.href}
-              className="flex flex-col md:flex-row items-center justify-center space-y-1 md:space-y-0 md:space-x-2 px-3 md:px-4 py-2.5 md:py-2 rounded-xl bg-gradient-primary text-white hover:brightness-110 transition-all duration-300 shadow-lg hover:shadow-red-500/30 hover:scale-105 flex-1 md:flex-initial"
+              className="flex flex-col md:flex-row items-center justify-center space-y-0 md:space-y-0 md:space-x-2 px-3 md:px-4 py-2 md:py-2 rounded-xl bg-gradient-primary text-white hover:brightness-110 transition-all duration-300 shadow-lg hover:shadow-red-500/30 hover:scale-105 flex-1 md:flex-initial"
             >
-              <postButton.icon className="w-6 h-6 md:w-5 md:h-5" strokeWidth={2.5} />
-              <span className="text-[10px] md:text-sm font-bold tracking-wide">{postButton.label}</span>
+              <postButton.icon className="w-7 h-7 md:w-5 md:h-5" strokeWidth={2.5} />
+              <span className="hidden md:inline text-sm font-bold tracking-wide">{postButton.label}</span>
             </Link>
 
             {/* Right items */}
