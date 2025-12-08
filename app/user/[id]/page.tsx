@@ -248,6 +248,15 @@ export default async function UserProfilePage({
 
         {/* Content Below Profile Header */}
         <div className="px-4 md:px-8 pb-6 md:pb-8">
+          {/* Top Lifts Display */}
+          <div className="mb-6">
+            <TopLiftsDisplay 
+              topLift1={(profile as any)?.top_lift_1}
+              topLift2={(profile as any)?.top_lift_2}
+              topLift3={(profile as any)?.top_lift_3}
+            />
+          </div>
+
           {/* Posts Section */}
           <div>
             <h2 className="text-2xl font-black text-white tracking-tight mb-6">Posts</h2>
