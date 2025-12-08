@@ -33,13 +33,10 @@ export default async function DeadcemberPage() {
     .order('created_at', { ascending: false })
     .limit(50)
 
-  // Get ALL Deadcember posts for community total (not just the limited 50)
-  const { data: allDeadcemberPosts } = await supabase
-    .from('posts')
-    .select('deadcember_volume')
-    .eq('is_deadcember_post', true)
-    .or('is_archived.is.null,is_archived.eq.false')
-    .not('deadcember_volume', 'is', null)
+  // Get ALL Deadcember posts for community total using RPC to bypass RLS
+  // This ensures EVERY Deadcember post is counted, regardless of privacy
+  const { data: communityTotalData } = await supabase
+    .rpc('get_deadcember_total')
 
   const postsWithCounts = deadcemberPosts?.map((post: any) => {
     let profile = post.profiles
@@ -55,10 +52,8 @@ export default async function DeadcemberPage() {
     }
   }) || []
 
-  // Calculate community total from ALL Deadcember posts (not just the 50 shown)
-  const communityTotal = allDeadcemberPosts?.reduce((sum, post: any) => {
-    return sum + (post.deadcember_volume || 0)
-  }, 0) || 0
+  // Use the RPC function result for community total (bypasses RLS)
+  const communityTotal = communityTotalData || 0
 
   return (
     <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
