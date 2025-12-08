@@ -592,7 +592,7 @@ function CreatePage() {
                         className="input-field flex-1"
                         placeholder="0 (start from beginning)"
                       />
-                      {previewStartTime !== null && previewStartTime >= 0 && (
+                      {previewStartTime !== null && previewStartTime !== undefined && previewStartTime >= 0 && (
                         <div className="text-xs text-green-400 animate-pulse">
                           Preview playing...
                         </div>

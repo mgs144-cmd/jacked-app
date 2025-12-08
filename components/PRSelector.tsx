@@ -28,10 +28,6 @@ export function PRSelector({ userId, onSelect, onClose, currentLiftNumber }: PRS
   const [selectedExercise, setSelectedExercise] = useState<string>('')
   const supabase = createClient()
 
-  useEffect(() => {
-    loadUserPRs()
-  }, [userId])
-
   const loadUserPRs = async () => {
     try {
       // Get all workout exercises from user's posts
@@ -100,6 +96,11 @@ export function PRSelector({ userId, onSelect, onClose, currentLiftNumber }: PRS
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadUserPRs()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId])
 
   const handleSelect = (exercise: WorkoutExercise) => {
     onSelect({
