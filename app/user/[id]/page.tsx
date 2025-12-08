@@ -7,6 +7,11 @@ import { PostCard } from '@/components/PostCard'
 import { FollowButton } from '@/components/FollowButton'
 import { Crown, Calendar, ArrowLeft } from 'lucide-react'
 import { ProfileMusicPlayer } from '@/components/ProfileMusicPlayer'
+import { PRDisplay } from '@/components/PRDisplay'
+import { BadgeDisplay } from '@/components/BadgeDisplay'
+import { FitnessGoalIndicator } from '@/components/FitnessGoalIndicator'
+import { TopLiftsDisplay } from '@/components/TopLiftsDisplay'
+import { Trophy } from 'lucide-react'
 
 export default async function UserProfilePage({
   params,
