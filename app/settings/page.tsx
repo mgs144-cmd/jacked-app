@@ -7,10 +7,11 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
 import { Navbar } from '@/components/Navbar'
 import Link from 'next/link'
-import { Loader2, Upload, LogOut, User, Shield } from 'lucide-react'
+import { Loader2, Upload, LogOut, User, Shield, ListFilter } from 'lucide-react'
 import { MusicSelector } from '@/components/MusicSelector'
 import { ImageCropper } from '@/components/ImageCropper'
 import { SongPreviewPlayer } from '@/components/SongPreviewPlayer'
+import { PRSelector } from '@/components/PRSelector'
 
 export default function SettingsPage() {
   const [username, setUsername] = useState('')
@@ -30,6 +31,8 @@ export default function SettingsPage() {
   const [topLift1, setTopLift1] = useState<{ exercise: string; weight: string; reps: string }>({ exercise: '', weight: '', reps: '' })
   const [topLift2, setTopLift2] = useState<{ exercise: string; weight: string; reps: string }>({ exercise: '', weight: '', reps: '' })
   const [topLift3, setTopLift3] = useState<{ exercise: string; weight: string; reps: string }>({ exercise: '', weight: '', reps: '' })
+  const [showPRSelector, setShowPRSelector] = useState(false)
+  const [selectingLiftNumber, setSelectingLiftNumber] = useState<1 | 2 | 3>(1)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -411,6 +414,36 @@ export default function SettingsPage() {
     <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
       <Navbar />
       
+      {/* PR Selector Modal */}
+      {showPRSelector && user && (
+        <PRSelector
+          userId={user.id}
+          currentLiftNumber={selectingLiftNumber}
+          onSelect={(selectedPR) => {
+            if (selectingLiftNumber === 1) {
+              setTopLift1({
+                exercise: selectedPR.exercise,
+                weight: selectedPR.weight.toString(),
+                reps: selectedPR.reps.toString()
+              })
+            } else if (selectingLiftNumber === 2) {
+              setTopLift2({
+                exercise: selectedPR.exercise,
+                weight: selectedPR.weight.toString(),
+                reps: selectedPR.reps.toString()
+              })
+            } else {
+              setTopLift3({
+                exercise: selectedPR.exercise,
+                weight: selectedPR.weight.toString(),
+                reps: selectedPR.reps.toString()
+              })
+            }
+          }}
+          onClose={() => setShowPRSelector(false)}
+        />
+      )}
+      
       <div className="max-w-3xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -669,14 +702,29 @@ export default function SettingsPage() {
 
               {/* Top 3 Lifts Section */}
               <div>
-                <label className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
-                  TOP 3 LIFTS
-                </label>
-                <p className="text-xs text-gray-500 mb-4">Showcase your best lifts on your profile. 1RM will be calculated automatically for reps &gt; 1 using the Epley formula.</p>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-bold text-gray-300 tracking-wide">
+                    TOP 3 LIFTS
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 mb-4">Showcase your best lifts on your profile. 1RM will be calculated automatically for reps &gt; 1 using the Epley formula. Choose from your posted PRs or enter manually.</p>
                 
                 {/* Lift 1 */}
                 <div className="space-y-3 mb-4 p-3 md:p-4 bg-gray-800/40 rounded-xl border border-gray-700">
-                  <div className="text-xs md:text-sm font-bold text-gray-400 mb-2">LIFT #1</div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs md:text-sm font-bold text-gray-400">LIFT #1</div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectingLiftNumber(1)
+                        setShowPRSelector(true)
+                      }}
+                      className="text-xs text-primary hover:text-red-400 font-bold flex items-center space-x-1 transition-colors"
+                    >
+                      <ListFilter className="w-3 h-3" />
+                      <span>Select from PRs</span>
+                    </button>
+                  </div>
                   <div className="grid grid-cols-3 gap-2 md:gap-3">
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">Exercise</label>
@@ -716,7 +764,20 @@ export default function SettingsPage() {
 
                 {/* Lift 2 */}
                 <div className="space-y-3 mb-4 p-3 md:p-4 bg-gray-800/40 rounded-xl border border-gray-700">
-                  <div className="text-xs md:text-sm font-bold text-gray-400 mb-2">LIFT #2</div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs md:text-sm font-bold text-gray-400">LIFT #2</div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectingLiftNumber(2)
+                        setShowPRSelector(true)
+                      }}
+                      className="text-xs text-primary hover:text-red-400 font-bold flex items-center space-x-1 transition-colors"
+                    >
+                      <ListFilter className="w-3 h-3" />
+                      <span>Select from PRs</span>
+                    </button>
+                  </div>
                   <div className="grid grid-cols-3 gap-2 md:gap-3">
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">Exercise</label>
@@ -756,7 +817,20 @@ export default function SettingsPage() {
 
                 {/* Lift 3 */}
                 <div className="space-y-3 p-3 md:p-4 bg-gray-800/40 rounded-xl border border-gray-700">
-                  <div className="text-xs md:text-sm font-bold text-gray-400 mb-2">LIFT #3</div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs md:text-sm font-bold text-gray-400">LIFT #3</div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectingLiftNumber(3)
+                        setShowPRSelector(true)
+                      }}
+                      className="text-xs text-primary hover:text-red-400 font-bold flex items-center space-x-1 transition-colors"
+                    >
+                      <ListFilter className="w-3 h-3" />
+                      <span>Select from PRs</span>
+                    </button>
+                  </div>
                   <div className="grid grid-cols-3 gap-2 md:gap-3">
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">Exercise</label>
