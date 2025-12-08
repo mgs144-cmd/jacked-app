@@ -56,7 +56,7 @@ export default async function DeadcemberPage() {
   }) || []
 
   // Calculate community total from ALL Deadcember posts (not just the 50 shown)
-  const communityTotal = allDeadcemberPosts?.reduce((sum, post) => {
+  const communityTotal = allDeadcemberPosts?.reduce((sum, post: any) => {
     return sum + (post.deadcember_volume || 0)
   }, 0) || 0
 
