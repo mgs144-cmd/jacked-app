@@ -43,11 +43,6 @@ export function UserCard({
                   </div>
                 )}
               </div>
-              {user.is_premium && (
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-primary rounded-full flex items-center justify-center shadow-md">
-                  <Crown className="w-3.5 h-3.5 text-white fill-current" />
-                </div>
-              )}
             </div>
           </Link>
 
@@ -58,9 +53,6 @@ export function UserCard({
                 <h3 className="font-black text-white text-lg truncate group-hover:text-primary transition-colors">
                   {user.username || user.full_name || 'Unknown User'}
                 </h3>
-                {user.is_premium && (
-                  <span className="badge-premium text-[10px] px-2 py-0.5">JACKED+</span>
-                )}
               </div>
             </Link>
             

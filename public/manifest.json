@@ -1,0 +1,44 @@
+{
+  "name": "JACKED - Fitness Social Network",
+  "short_name": "JACKED",
+  "description": "Share your workouts, connect with other lifters, and track your progress",
+  "start_url": "/feed",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#950606",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "fitness", "social"],
+  "shortcuts": [
+    {
+      "name": "Create Post",
+      "short_name": "Post",
+      "description": "Share a new workout",
+      "url": "/create",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Profile",
+      "short_name": "Profile",
+      "description": "View your profile",
+      "url": "/profile",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": []
+}
+
+

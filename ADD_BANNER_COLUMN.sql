@@ -6,3 +6,4 @@ ADD COLUMN IF NOT EXISTS banner_url TEXT;
 
 COMMENT ON COLUMN profiles.banner_url IS 'Banner/cover image URL for user profile (like YouTube/LinkedIn)';
 
+

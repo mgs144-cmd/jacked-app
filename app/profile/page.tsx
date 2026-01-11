@@ -134,11 +134,6 @@ export default async function ProfilePage() {
                     </div>
                   )}
                 </div>
-                {(profile as any)?.is_premium && (
-                  <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-gradient-primary rounded-full flex items-center justify-center shadow-lg">
-                    <Crown className="w-3.5 h-3.5 text-white fill-current" />
-                  </div>
-                )}
               </div>
               
               <div className="flex-1 pb-2">
@@ -148,9 +143,6 @@ export default async function ProfilePage() {
                       <h1 className="text-2xl md:text-3xl font-black text-white">
                         {(profile as any)?.username || (profile as any)?.full_name || 'User'}
                       </h1>
-                      {(profile as any)?.is_premium && (
-                        <span className="badge-premium text-xs">JACKED+</span>
-                      )}
                     </div>
                     {(profile as any)?.full_name && (profile as any).full_name !== (profile as any).username && (
                       <p className="text-gray-400 text-sm">{(profile as any).full_name}</p>
