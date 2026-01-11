@@ -148,7 +148,185 @@ main {
   @apply bg-gray-900/50 border border-gray-800 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all;
 }
 
-/* Premium badge */
+/* Premium badge - deprecated but keeping CSS for legacy */
 .badge-premium {
   @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gradient-primary text-white glow-red-sm;
+}
+
+/* ===== PWA ENHANCEMENTS ===== */
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Native app feel - remove text selection on UI elements */
+button, a, .no-select {
+  -webkit-tap-highlight-color: rgba(149, 6, 6, 0.1);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Keep text selection for inputs */
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Button active state for touch feedback */
+.btn-primary:active, .btn-secondary:active {
+  transform: scale(0.95);
+}
+
+/* Smooth focus states */
+input:focus, textarea:focus, select:focus {
+  outline: 2px solid #950606;
+  outline-offset: 2px;
+}
+
+/* Page transition animations */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Apply animations */
+main {
+  animation: slideInUp 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Skeleton loading shimmer effect */
+@keyframes pulse-shimmer {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse-shimmer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Card hover effects on desktop */
+@media (min-width: 768px) {
+  .card-elevated:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Loading state shimmer */
+.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.1),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+/* Safe area for devices with notches */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Pull-to-refresh indicator styling */
+.pull-indicator {
+  transition: all 0.2s ease;
+}
+
+/* Native-like transitions */
+* {
+  -webkit-touch-callout: none;
+}
+
+/* Ensure links work on touch devices */
+a, button {
+  -webkit-touch-callout: default;
+  touch-action: manipulation;
+}
+
+/* Better image rendering */
+img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Prevent horizontal scroll */
+body {
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }

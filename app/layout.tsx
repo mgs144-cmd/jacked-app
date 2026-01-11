@@ -3,6 +3,7 @@ import { Inter, Black_Ops_One } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
+import { PWAInstallBanner } from '@/components/PWAInstallBanner'
 
 const inter = Inter({ subsets: ['latin'] })
 const blackOpsOne = Black_Ops_One({ 
@@ -54,6 +55,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} ${blackOpsOne.variable}`}>
         <PWAInstallPrompt />
+        <PWAInstallBanner />
         <Providers>{children}</Providers>
       </body>
     </html>
