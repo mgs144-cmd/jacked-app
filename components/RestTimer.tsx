@@ -103,7 +103,7 @@ export function RestTimer() {
 
   // If timer is running, show full display
   if (timeLeft > 0) {
-    const progress = (timeLeft / PRESETS.find(p => p >= timeLeft) || 180) * 100
+    const progress = (timeLeft / (PRESETS.find(p => p >= timeLeft) || 180)) * 100
 
     return (
       <div className="fixed bottom-24 md:bottom-8 right-4 z-40">
