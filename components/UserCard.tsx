@@ -22,7 +22,7 @@ export function UserCard({
 }: UserCardProps) {
 
   return (
-    <div className="card group/card transition-all hover:shadow-lg hover:border-red-600/20">
+    <div className="card group/card transition-all duration-200 hover:shadow-lg hover:border-red-600/20 hover:-translate-y-0.5">
       <div className="p-5">
         {/* Flex column layout for consistent spacing */}
         <div className="flex flex-col space-y-4">
@@ -50,7 +50,7 @@ export function UserCard({
             {/* User Info */}
             <div className="flex-1 min-w-0">
               <Link href={`/user/${user.id}`} className="group/link">
-                <h3 className="font-semibold text-primary text-lg truncate group-hover/link:text-red-600 transition-colors">
+                <h3 className="font-semibold text-white text-[18px] truncate group-hover/link:text-red-600 transition-colors duration-150">
                   {user.username || user.full_name || 'Unknown User'}
                 </h3>
               </Link>
@@ -64,28 +64,26 @@ export function UserCard({
           </div>
 
           {/* Stats Row */}
-          <div className="flex items-center space-x-4 text-sm px-0.5">
+          <div className="flex items-center space-x-4 text-[13px] px-0.5">
             <div>
-              <span className="font-semibold text-primary">{user.followers_count || 0}</span>
-              <span className="text-tertiary ml-1.5">followers</span>
+              <span className="font-semibold text-white">{user.followers_count || 0}</span>
+              <span className="text-secondary/70 ml-1.5">followers</span>
             </div>
             <div>
-              <span className="font-semibold text-primary">{user.following_count || 0}</span>
-              <span className="text-tertiary ml-1.5">following</span>
+              <span className="font-semibold text-white">{user.following_count || 0}</span>
+              <span className="text-secondary/70 ml-1.5">following</span>
             </div>
           </div>
 
           {/* Follow Button - aligned left with content */}
           <div className="flex pt-1">
-            <div className="min-w-[120px]">
-              <FollowButton
-                userId={user.id}
-                currentUserId={currentUserId}
-                initialIsFollowing={isFollowing}
-                isPrivateAccount={isPrivateAccount}
-                initialRequestStatus={requestStatus}
-              />
-            </div>
+            <FollowButton
+              userId={user.id}
+              currentUserId={currentUserId}
+              initialIsFollowing={isFollowing}
+              isPrivateAccount={isPrivateAccount}
+              initialRequestStatus={requestStatus}
+            />
           </div>
         </div>
       </div>
