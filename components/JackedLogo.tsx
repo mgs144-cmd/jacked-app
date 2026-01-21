@@ -9,24 +9,22 @@ export function JackedLogo({ className = '' }: { className?: string }) {
     <div className={`flex items-center ${className}`}>
       <div className="relative inline-flex items-baseline">
         {/* Main wordmark */}
-        <span className="font-black text-xl tracking-[0.15em] uppercase text-primary" 
+        <span className="font-black text-2xl tracking-[0.12em] uppercase text-primary" 
               style={{ 
                 fontFamily: 'var(--font-black-ops-one, -apple-system, BlinkMacSystemFont, sans-serif)',
-                letterSpacing: '0.15em',
-                fontStretch: 'condensed'
+                letterSpacing: '0.12em'
               }}>
           JAC
           {/* K with notch detail */}
           <span className="relative inline-block">
             K
             {/* Subtle cut/notch on the K */}
-            <span className="absolute top-[45%] right-[30%] w-[3px] h-[8px] bg-[#0a0a0a] transform -rotate-[20deg]" 
-                  style={{ zIndex: 1 }} />
+            <span className="absolute top-[48%] left-[35%] w-[2px] h-[6px] bg-[#0a0a0a] transform -rotate-[25deg] z-10" />
           </span>
           ED
         </span>
         {/* Minimal red accent bar */}
-        <span className="absolute -bottom-0.5 left-0 w-8 h-[2px] bg-red-600" />
+        <span className="absolute -bottom-1 left-0 w-10 h-[2px] bg-red-600" />
       </div>
     </div>
   )

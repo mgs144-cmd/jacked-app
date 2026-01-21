@@ -95,10 +95,10 @@ export function FollowButton({
       <button
         onClick={handleToggleFollow}
         disabled={loading}
-        className="w-full px-8 py-3 rounded-xl font-bold text-base transition-all flex items-center justify-center space-x-2 bg-gray-800 text-white hover:bg-gray-700 border border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="btn btn-secondary w-full font-semibold"
       >
-        <UserCheck className="w-5 h-5" />
-        <span>FOLLOWING</span>
+        <UserCheck className="w-4 h-4" />
+        <span>Following</span>
       </button>
     )
   }
@@ -108,10 +108,10 @@ export function FollowButton({
       <button
         onClick={handleToggleFollow}
         disabled={loading}
-        className="w-full px-8 py-3 rounded-xl font-bold text-base transition-all flex items-center justify-center space-x-2 bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="btn btn-secondary w-full font-semibold"
       >
-        <Clock className="w-5 h-5" />
-        <span>REQUESTED</span>
+        <Clock className="w-4 h-4" />
+        <span>Requested</span>
       </button>
     )
   }
@@ -120,10 +120,10 @@ export function FollowButton({
     <button
       onClick={handleToggleFollow}
       disabled={loading}
-      className="w-full px-8 py-3 rounded-xl font-bold text-base transition-all flex items-center justify-center space-x-2 bg-gradient-primary text-white hover:brightness-110 shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+      className="btn btn-primary w-full font-semibold"
     >
-      <UserPlus className="w-5 h-5" />
-      <span>{isPrivateAccount ? 'REQUEST' : 'FOLLOW'}</span>
+      <UserPlus className="w-4 h-4" />
+      <span>{isPrivateAccount ? 'Request' : 'Follow'}</span>
     </button>
   )
 }

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/app/providers'
-import { Home, PlusCircle, User, Users, Trophy } from 'lucide-react'
+import { Home, PlusCircle, User, Users } from 'lucide-react'
 import { JackedLogo, JackedLogoCompact } from './JackedLogo'
 
 export function Navbar() {
@@ -12,15 +12,10 @@ export function Navbar() {
 
   if (!user) return null
 
-  const currentMonth = new Date().getMonth() + 1
-  const isDecember = currentMonth === 12
-  const showDeadcember = true // Change to: isDecember
-
   const navItems = [
     { href: '/feed', icon: Home, label: 'Feed' },
     { href: '/discover', icon: Users, label: 'Discover' },
     { href: '/create', icon: PlusCircle, label: 'New', isPrimary: true },
-    ...(showDeadcember ? [{ href: '/deadcember', icon: Trophy, label: 'Deadcember' }] : []),
     { href: '/profile', icon: User, label: 'Profile' },
   ]
 

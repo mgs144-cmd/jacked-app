@@ -50,13 +50,13 @@ export function UserCard({
             {/* User Info */}
             <div className="flex-1 min-w-0">
               <Link href={`/user/${user.id}`} className="group/link">
-                <h3 className="font-semibold text-primary text-base truncate group-hover/link:text-red-600 transition-colors">
+                <h3 className="font-semibold text-primary text-lg truncate group-hover/link:text-red-600 transition-colors">
                   {user.username || user.full_name || 'Unknown User'}
                 </h3>
               </Link>
               
               {user.bio && (
-                <p className="text-secondary text-sm mt-1 line-clamp-2 leading-snug">
+                <p className="text-secondary text-sm mt-1.5 line-clamp-2 leading-snug">
                   {user.bio}
                 </p>
               )}
@@ -76,14 +76,16 @@ export function UserCard({
           </div>
 
           {/* Follow Button - aligned left with content */}
-          <div className="flex">
-            <FollowButton
-              userId={user.id}
-              currentUserId={currentUserId}
-              initialIsFollowing={isFollowing}
-              isPrivateAccount={isPrivateAccount}
-              initialRequestStatus={requestStatus}
-            />
+          <div className="flex pt-1">
+            <div className="min-w-[120px]">
+              <FollowButton
+                userId={user.id}
+                currentUserId={currentUserId}
+                initialIsFollowing={isFollowing}
+                isPrivateAccount={isPrivateAccount}
+                initialRequestStatus={requestStatus}
+              />
+            </div>
           </div>
         </div>
       </div>
