@@ -80,17 +80,17 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
       {/* Search Bar */}
       <div className="mb-8">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+          <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-tertiary" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search users by username or name..."
-            className="input-field w-full pl-12"
+            placeholder="Search users..."
+            className="input-field w-full pl-10 pr-10 text-sm placeholder:text-tertiary"
           />
           {searching && (
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="absolute right-3.5 top-1/2 transform -translate-y-1/2">
+              <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
             </div>
           )}
         </div>
@@ -99,10 +99,10 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
       {/* Search Results */}
       {isSearching && (
         <div className="mb-10">
-          <div className="flex items-center space-x-3 mb-6">
-            <Search className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-black text-white tracking-tight">
-              Search Results {users.length > 0 && `(${users.length})`}
+          <div className="flex items-center space-x-2.5 mb-5">
+            <Search className="w-5 h-5 text-red-600" />
+            <h2 className="text-lg font-semibold text-primary tracking-tight">
+              Search Results {users.length > 0 && <span className="text-secondary font-normal">({users.length})</span>}
             </h2>
           </div>
           {users.length > 0 ? (
@@ -119,8 +119,8 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
               ))}
             </div>
           ) : (
-            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-12 text-center">
-              <p className="text-gray-400 text-lg font-semibold">No users found for &quot;{query}&quot;</p>
+            <div className="card p-12 text-center">
+              <p className="text-secondary text-base font-medium">No users found for &quot;{query}&quot;</p>
             </div>
           )}
         </div>
@@ -129,9 +129,9 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
       {/* Suggested Users - Only show when not searching */}
       {!isSearching && suggestedUsers.length > 0 && (
         <div className="mb-10">
-          <div className="flex items-center space-x-3 mb-6">
-            <TrendingUp className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-black text-white tracking-tight">Suggested For You</h2>
+          <div className="flex items-center space-x-2.5 mb-5">
+            <TrendingUp className="w-5 h-5 text-red-600" />
+            <h2 className="text-lg font-semibold text-primary tracking-tight">Suggested For You</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {suggestedUsers.map((user: any) => (

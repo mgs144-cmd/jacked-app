@@ -22,68 +22,68 @@ export function UserCard({
 }: UserCardProps) {
 
   return (
-    <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 overflow-hidden card-elevated hover:border-gray-700 transition-all">
-      <div className="p-6">
-        <div className="flex items-start space-x-4">
-          {/* Avatar */}
-          <Link href={`/user/${user.id}`} className="flex-shrink-0">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden shadow-md">
+    <div className="card group/card transition-all hover:shadow-lg hover:border-red-600/20">
+      <div className="p-5">
+        {/* Flex column layout for consistent spacing */}
+        <div className="flex flex-col space-y-4">
+          {/* Top section: Avatar + Name + Bio */}
+          <div className="flex items-start space-x-3">
+            {/* Avatar */}
+            <Link href={`/user/${user.id}`} className="flex-shrink-0">
+              <div className="w-14 h-14 rounded-full bg-surface-hover overflow-hidden border border-default">
                 {user.avatar_url ? (
                   <Image
                     src={user.avatar_url}
                     alt={user.username}
-                    width={64}
-                    height={64}
+                    width={56}
+                    height={56}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-white text-2xl font-black">
+                  <div className="w-full h-full flex items-center justify-center bg-surface-hover text-primary text-xl font-semibold">
                     {user.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                   </div>
                 )}
               </div>
-            </div>
-          </Link>
+            </Link>
 
-          {/* User Info */}
-          <div className="flex-1 min-w-0">
-            <Link href={`/user/${user.id}`} className="group">
-              <div className="flex items-center space-x-2 mb-1">
-                <h3 className="font-black text-white text-lg truncate group-hover:text-primary transition-colors">
+            {/* User Info */}
+            <div className="flex-1 min-w-0">
+              <Link href={`/user/${user.id}`} className="group/link">
+                <h3 className="font-semibold text-primary text-base truncate group-hover/link:text-red-600 transition-colors">
                   {user.username || user.full_name || 'Unknown User'}
                 </h3>
-              </div>
-            </Link>
-            
-            {user.bio && (
-              <p className="text-gray-400 text-sm mb-3 line-clamp-2">
-                {user.bio}
-              </p>
-            )}
-
-            {/* Stats */}
-            <div className="flex items-center space-x-4 text-sm mb-4">
-              <div>
-                <span className="font-black text-white">{user.followers_count || 0}</span>
-                <span className="text-gray-500 ml-1">followers</span>
-              </div>
-              <div>
-                <span className="font-black text-white">{user.following_count || 0}</span>
-                <span className="text-gray-500 ml-1">following</span>
-              </div>
+              </Link>
+              
+              {user.bio && (
+                <p className="text-secondary text-sm mt-1 line-clamp-2 leading-snug">
+                  {user.bio}
+                </p>
+              )}
             </div>
+          </div>
 
-            {/* Follow Button */}
-            <div className="w-full">
-              <FollowButton
-                userId={user.id}
-                currentUserId={currentUserId}
-                initialIsFollowing={isFollowing}
-                isPrivateAccount={isPrivateAccount}
-                initialRequestStatus={requestStatus}
-              />
+          {/* Stats Row */}
+          <div className="flex items-center space-x-4 text-sm px-0.5">
+            <div>
+              <span className="font-semibold text-primary">{user.followers_count || 0}</span>
+              <span className="text-tertiary ml-1.5">followers</span>
             </div>
+            <div>
+              <span className="font-semibold text-primary">{user.following_count || 0}</span>
+              <span className="text-tertiary ml-1.5">following</span>
+            </div>
+          </div>
+
+          {/* Follow Button - aligned left with content */}
+          <div className="flex">
+            <FollowButton
+              userId={user.id}
+              currentUserId={currentUserId}
+              initialIsFollowing={isFollowing}
+              isPrivateAccount={isPrivateAccount}
+              initialRequestStatus={requestStatus}
+            />
           </div>
         </div>
       </div>

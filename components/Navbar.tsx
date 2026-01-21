@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/app/providers'
 import { Home, PlusCircle, User, Users, Trophy } from 'lucide-react'
+import { JackedLogo, JackedLogoCompact } from './JackedLogo'
 
 export function Navbar() {
   const pathname = usePathname()
@@ -31,9 +32,7 @@ export function Navbar() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/feed" className="flex items-center space-x-2 group">
-              <span className="text-xl font-semibold text-primary tracking-tight">
-                JACKED
-              </span>
+              <JackedLogo />
             </Link>
 
             {/* Navigation Links */}
@@ -59,10 +58,14 @@ export function Navbar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`nav-link ${isActive ? 'nav-link-active' : ''}`}
+                    className={`relative nav-link ${isActive ? 'nav-link-active' : ''}`}
                   >
                     <Icon className="w-4 h-4" />
                     <span>{item.label}</span>
+                    {/* Active state underline */}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-red-600 rounded-full" />
+                    )}
                   </Link>
                 )
               })}

@@ -71,17 +71,17 @@ export default async function DiscoverPage() {
     .limit(10)
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
+    <div className="min-h-screen pb-20 md:pb-0 md:pt-16">
       <Navbar />
       
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-3">
-            <Users className="w-8 h-8 text-primary" />
-            <h1 className="text-4xl font-black text-white tracking-tight">Discover</h1>
+        <div className="mb-8 pb-6 border-b border-default">
+          <div className="flex items-center space-x-2.5 mb-2">
+            <Users className="w-6 h-6 text-red-600" />
+            <h1 className="text-2xl font-semibold text-primary tracking-tight">Discover</h1>
           </div>
-          <p className="text-gray-400 font-medium">Find and follow other lifters</p>
+          <p className="text-secondary text-sm">Find and follow other lifters</p>
         </div>
 
         {/* Search and User Lists */}
