@@ -107,28 +107,28 @@ export function RestTimer() {
 
     return (
       <div className="fixed bottom-24 md:bottom-8 right-4 z-40">
-        <div className="bg-gradient-to-br from-primary to-red-700 text-white p-6 rounded-2xl shadow-2xl min-w-[160px] border-2 border-red-400/30">
+        <div className="card p-5 shadow-xl min-w-[160px]">
           <button
             onClick={resetTimer}
-            className="absolute top-2 right-2 text-white/60 hover:text-white transition-colors"
+            className="absolute top-2 right-2 text-secondary hover:text-primary transition-colors"
             aria-label="Close timer"
           >
             <X className="w-4 h-4" />
           </button>
 
           <div className="text-center mb-4">
-            <div className="text-5xl font-black mb-1">
+            <div className="text-4xl font-semibold text-primary mb-1">
               {formatTime(timeLeft)}
             </div>
-            <p className="text-xs text-white/80 font-semibold tracking-wide">
+            <p className="text-xs text-secondary font-medium tracking-wide">
               REST TIME
             </p>
           </div>
 
           {/* Progress bar */}
-          <div className="w-full h-2 bg-black/30 rounded-full overflow-hidden mb-4">
+          <div className="w-full h-1.5 bg-surface-hover rounded-full overflow-hidden mb-4">
             <div
-              className="h-full bg-white/90 rounded-full transition-all duration-1000 ease-linear"
+              className="h-full bg-red-600 rounded-full transition-all duration-1000 ease-linear"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -137,25 +137,25 @@ export function RestTimer() {
           <div className="flex space-x-2">
             <button
               onClick={togglePause}
-              className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm py-2 px-3 rounded-lg transition-all flex items-center justify-center space-x-1 active:scale-95"
+              className="btn btn-secondary flex-1 btn-sm"
             >
               {isActive ? (
                 <>
-                  <Pause className="w-4 h-4" />
-                  <span className="text-xs font-bold">Pause</span>
+                  <Pause className="w-4 h-4 mr-1" />
+                  <span>Pause</span>
                 </>
               ) : (
                 <>
-                  <Play className="w-4 h-4" />
-                  <span className="text-xs font-bold">Resume</span>
+                  <Play className="w-4 h-4 mr-1" />
+                  <span>Resume</span>
                 </>
               )}
             </button>
             <button
               onClick={resetTimer}
-              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm py-2 px-3 rounded-lg transition-all active:scale-95"
+              className="btn btn-secondary btn-sm"
             >
-              <span className="text-xs font-bold">Reset</span>
+              Reset
             </button>
           </div>
         </div>
@@ -167,26 +167,26 @@ export function RestTimer() {
   if (isExpanded) {
     return (
       <div className="fixed bottom-24 md:bottom-8 right-4 z-40">
-        <div className="bg-gray-900 border-2 border-gray-800 rounded-2xl shadow-2xl p-4 min-w-[200px]">
+        <div className="card shadow-xl p-4 min-w-[200px]">
           <button
             onClick={() => setIsExpanded(false)}
-            className="absolute top-2 right-2 text-gray-500 hover:text-white transition-colors"
+            className="absolute top-2 right-2 text-secondary hover:text-primary transition-colors"
             aria-label="Close"
           >
             <X className="w-4 h-4" />
           </button>
 
-          <p className="text-white font-bold text-sm mb-3">Rest Timer</p>
+          <p className="text-primary font-semibold text-sm mb-3">Rest Timer</p>
 
           <div className="space-y-2">
             {PRESETS.map((seconds) => (
               <button
                 key={seconds}
                 onClick={() => startTimer(seconds)}
-                className="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-lg transition-all active:scale-95 flex items-center justify-between px-4"
+                className="btn btn-secondary w-full justify-between"
               >
                 <span>{formatTime(seconds)}</span>
-                <Clock className="w-4 h-4 text-primary" />
+                <Clock className="w-4 h-4 text-red-600" />
               </button>
             ))}
           </div>
@@ -199,10 +199,10 @@ export function RestTimer() {
   return (
     <button
       onClick={() => setIsExpanded(true)}
-      className="fixed bottom-24 md:bottom-8 right-4 z-40 bg-gradient-to-br from-primary to-red-700 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-all active:scale-95 border-2 border-red-400/30"
+      className="fixed bottom-24 md:bottom-8 right-4 z-40 btn btn-primary p-3 rounded-full shadow-xl active-scale"
       aria-label="Open rest timer"
     >
-      <Clock className="w-6 h-6" />
+      <Clock className="w-5 h-5" />
     </button>
   )
 }

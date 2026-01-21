@@ -78,37 +78,33 @@ export function PWAInstallBanner() {
 
   return (
     <div className="fixed bottom-20 md:bottom-8 left-4 right-4 z-50 animate-slide-up">
-      <div className="bg-gradient-to-r from-primary via-red-600 to-primary p-4 rounded-2xl shadow-2xl border-2 border-red-400/30 relative overflow-hidden">
-        {/* Animated background */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-        
+      <div className="card p-4 shadow-xl border-red-600/20">
         <button
           onClick={handleDismiss}
-          className="absolute top-2 right-2 text-white/80 hover:text-white z-10 transition-colors"
+          className="absolute top-3 right-3 text-secondary hover:text-primary transition-colors"
           aria-label="Dismiss"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
-        <div className="flex items-start space-x-3 relative z-10">
-          <div className="w-12 h-12 bg-black/30 rounded-xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
-            <span className="text-2xl font-black text-white">J</span>
+        <div className="flex items-start space-x-3">
+          <div className="w-10 h-10 bg-surface-hover rounded-lg flex items-center justify-center flex-shrink-0">
+            <span className="text-lg font-semibold text-primary">J</span>
           </div>
 
-          <div className="flex-1">
-            <h3 className="text-white font-black text-lg mb-1 flex items-center space-x-2">
+          <div className="flex-1 pr-6">
+            <h3 className="text-primary font-semibold text-base mb-1 flex items-center space-x-2">
               <span>Install JACKED</span>
-              <Smartphone className="w-5 h-5" />
             </h3>
-            <p className="text-white/90 text-sm mb-3 leading-relaxed">
-              Get the full app experience - faster loading, offline access, and it feels like a native app!
+            <p className="text-secondary text-sm mb-3 leading-relaxed">
+              Get faster loading, offline access, and a native app experience.
             </p>
             <button
               onClick={handleInstall}
-              className="w-full bg-white text-primary font-black py-2.5 px-4 rounded-lg hover:bg-gray-100 transition-all flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl active:scale-95"
+              className="btn btn-primary btn-sm w-full"
             >
-              <Download className="w-4 h-4" />
-              <span>Install Now</span>
+              <Download className="w-4 h-4 mr-1.5" />
+              <span>Install App</span>
             </button>
           </div>
         </div>

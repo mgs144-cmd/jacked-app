@@ -13,92 +13,101 @@ export function Navbar() {
 
   const currentMonth = new Date().getMonth() + 1
   const isDecember = currentMonth === 12
-  // Always show Deadcember for now (can change back to isDecember only later)
   const showDeadcember = true // Change to: isDecember
 
-  // Split nav items - post button goes in middle
-  const leftItems = [
+  const navItems = [
     { href: '/feed', icon: Home, label: 'Feed' },
     { href: '/discover', icon: Users, label: 'Discover' },
-  ]
-  
-  const rightItems = [
+    { href: '/create', icon: PlusCircle, label: 'New', isPrimary: true },
     ...(showDeadcember ? [{ href: '/deadcember', icon: Trophy, label: 'Deadcember' }] : []),
     { href: '/profile', icon: User, label: 'Profile' },
   ]
 
-  const postButton = { href: '/create', icon: PlusCircle, label: 'Post', isPrimary: true }
-
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-gradient-metal backdrop-blur-xl border-t border-gray-800/50 z-50 md:top-0 md:bottom-auto md:border-b md:border-t-0 shadow-2xl" style={{ position: 'fixed' }}>
-      <div className="max-w-7xl mx-auto px-2 md:px-8">
-        <div className="flex items-center justify-between h-16 md:h-24">
-          {/* Logo - Hidden on mobile, shown on desktop */}
-          <Link
-            href="/feed"
-            className="hidden md:flex items-center space-x-3 group"
-          >
-            <div className="relative">
-              <span className="text-white text-3xl md:text-5xl font-logo tracking-[0.2em] text-glow transition-all duration-300 group-hover:scale-105 block">
+    <>
+      {/* Desktop Navigation */}
+      <nav className="hidden md:block fixed top-0 left-0 right-0 bg-surface border-b border-default z-50 backdrop-blur-xl bg-opacity-90">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link href="/feed" className="flex items-center space-x-2 group">
+              <span className="text-xl font-semibold text-primary tracking-tight">
                 JACKED
               </span>
-              <div className="absolute -bottom-1 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 glow-red-sm"></div>
-            </div>
-          </Link>
-
-          {/* All Nav Items - Centered on mobile with post in middle */}
-          <div className="flex items-center justify-center flex-1 md:flex-initial gap-1 md:gap-2 w-full md:w-auto">
-            {/* Left items */}
-            {leftItems.map((item) => {
-              const Icon = item.icon
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex flex-col md:flex-row items-center justify-center space-y-1 md:space-y-0 md:space-x-2 px-2 md:px-3 py-2.5 md:py-2 rounded-xl transition-all duration-300 flex-1 md:flex-initial ${
-                    isActive
-                      ? 'text-white bg-gray-800/60 shadow-lg'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-800/40'
-                  }`}
-                >
-                  <Icon className="w-6 h-6 md:w-5 md:h-5" strokeWidth={2.5} />
-                  <span className="text-[10px] md:text-sm font-semibold hidden md:inline">{item.label}</span>
-                </Link>
-              )
-            })}
-
-            {/* Post Button - Middle */}
-            <Link
-              href={postButton.href}
-              className="flex flex-col md:flex-row items-center justify-center space-y-0 md:space-y-0 md:space-x-2 px-3 md:px-4 py-2 md:py-2 rounded-xl bg-gradient-primary text-white hover:brightness-110 transition-all duration-300 shadow-lg hover:shadow-red-500/30 hover:scale-105 flex-1 md:flex-initial"
-            >
-              <postButton.icon className="w-7 h-7 md:w-5 md:h-5" strokeWidth={2.5} />
-              <span className="hidden md:inline text-sm font-bold tracking-wide">{postButton.label}</span>
             </Link>
 
-            {/* Right items */}
-            {rightItems.map((item) => {
-              const Icon = item.icon
-              const isActive = pathname === item.href
+            {/* Navigation Links */}
+            <div className="flex items-center space-x-1">
+              {navItems.map((item) => {
+                const Icon = item.icon
+                const isActive = pathname === item.href
+                
+                if (item.isPrimary) {
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="btn btn-primary btn-sm ml-2"
+                    >
+                      <Icon className="w-4 h-4 mr-1.5" />
+                      <span>{item.label}</span>
+                    </Link>
+                  )
+                }
+                
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`nav-link ${isActive ? 'nav-link-active' : ''}`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{item.label}</span>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-default z-50 backdrop-blur-xl bg-opacity-95">
+        <div className="flex items-center justify-around px-2 py-2 safe-area-pb">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            const isActive = pathname === item.href
+            
+            if (item.isPrimary) {
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex flex-col md:flex-row items-center justify-center space-y-1 md:space-y-0 md:space-x-2 px-2 md:px-3 py-2.5 md:py-2 rounded-xl transition-all duration-300 flex-1 md:flex-initial ${
-                    isActive
-                      ? 'text-white bg-gray-800/60 shadow-lg'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-800/40'
-                  }`}
+                  className="flex flex-col items-center justify-center p-2 rounded-lg bg-red-600 text-white active-scale"
                 >
-                  <Icon className="w-6 h-6 md:w-5 md:h-5" strokeWidth={2.5} />
-                  <span className="text-[10px] md:text-sm font-semibold hidden md:inline">{item.label}</span>
+                  <Icon className="w-6 h-6" strokeWidth={2} />
+                  <span className="text-[10px] font-medium mt-0.5">{item.label}</span>
                 </Link>
               )
-            })}
-          </div>
+            }
+            
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
+                  isActive
+                    ? 'text-primary'
+                    : 'text-secondary'
+                }`}
+              >
+                <Icon className="w-6 h-6" strokeWidth={2} />
+                <span className="text-[10px] font-medium mt-0.5">{item.label}</span>
+              </Link>
+            )
+          })}
         </div>
-      </div>
-    </nav>
+      </nav>
+    </>
   )
 }
