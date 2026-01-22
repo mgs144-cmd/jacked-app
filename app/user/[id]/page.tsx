@@ -237,20 +237,20 @@ export default async function UserProfilePage({
           </div>
         </div>
 
-        {/* Content Below Profile Header */}
-        <div className="px-4 md:px-8 pb-6 md:pb-8">
-          {/* Top Lifts Display */}
-          <div className="mb-6">
-            <TopLiftsDisplay 
-              topLift1={(profile as any)?.top_lift_1}
-              topLift2={(profile as any)?.top_lift_2}
-              topLift3={(profile as any)?.top_lift_3}
-            />
-          </div>
+      {/* Content Below Profile Header */}
+      <div className="max-w-5xl mx-auto px-4 md:px-8 pb-8">
+        {/* Top Lifts Display */}
+        <div className="mb-6">
+          <TopLiftsDisplay 
+            topLift1={(profile as any)?.top_lift_1}
+            topLift2={(profile as any)?.top_lift_2}
+            topLift3={(profile as any)?.top_lift_3}
+          />
+        </div>
 
-          {/* Posts Section */}
-          <div>
-            <h2 className="text-2xl font-black text-white tracking-tight mb-6">Posts</h2>
+        {/* Posts Section */}
+        <div>
+          <h2 className="text-2xl font-black text-white tracking-tight mb-6">Posts</h2>
 
           {visiblePosts && visiblePosts.length === 0 ? (
             <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-12 text-center card-elevated">
@@ -268,7 +268,6 @@ export default async function UserProfilePage({
               ))}
             </div>
           )}
-          </div>
         </div>
       </div>
     </div>
