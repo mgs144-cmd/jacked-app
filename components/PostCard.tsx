@@ -12,6 +12,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
 import { useRouter } from 'next/navigation'
+import { calculateOneRepMax } from '@/utils/oneRepMax'
 
 interface PostCardProps {
   post: any
@@ -300,34 +301,38 @@ export function PostCard({ post }: PostCardProps) {
         )}
       </div>
 
-      {/* PR Stats - Weight/Reps as Focal Point */}
+      {/* PR Stats - Exercise, Weight, Reps Focus */}
       {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
         <div className="px-6 py-6 bg-surface border-b border-default">
-          <div className="space-y-5">
-            {/* Weight and Reps - LARGEST ELEMENTS (Focal Point) */}
+          <div className="space-y-5 text-center">
+            {/* Exercise Name - LARGEST (Primary Focus) */}
+            {post.pr_exercise && (
+              <h3 className="text-3xl md:text-4xl font-bold text-primary tracking-tight">{post.pr_exercise}</h3>
+            )}
+            
+            {/* Weight and Reps - Large (Secondary Focus) */}
             {(post.pr_weight || post.pr_reps) && (
-              <div className="flex items-center justify-center space-x-8">
+              <div className="flex items-center justify-center space-x-8 md:space-x-12">
                 {post.pr_weight && (
                   <div className="flex items-baseline space-x-2">
-                    <span className="text-6xl md:text-7xl font-bold text-primary tabular-nums">{post.pr_weight}</span>
+                    <span className="text-5xl md:text-6xl font-bold text-primary tabular-nums">{post.pr_weight}</span>
                     <span className="text-base font-medium text-secondary uppercase tracking-wide">lbs</span>
                   </div>
                 )}
                 
                 {post.pr_reps && (
                   <div className="flex items-baseline space-x-2">
-                    <span className="text-6xl md:text-7xl font-bold text-primary tabular-nums">{post.pr_reps}</span>
+                    <span className="text-5xl md:text-6xl font-bold text-primary tabular-nums">{post.pr_reps}</span>
                     <span className="text-base font-medium text-secondary uppercase tracking-wide">reps</span>
                   </div>
                 )}
               </div>
             )}
             
-            {/* Exercise Name - Smaller, Secondary */}
-            {post.pr_exercise && (
-              <div className="flex items-center justify-center space-x-2">
-                <Trophy className="w-4 h-4 text-red-600 flex-shrink-0" />
-                <h3 className="text-base font-medium text-secondary">{post.pr_exercise}</h3>
+            {/* Estimated 1RM - Small (Tertiary) */}
+            {post.pr_weight && post.pr_reps && post.pr_reps > 1 && (
+              <div className="text-sm text-tertiary">
+                Est. 1RM: <span className="text-red-600 font-semibold tabular-nums">{calculateOneRepMax(post.pr_weight, post.pr_reps)} lbs</span>
               </div>
             )}
           </div>
