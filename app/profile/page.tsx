@@ -42,13 +42,7 @@ export default async function ProfilePage() {
   // Get all posts including archived (user can see their own archived posts)
   const { data: posts } = await supabase
     .from('posts')
-    .select(`
-      *,
-      profiles:user_id(username, avatar_url, full_name),
-      likes(id),
-      comments(id),
-      workout_exercises(*)
-    `)
+    .select('*, profiles:user_id(username, avatar_url, full_name), likes(id), comments(id), workout_exercises(*)')
     .eq('user_id', session.user.id)
     .order('created_at', { ascending: false })
   
@@ -58,10 +52,7 @@ export default async function ProfilePage() {
   // Get badges
   const { data: userBadges } = await supabase
     .from('user_badges')
-    .select(`
-      *,
-      badges(*)
-    `)
+    .select('*, badges(*)')
     .eq('user_id', session.user.id)
 
   const badges = userBadges?.map((ub: any) => ({
