@@ -476,7 +476,7 @@ export default function SettingsPage() {
                 <span>BANNER IMAGE</span>
               </label>
               <p className="text-xs text-gray-500 mb-3">This image appears at the top of your profile</p>
-              <div className="relative w-full h-48 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden border-2 border-gray-700 mb-3">
+              <div className="relative w-full h-48 rounded-xl bg-surface overflow-hidden border border-default mb-3">
                 {bannerPreview ? (
                   <>
                     <Image
@@ -524,7 +524,7 @@ export default function SettingsPage() {
               </label>
               <div className="flex items-center space-x-6">
                 <div className="relative">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden shadow-xl">
+                  <div className="w-24 h-24 rounded-full bg-surface overflow-hidden border border-default">
                     {avatarPreview ? (
                       <Image
                         src={avatarPreview}
@@ -534,7 +534,7 @@ export default function SettingsPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-white text-3xl font-black">
+                      <div className="w-full h-full flex items-center justify-center bg-surface-hover text-primary text-3xl font-semibold">
                         {username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
                       </div>
                     )}

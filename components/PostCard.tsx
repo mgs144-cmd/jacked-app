@@ -181,11 +181,11 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       )}
 
-      {/* PR Badge */}
+      {/* PR Banner */}
       {isPRPost && !isDeadcemberPost && (
-        <div className="bg-gradient-primary px-5 py-2 flex items-center space-x-2">
+        <div className="bg-gradient-to-r from-red-600 to-red-700 px-5 py-2 flex items-center space-x-2">
           <Trophy className="w-4 h-4 text-white" />
-          <span className="text-white font-bold text-sm">PERSONAL RECORD</span>
+          <span className="text-white font-semibold text-sm uppercase tracking-wide">Personal Record</span>
         </div>
       )}
 
@@ -307,7 +307,7 @@ export function PostCard({ post }: PostCardProps) {
           <div className="space-y-5 text-center">
             {/* Exercise Name - LARGEST (Primary Focus) */}
             {post.pr_exercise && (
-              <h3 className="text-3xl md:text-4xl font-bold text-primary tracking-tight">{post.pr_exercise}</h3>
+              <h3 className="text-4xl md:text-5xl font-bold text-primary tracking-tight">{post.pr_exercise}</h3>
             )}
             
             {/* Weight and Reps - Large (Secondary Focus) */}
