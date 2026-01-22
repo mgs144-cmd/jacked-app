@@ -206,7 +206,6 @@ export default async function ProfilePage() {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Content Section - Constrained Width */}
       <div className="max-w-4xl mx-auto px-4 md:px-6 pb-6">
