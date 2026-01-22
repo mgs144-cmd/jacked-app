@@ -79,12 +79,6 @@ export default async function ProfilePage() {
     earned_at: ub.earned_at,
   })) || []
 
-  // Get Deadcember total (only if they have entries)
-  const { data: deadcemberTotal } = await supabase.rpc('get_user_deadcember_total', {
-    p_user_id: session.user.id,
-  }) as any
-  const hasDeadcemberEntries = deadcemberTotal && deadcemberTotal > 0
-
   const postsWithCounts = visiblePosts.map((post: any) => ({
     ...post,
     like_count: Array.isArray(post.likes) ? post.likes.length : 0,
@@ -223,31 +217,16 @@ export default async function ProfilePage() {
           </div>
 
           {/* Compact Info Cards */}
-          {(hasDeadcemberEntries || badges.length > 0) && (
+          {badges.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-              {/* Deadcember Total */}
-              {hasDeadcemberEntries && (
-                <div className="bg-gradient-to-br from-red-950/30 to-gray-900/60 backdrop-blur-sm rounded-xl border border-primary/30 p-4">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Trophy className="w-4 h-4 text-primary" />
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">Deadcember</span>
-                  </div>
-                  <p className="text-2xl font-black text-primary">
-                    {deadcemberTotal.toLocaleString()} lbs
-                  </p>
-                </div>
-              )}
-              
               {/* Badges Summary */}
-              {badges.length > 0 && (
-                <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-4">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Crown className="w-4 h-4 text-primary" />
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">Badges</span>
-                  </div>
-                  <p className="text-2xl font-black text-white">{badges.length}</p>
+              <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Crown className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">Badges</span>
                 </div>
-              )}
+                <p className="text-2xl font-black text-white">{badges.length}</p>
+              </div>
             </div>
           )}
 
