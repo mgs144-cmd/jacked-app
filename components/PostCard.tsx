@@ -205,11 +205,11 @@ export function PostCard({ post }: PostCardProps) {
             )}
           </div>
           <div className="flex items-center space-x-2">
-            <span className="font-semibold text-white/90 text-sm group-hover:text-white transition-colors">
+            <span className="font-semibold text-white text-[14px] group-hover:text-white/80 transition-colors">
               {profile.username || profile.full_name || 'Unknown'}
             </span>
-            <span className="text-xs text-gray-500">•</span>
-            <span className="text-xs text-gray-500">
+            <span className="text-gray-600">•</span>
+            <span className="text-[13px] text-gray-500 font-normal">
               {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
             </span>
           </div>
@@ -295,49 +295,55 @@ export function PostCard({ post }: PostCardProps) {
         )}
       </div>
 
-      {/* PR Stats - Data-First, Minimal Design */}
+      {/* PR Stats - Technical, Data-Forward Typography */}
       {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
         <div className="px-6 pb-6 pt-2">
-          {/* Compact lift label with PR badge */}
-          <div className="flex items-center justify-between mb-3">
+          {/* Exercise label + PR badge */}
+          <div className="flex items-center justify-between mb-4">
             {post.pr_exercise && (
-              <div className="flex items-center space-x-2">
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{post.pr_exercise}</span>
-              </div>
+              <span className="text-sm font-semibold text-gray-400 uppercase tracking-wide">
+                {post.pr_exercise}
+              </span>
             )}
-            <div className="flex items-center space-x-1.5 px-2 py-1 bg-red-600/10 rounded-md border border-red-600/20">
+            <div className="flex items-center space-x-1.5 px-2 py-0.5 bg-red-600/10 rounded border border-red-600/20">
               <Trophy className="w-3 h-3 text-red-500" />
               <span className="text-[10px] font-bold text-red-500 uppercase tracking-wider">PR</span>
             </div>
           </div>
           
-          {/* HUGE Numbers - Primary Focus */}
+          {/* Large numeric data - condensed, tabular */}
           {(post.pr_weight || post.pr_reps) && (
-            <div className="flex items-end space-x-8 mb-3">
+            <div className="flex items-baseline space-x-10 mb-3">
               {post.pr_weight && (
-                <div className="flex-1">
-                  <div className="text-6xl md:text-7xl font-black text-white tabular-nums tracking-tighter leading-none">
+                <div>
+                  <div 
+                    className="text-[64px] md:text-[72px] font-extrabold text-white tabular-nums leading-none" 
+                    style={{ letterSpacing: '-0.02em' }}
+                  >
                     {post.pr_weight}
                   </div>
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mt-1">lbs</div>
+                  <div className="text-sm font-semibold text-gray-500 uppercase mt-1.5">LBS</div>
                 </div>
               )}
               
               {post.pr_reps && (
-                <div className="flex-1">
-                  <div className="text-6xl md:text-7xl font-black text-white tabular-nums tracking-tighter leading-none">
+                <div>
+                  <div 
+                    className="text-[64px] md:text-[72px] font-extrabold text-white tabular-nums leading-none" 
+                    style={{ letterSpacing: '-0.02em' }}
+                  >
                     {post.pr_reps}
                   </div>
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mt-1">reps</div>
+                  <div className="text-sm font-semibold text-gray-500 uppercase mt-1.5">REPS</div>
                 </div>
               )}
             </div>
           )}
           
-          {/* De-emphasized 1RM */}
+          {/* Secondary metric - subtle */}
           {post.pr_weight && post.pr_reps && post.pr_reps > 1 && (
-            <div className="text-xs text-gray-600">
-              Est. 1RM: <span className="text-gray-400 font-semibold tabular-nums">{calculateOneRepMax(post.pr_weight, post.pr_reps)} lbs</span>
+            <div className="text-[13px] text-gray-600 font-normal">
+              Est. 1RM: <span className="text-gray-500 font-medium tabular-nums">{calculateOneRepMax(post.pr_weight, post.pr_reps)} lbs</span>
             </div>
           )}
         </div>
