@@ -53,14 +53,7 @@ export default async function ProfilePage() {
     .order('created_at', { ascending: false })
   
   // Filter out archived posts from display (but keep them in data for archive page later)
-  const visiblePosts = posts?.filter((p: any) => !p.is_archived) || []
-
-  // Get PRs
-  const { data: prs } = await supabase
-    .from('personal_records')
-    .select('*')
-    .eq('user_id', session.user.id)
-    .order('date', { ascending: false })
+  const visiblePosts = posts?.filter((p: any) => !p.is_archived) || [];
 
   // Get badges
   const { data: userBadges } = await supabase
