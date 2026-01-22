@@ -116,50 +116,49 @@ export default async function UserProfilePage({
     <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
       <Navbar />
       
-      <div className="max-w-5xl mx-auto">
-        {/* Back Button */}
-        <div className="px-4 md:px-8 pt-6 md:pt-8">
-          <Link
-            href="/discover"
-            className="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors mb-6 font-semibold"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Back to Discover</span>
-          </Link>
-        </div>
+      {/* Back Button */}
+      <div className="max-w-5xl mx-auto px-4 md:px-8 pt-6 md:pt-8">
+        <Link
+          href="/discover"
+          className="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors mb-6 font-semibold"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>Back to Discover</span>
+        </Link>
+      </div>
 
-        {/* Banner Section - YouTube/LinkedIn Style */}
-        <div className="relative w-full">
-          {/* Banner Image */}
-          {(profile as any)?.banner_url ? (
-            <div className="relative w-full h-48 md:h-64 bg-gradient-to-br from-gray-800 to-gray-900">
-              <Image
-                src={(profile as any).banner_url}
-                alt="Profile banner"
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-          ) : (
-            <div className="w-full h-48 md:h-64 bg-gradient-to-br from-gray-800 via-gray-850 to-gray-900"></div>
-          )}
-          
-          {/* Profile Header Container - Overlapping Banner */}
-          <div className="relative px-4 md:px-8">
+      {/* Full-bleed Banner Section */}
+      <div className="relative w-full">
+        {/* Banner Image - Full Viewport Width */}
+        {(profile as any)?.banner_url ? (
+          <div className="relative w-full h-48 md:h-64 bg-surface">
+            <Image
+              src={(profile as any).banner_url}
+              alt="Profile banner"
+              fill
+              className="object-cover object-center"
+              priority
+            />
+          </div>
+        ) : (
+          <div className="w-full h-48 md:h-64 bg-surface"></div>
+        )}
+        
+        {/* Profile Content - Constrained Width */}
+        <div className="max-w-5xl mx-auto relative px-4 md:px-8">
             {/* Avatar - Overlapping Banner Bottom */}
             <div className="relative -mt-16 md:-mt-20 mb-4">
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden shadow-2xl">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-surface border-4 border-background overflow-hidden shadow-2xl">
                 {(profile as any)?.avatar_url ? (
                   <Image
                     src={(profile as any).avatar_url}
                     alt={(profile as any).username || 'Profile'}
-                    width={128}
-                    height={128}
+                    width={160}
+                    height={160}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-white text-5xl font-black">
+                  <div className="w-full h-full flex items-center justify-center bg-surface-hover text-primary text-5xl font-semibold">
                     {(profile as any)?.username?.[0]?.toUpperCase() || (profile as any)?.email?.[0]?.toUpperCase() || 'U'}
                   </div>
                 )}

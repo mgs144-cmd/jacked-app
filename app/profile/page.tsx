@@ -96,40 +96,39 @@ export default async function ProfilePage() {
     <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
       <Navbar />
       
-      <div className="max-w-4xl mx-auto">
-        {/* Banner Section - Sleek Style */}
-        <div className="relative w-full">
-          {/* Banner Image */}
-          {(profile as any)?.banner_url ? (
-            <div className="relative w-full h-40 md:h-52 bg-gradient-to-br from-gray-800 to-gray-900">
-              <Image
-                src={(profile as any).banner_url}
-                alt="Profile banner"
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-          ) : (
-            <div className="w-full h-40 md:h-52 bg-gradient-to-br from-gray-800 via-gray-850 to-gray-900"></div>
-          )}
-          
-          {/* Profile Header Container */}
-          <div className="relative px-4 md:px-6">
+      {/* Full-bleed Banner Section */}
+      <div className="relative w-full">
+        {/* Banner Image - Full Viewport Width */}
+        {(profile as any)?.banner_url ? (
+          <div className="relative w-full h-48 md:h-64 bg-surface">
+            <Image
+              src={(profile as any).banner_url}
+              alt="Profile banner"
+              fill
+              className="object-cover object-center"
+              priority
+            />
+          </div>
+        ) : (
+          <div className="w-full h-48 md:h-64 bg-surface"></div>
+        )}
+        
+        {/* Profile Content - Constrained Width */}
+        <div className="max-w-4xl mx-auto relative px-4 md:px-6">
             {/* Avatar - Overlapping Banner */}
-            <div className="flex items-end space-x-4 -mt-12 mb-4">
+            <div className="flex items-end space-x-4 -mt-16 md:-mt-20 mb-4">
               <div className="relative">
-                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden shadow-xl">
+                <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-surface border-4 border-background overflow-hidden shadow-2xl">
                   {(profile as any)?.avatar_url ? (
                     <Image
                       src={(profile as any).avatar_url}
                       alt={(profile as any).username || 'Profile'}
-                      width={128}
-                      height={128}
+                      width={144}
+                      height={144}
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-white text-4xl md:text-5xl font-black">
+                    <div className="w-full h-full flex items-center justify-center bg-surface-hover text-primary text-4xl md:text-5xl font-semibold">
                       {(profile as any)?.username?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || 'U'}
                     </div>
                   )}
@@ -207,9 +206,10 @@ export default async function ProfilePage() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Content Section */}
-        <div className="px-4 md:px-6 pb-6">
+      {/* Content Section - Constrained Width */}
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pb-6">
           {/* Top Lifts Display */}
           <div className="mb-6">
             <TopLiftsDisplay 
