@@ -136,7 +136,6 @@ export default async function ProfilePage() {
                   )}
                 </div>
               </div>
-            </div>
             
             <div className="flex-1 pb-2">
                 <div className="flex items-center justify-between">
