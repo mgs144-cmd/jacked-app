@@ -166,12 +166,12 @@ export function PostCard({ post }: PostCardProps) {
   const isDeadcemberPost = post.is_deadcember_post
 
   return (
-    <article className={`bg-gray-900/60 rounded-2xl border overflow-hidden card-elevated card-hover backdrop-blur-sm min-h-[400px] ${
+    <article className={`rounded-2xl border overflow-hidden shadow-lg transition-all duration-200 hover:shadow-xl ${
       isDeadcemberPost
-        ? 'border-primary/80 glow-red-lg bg-gradient-to-br from-red-950/20 via-gray-900/60 to-gray-900/60'
+        ? 'bg-gradient-to-br from-red-950/20 via-gray-900/60 to-gray-900/60 border-primary/80'
         : isPRPost 
-        ? 'border-primary/50 glow-red-sm' 
-        : 'border-gray-800/60'
+        ? 'bg-[#0a0a0a] border-red-600/20' 
+        : 'bg-gray-900/60 border-gray-800/60'
     }`}>
       {/* Deadcember Badge */}
       {isDeadcemberPost && (
@@ -181,41 +181,35 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       )}
 
-      {/* PR Banner */}
+      {/* PR Accent Strip - Thin, minimal */}
       {isPRPost && !isDeadcemberPost && (
-        <div className="bg-gradient-to-r from-red-600 to-red-700 px-5 py-2 flex items-center space-x-2">
-          <Trophy className="w-4 h-4 text-white" />
-          <span className="text-white font-semibold text-sm uppercase tracking-wide">Personal Record</span>
-        </div>
+        <div className="h-1 bg-gradient-to-r from-red-600 via-red-500 to-red-600"></div>
       )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between p-5 border-b border-gray-800/40">
+      {/* Header - Clean single row */}
+      <div className="flex items-center justify-between p-6 pb-4">
         <Link href={profileLink} className="flex items-center space-x-3 group">
-          <div className="relative">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden shadow-md">
-              {profile.avatar_url ? (
-                <Image
-                  src={profile.avatar_url}
-                  alt={profile.username}
-                  width={48}
-                  height={48}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-gray-300 font-bold text-lg">
-                  {profile.username?.[0]?.toUpperCase() || 'U'}
-                </div>
-              )}
-            </div>
+          <div className="w-10 h-10 rounded-full bg-gray-800 overflow-hidden ring-1 ring-gray-700/50">
+            {profile.avatar_url ? (
+              <Image
+                src={profile.avatar_url}
+                alt={profile.username}
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-400 font-semibold text-sm">
+                {profile.username?.[0]?.toUpperCase() || 'U'}
+              </div>
+            )}
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center space-x-2">
-              <span className="font-bold text-white group-hover:text-primary transition-colors">
-                {profile.username || profile.full_name || 'Unknown'}
-              </span>
-            </div>
-            <span className="text-xs text-gray-500 font-medium">
+          <div className="flex items-center space-x-2">
+            <span className="font-semibold text-white/90 text-sm group-hover:text-white transition-colors">
+              {profile.username || profile.full_name || 'Unknown'}
+            </span>
+            <span className="text-xs text-gray-500">•</span>
+            <span className="text-xs text-gray-500">
               {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
             </span>
           </div>
@@ -301,41 +295,51 @@ export function PostCard({ post }: PostCardProps) {
         )}
       </div>
 
-      {/* PR Stats - Exercise, Weight, Reps Focus */}
+      {/* PR Stats - Data-First, Minimal Design */}
       {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
-        <div className="px-6 py-6 bg-surface border-b border-default">
-          <div className="space-y-5 text-center">
-            {/* Exercise Name - LARGEST (Primary Focus) */}
+        <div className="px-6 pb-6 pt-2">
+          {/* Compact lift label with PR badge */}
+          <div className="flex items-center justify-between mb-3">
             {post.pr_exercise && (
-              <h3 className="text-4xl md:text-5xl font-bold text-primary tracking-tight">{post.pr_exercise}</h3>
-            )}
-            
-            {/* Weight and Reps - Large (Secondary Focus) */}
-            {(post.pr_weight || post.pr_reps) && (
-              <div className="flex items-center justify-center space-x-8 md:space-x-12">
-                {post.pr_weight && (
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-5xl md:text-6xl font-bold text-primary tabular-nums">{post.pr_weight}</span>
-                    <span className="text-base font-medium text-secondary uppercase tracking-wide">lbs</span>
-                  </div>
-                )}
-                
-                {post.pr_reps && (
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-5xl md:text-6xl font-bold text-primary tabular-nums">{post.pr_reps}</span>
-                    <span className="text-base font-medium text-secondary uppercase tracking-wide">reps</span>
-                  </div>
-                )}
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{post.pr_exercise}</span>
               </div>
             )}
-            
-            {/* Estimated 1RM - Small (Tertiary) */}
-            {post.pr_weight && post.pr_reps && post.pr_reps > 1 && (
-              <div className="text-sm text-tertiary">
-                Est. 1RM: <span className="text-red-600 font-semibold tabular-nums">{calculateOneRepMax(post.pr_weight, post.pr_reps)} lbs</span>
-              </div>
-            )}
+            <div className="flex items-center space-x-1.5 px-2 py-1 bg-red-600/10 rounded-md border border-red-600/20">
+              <Trophy className="w-3 h-3 text-red-500" />
+              <span className="text-[10px] font-bold text-red-500 uppercase tracking-wider">PR</span>
+            </div>
           </div>
+          
+          {/* HUGE Numbers - Primary Focus */}
+          {(post.pr_weight || post.pr_reps) && (
+            <div className="flex items-end space-x-8 mb-3">
+              {post.pr_weight && (
+                <div className="flex-1">
+                  <div className="text-6xl md:text-7xl font-black text-white tabular-nums tracking-tighter leading-none">
+                    {post.pr_weight}
+                  </div>
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mt-1">lbs</div>
+                </div>
+              )}
+              
+              {post.pr_reps && (
+                <div className="flex-1">
+                  <div className="text-6xl md:text-7xl font-black text-white tabular-nums tracking-tighter leading-none">
+                    {post.pr_reps}
+                  </div>
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mt-1">reps</div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* De-emphasized 1RM */}
+          {post.pr_weight && post.pr_reps && post.pr_reps > 1 && (
+            <div className="text-xs text-gray-600">
+              Est. 1RM: <span className="text-gray-400 font-semibold tabular-nums">{calculateOneRepMax(post.pr_weight, post.pr_reps)} lbs</span>
+            </div>
+          )}
         </div>
       )}
 
