@@ -44,7 +44,7 @@ export default async function ProfilePage() {
     .from('posts')
     .select(`
       *,
-      profiles:user_id(username, avatar_url, full_name, is_premium),
+      profiles:user_id(username, avatar_url, full_name),
       likes(id),
       comments(id),
       workout_exercises(*)
@@ -77,14 +77,13 @@ export default async function ProfilePage() {
     description: ub.badges.description,
     icon_url: ub.badges.icon_url,
     earned_at: ub.earned_at,
-  })) || []
+  })) || [];
 
   const postsWithCounts = visiblePosts.map((post: any) => ({
     ...post,
     like_count: Array.isArray(post.likes) ? post.likes.length : 0,
     comment_count: Array.isArray(post.comments) ? post.comments.length : 0,
-  }))
-
+  }));
 
   return (
     <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
