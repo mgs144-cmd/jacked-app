@@ -1,13 +1,13 @@
 // JACKED Service Worker
 // This enables offline functionality and faster loading
 
-const CACHE_NAME = 'jacked-v2' // Updated
-const STATIC_CACHE = 'jacked-static-v1'
+const CACHE_NAME = 'jacked-v3' // Updated to clear cache
+const STATIC_CACHE = 'jacked-static-v2'
 
-// Assets to cache immediately
+// Assets to cache immediately (excluding root path which is just a redirect)
 const STATIC_ASSETS = [
-  '/',
   '/feed',
+  '/discover',
   '/offline.html',
 ]
 
@@ -49,6 +49,14 @@ self.addEventListener('fetch', (event) => {
 
   // Skip POST requests
   if (event.request.method !== 'GET') {
+    return
+  }
+
+  const url = new URL(event.request.url)
+  
+  // Never cache root path (it's just a redirect) or auth pages
+  if (url.pathname === '/' || url.pathname.startsWith('/auth/')) {
+    event.respondWith(fetch(event.request))
     return
   }
 
