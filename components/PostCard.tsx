@@ -300,39 +300,36 @@ export function PostCard({ post }: PostCardProps) {
         )}
       </div>
 
-      {/* PR Stats - Prominent Display */}
+      {/* PR Stats - Clean Minimal Display */}
       {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
-        <div className="px-5 py-6 bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 border-b border-primary/30">
-          <div className="text-center space-y-4">
-            {/* Exercise Name */}
+        <div className="px-5 py-5 bg-surface border-b border-default">
+          <div className="space-y-4">
+            {/* Exercise Name - Primary Text */}
             {post.pr_exercise && (
-              <div>
-                <p className="text-gray-400 text-xs font-bold tracking-wider uppercase mb-1">Exercise</p>
-                <h3 className="text-2xl md:text-3xl font-black text-white">{post.pr_exercise}</h3>
+              <div className="flex items-center space-x-2">
+                <Trophy className="w-5 h-5 text-red-600 flex-shrink-0" />
+                <h3 className="text-xl font-semibold text-primary">{post.pr_exercise}</h3>
               </div>
             )}
             
-            {/* Weight and Reps - Large Display */}
-            <div className="flex items-center justify-center space-x-8 md:space-x-12">
-              {post.pr_weight && (
-                <div className="text-center">
-                  <p className="text-gray-400 text-xs font-bold tracking-wider uppercase mb-2">Weight</p>
-                  <div className="flex items-baseline justify-center space-x-1">
-                    <span className="text-4xl md:text-5xl font-black text-primary">{post.pr_weight}</span>
-                    <span className="text-xl md:text-2xl font-bold text-gray-400">lbs</span>
+            {/* Weight and Reps - Subdued Typography */}
+            {(post.pr_weight || post.pr_reps) && (
+              <div className="flex items-center space-x-6 pl-7">
+                {post.pr_weight && (
+                  <div className="flex items-baseline space-x-1.5">
+                    <span className="text-2xl font-semibold text-primary">{post.pr_weight}</span>
+                    <span className="text-sm font-medium text-secondary">lbs</span>
                   </div>
-                </div>
-              )}
-              
-              {post.pr_reps && (
-                <div className="text-center">
-                  <p className="text-gray-400 text-xs font-bold tracking-wider uppercase mb-2">Reps</p>
-                  <div className="flex items-baseline justify-center">
-                    <span className="text-4xl md:text-5xl font-black text-primary">{post.pr_reps}</span>
+                )}
+                
+                {post.pr_reps && (
+                  <div className="flex items-baseline space-x-1.5">
+                    <span className="text-2xl font-semibold text-primary">{post.pr_reps}</span>
+                    <span className="text-sm font-medium text-secondary">reps</span>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

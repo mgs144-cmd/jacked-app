@@ -62,10 +62,12 @@ export default async function DiscoverPage() {
   )
 
   // Get suggested users (users with most followers that current user doesn't follow)
+  // Exclude demo_user from suggestions
   const { data: suggested } = await supabase
     .from('profiles')
     .select('*')
     .neq('id', session.user.id)
+    .neq('username', 'demo_user')
     .not('id', 'in', `(${followingIds.join(',') || 'null'})`)
     .order('followers_count', { ascending: false })
     .limit(10)
