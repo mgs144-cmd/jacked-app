@@ -97,10 +97,10 @@ export default async function ProfilePage() {
       <Navbar />
       
       {/* Full-bleed Banner Section */}
-      <div className="relative w-full">
-        {/* Banner Image - Full Viewport Width */}
+      <div className="relative w-screen -ml-[calc(50vw-50%)]">
+        {/* Banner Image */}
         {(profile as any)?.banner_url ? (
-          <div className="relative w-full h-48 md:h-64 bg-surface">
+          <div className="relative w-full h-40 md:h-52 bg-surface-dark">
             <Image
               src={(profile as any).banner_url}
               alt="Profile banner"
@@ -110,15 +110,17 @@ export default async function ProfilePage() {
             />
           </div>
         ) : (
-          <div className="w-full h-48 md:h-64 bg-surface"></div>
+          <div className="w-full h-40 md:h-52 bg-surface-dark"></div>
         )}
-        
-        {/* Profile Content - Constrained Width */}
-        <div className="max-w-4xl mx-auto relative px-4 md:px-6">
-            {/* Avatar - Overlapping Banner */}
-            <div className="flex items-end space-x-4 -mt-16 md:-mt-20 mb-4">
-              <div className="relative">
-                <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-surface border-4 border-background overflow-hidden shadow-2xl">
+      </div>
+
+      {/* Profile Content Container - Centered */}
+      <div className="max-w-4xl mx-auto relative z-10 px-4 md:px-6">
+        {/* Avatar - Overlapping Banner Bottom */}
+        <div className="relative -mt-12 mb-4">
+          <div className="flex items-end space-x-4">
+            <div className="relative">
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-surface-hover overflow-hidden shadow-2xl border-4 border-white">
                   {(profile as any)?.avatar_url ? (
                     <Image
                       src={(profile as any).avatar_url}
@@ -134,8 +136,9 @@ export default async function ProfilePage() {
                   )}
                 </div>
               </div>
-              
-              <div className="flex-1 pb-2">
+            </div>
+            
+            <div className="flex-1 pb-2">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="flex items-center space-x-2 mb-1">
@@ -157,9 +160,11 @@ export default async function ProfilePage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Profile Info Section */}
-            <div className="space-y-3 mb-4">
+        {/* Profile Info Section */}
+        <div className="space-y-3 mb-4">
               {/* Bio */}
               {(profile as any)?.bio && (
                 <p className="text-gray-300 text-sm leading-relaxed max-w-2xl">{(profile as any).bio}</p>
@@ -204,11 +209,11 @@ export default async function ProfilePage() {
                 </div>
               )}
             </div>
-          </div>
         </div>
+      </div>
 
       {/* Content Section - Constrained Width */}
-      <div className="max-w-4xl mx-auto px-4 md:px-6 pb-6">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pb-8">
           {/* Top Lifts Display */}
           <div className="mb-6">
             <TopLiftsDisplay 
