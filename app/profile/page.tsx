@@ -220,7 +220,7 @@ export default async function ProfilePage() {
           </div>
 
           {/* Compact Info Cards */}
-          {(hasDeadcemberEntries || (prs && prs.length > 0) || badges.length > 0) && (
+          {(hasDeadcemberEntries || badges.length > 0) && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
               {/* Deadcember Total */}
               {hasDeadcemberEntries && (
@@ -248,13 +248,7 @@ export default async function ProfilePage() {
             </div>
           )}
 
-          {/* Expandable Sections */}
-          {prs && prs.length > 0 && (
-            <div className="mb-6">
-              <PRDisplay prs={prs} userId={session.user.id} isOwnProfile={true} />
-            </div>
-          )}
-
+          {/* Badges Section */}
           {badges.length > 0 && (
             <div className="mb-6">
               <BadgeDisplay badges={badges} />

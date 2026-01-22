@@ -1,8 +1,8 @@
 // JACKED Service Worker
 // This enables offline functionality and faster loading
 
-const CACHE_NAME = 'jacked-v4' // Updated to clear cache
-const STATIC_CACHE = 'jacked-static-v3'
+const CACHE_NAME = 'jacked-v5' // Updated to clear cache
+const STATIC_CACHE = 'jacked-static-v4'
 
 // Assets to cache immediately (excluding root path which is just a redirect)
 const STATIC_ASSETS = [
