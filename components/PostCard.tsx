@@ -300,34 +300,34 @@ export function PostCard({ post }: PostCardProps) {
         )}
       </div>
 
-      {/* PR Stats - Clean Minimal Display */}
+      {/* PR Stats - Weight/Reps as Focal Point */}
       {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
-        <div className="px-5 py-5 bg-surface border-b border-default">
-          <div className="space-y-4">
-            {/* Exercise Name - Primary Text */}
-            {post.pr_exercise && (
-              <div className="flex items-center space-x-2">
-                <Trophy className="w-5 h-5 text-red-600 flex-shrink-0" />
-                <h3 className="text-xl font-semibold text-primary">{post.pr_exercise}</h3>
-              </div>
-            )}
-            
-            {/* Weight and Reps - Subdued Typography */}
+        <div className="px-6 py-6 bg-surface border-b border-default">
+          <div className="space-y-5">
+            {/* Weight and Reps - LARGEST ELEMENTS (Focal Point) */}
             {(post.pr_weight || post.pr_reps) && (
-              <div className="flex items-center space-x-6 pl-7">
+              <div className="flex items-center justify-center space-x-8">
                 {post.pr_weight && (
-                  <div className="flex items-baseline space-x-1.5">
-                    <span className="text-2xl font-semibold text-primary">{post.pr_weight}</span>
-                    <span className="text-sm font-medium text-secondary">lbs</span>
+                  <div className="flex items-baseline space-x-2">
+                    <span className="text-6xl md:text-7xl font-bold text-primary tabular-nums">{post.pr_weight}</span>
+                    <span className="text-base font-medium text-secondary uppercase tracking-wide">lbs</span>
                   </div>
                 )}
                 
                 {post.pr_reps && (
-                  <div className="flex items-baseline space-x-1.5">
-                    <span className="text-2xl font-semibold text-primary">{post.pr_reps}</span>
-                    <span className="text-sm font-medium text-secondary">reps</span>
+                  <div className="flex items-baseline space-x-2">
+                    <span className="text-6xl md:text-7xl font-bold text-primary tabular-nums">{post.pr_reps}</span>
+                    <span className="text-base font-medium text-secondary uppercase tracking-wide">reps</span>
                   </div>
                 )}
+              </div>
+            )}
+            
+            {/* Exercise Name - Smaller, Secondary */}
+            {post.pr_exercise && (
+              <div className="flex items-center justify-center space-x-2">
+                <Trophy className="w-4 h-4 text-red-600 flex-shrink-0" />
+                <h3 className="text-base font-medium text-secondary">{post.pr_exercise}</h3>
               </div>
             )}
           </div>

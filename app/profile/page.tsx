@@ -235,17 +235,6 @@ export default async function ProfilePage() {
                 </div>
               )}
               
-              {/* PRs Summary */}
-              {prs && prs.length > 0 && (
-                <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-4">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <TrendingUp className="w-4 h-4 text-primary" />
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">PRs</span>
-                  </div>
-                  <p className="text-2xl font-black text-white">{prs.length}</p>
-                </div>
-              )}
-              
               {/* Badges Summary */}
               {badges.length > 0 && (
                 <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-4">
