@@ -15,7 +15,7 @@ export function FeedToggle({ view, onViewChange }: FeedToggleProps) {
     >
       <button
         onClick={() => onViewChange('friends')}
-        className={`flex-1 flex items-center justify-center gap-2 px-4 rounded-lg text-sm font-medium transition-all h-full ${
+        className={`flex-1 flex items-center justify-center gap-2 px-4 rounded-lg text-sm font-medium transition-all h-full active:scale-[0.98] touch-manipulation ${
           view === 'friends' ? 'bg-[#ff5555] text-white' : 'text-[#a1a1a1] hover:text-white hover:bg-white/5'
         }`}
       >
@@ -24,7 +24,7 @@ export function FeedToggle({ view, onViewChange }: FeedToggleProps) {
       </button>
       <button
         onClick={() => onViewChange('community')}
-        className={`flex-1 flex items-center justify-center gap-2 px-4 rounded-lg text-sm font-medium transition-all h-full ${
+        className={`flex-1 flex items-center justify-center gap-2 px-4 rounded-lg text-sm font-medium transition-all h-full active:scale-[0.98] touch-manipulation ${
           view === 'community' ? 'bg-[#ff5555] text-white' : 'text-[#a1a1a1] hover:text-white hover:bg-white/5'
         }`}
       >

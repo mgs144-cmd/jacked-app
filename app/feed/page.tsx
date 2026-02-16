@@ -120,7 +120,7 @@ export default async function FeedPage() {
   }) || []
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-[#121212]">
+    <div className="min-h-screen pb-24 md:pb-0 md:pt-14 bg-[#121212]">
       <Navbar />
       <FeedClient
         allPosts={postsWithCounts || []}

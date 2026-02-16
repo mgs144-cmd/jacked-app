@@ -167,19 +167,16 @@ export function PostCard({ post }: PostCardProps) {
 
   return (
     <article 
-      className="overflow-hidden transition-all duration-200 w-full max-w-[640px]"
+      className="overflow-hidden transition-all duration-200 w-full max-w-[640px] rounded-lg md:rounded-xl p-5 md:p-7"
       style={{ 
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif",
         backgroundColor: '#1a1a1a',
-        borderRadius: 12,
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
-        padding: 28
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)'
       }}
     >
       {isDeadcemberPost && (
         <div 
-          className="bg-[#ff5555]/15 py-3 flex items-center justify-center gap-2 border-b border-white/5" 
-          style={{ marginLeft: -28, marginRight: -28, marginTop: -28, paddingLeft: 28, paddingRight: 28 }}
+          className="bg-[#ff5555]/15 py-3 flex items-center justify-center gap-2 border-b border-white/5 -mx-5 -mt-5 md:-mx-7 md:-mt-7 px-5 md:px-7"
         >
           <Trophy className="w-4 h-4 text-[#ff5555]" />
           <span className="text-[#ff5555] font-semibold text-sm tracking-wide">Deadcember</span>
@@ -203,12 +200,12 @@ export function PostCard({ post }: PostCardProps) {
               </div>
             )}
           </div>
-          <div className="ml-3 flex items-center gap-2">
-            <span className="text-[16px] font-semibold text-white" style={{ fontWeight: 600 }}>
+          <div className="ml-3 flex items-center gap-2 min-w-0 flex-1">
+            <span className="text-[16px] font-semibold text-white truncate" style={{ fontWeight: 600 }}>
               {profile.username || profile.full_name || 'Unknown'}
             </span>
-            <span className="text-gray-600">•</span>
-            <span className="text-[14px] font-normal" style={{ opacity: 0.6 }}>
+            <span className="text-gray-600 flex-shrink-0">•</span>
+            <span className="text-[14px] font-normal flex-shrink-0" style={{ opacity: 0.6 }}>
               {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
             </span>
           </div>
@@ -323,14 +320,12 @@ export function PostCard({ post }: PostCardProps) {
           
           {(post.pr_weight || post.pr_reps) && (
             <div 
-              className="flex justify-center items-baseline"
-              style={{ gap: 48, marginTop: 16 }}
+              className="flex justify-center items-baseline gap-8 md:gap-12 mt-4"
             >
               {post.pr_weight && (
                 <div className="flex flex-col items-center">
                   <div 
-                    className="text-white tabular-nums leading-none"
-                    style={{ fontSize: '76px', fontWeight: 700 }}
+                    className="text-white tabular-nums leading-none text-[56px] md:text-[76px] font-bold"
                   >
                     {post.pr_weight}
                   </div>
@@ -350,8 +345,7 @@ export function PostCard({ post }: PostCardProps) {
               {post.pr_reps && (
                 <div className="flex flex-col items-center">
                   <div 
-                    className="text-white tabular-nums leading-none"
-                    style={{ fontSize: '76px', fontWeight: 700 }}
+                    className="text-white tabular-nums leading-none text-[56px] md:text-[76px] font-bold"
                   >
                     {post.pr_reps}
                   </div>
@@ -475,9 +469,9 @@ export function PostCard({ post }: PostCardProps) {
           <button
             onClick={handleLike}
             disabled={isLiking}
-            className={`flex items-center group transition-all duration-200 ${
+            className={`flex items-center group transition-all duration-200 active:scale-95 touch-manipulation ${
               liked ? 'text-[#ff5555]' : 'text-[#a1a1a1] hover:text-[#ff5555]'
-            }            `}
+            }`}
             style={{ gap: '6px' }}
           >
             <Heart 
@@ -508,7 +502,7 @@ export function PostCard({ post }: PostCardProps) {
               e.stopPropagation()
               setShowCommentForm(!showCommentForm)
             }}
-            className={`flex items-center group transition-all duration-200 ${
+            className={`flex items-center group transition-all duration-200 active:scale-95 touch-manipulation ${
               showCommentForm ? 'text-[#ff5555]' : 'text-[#a1a1a1] hover:text-[#ff5555]'
             }`}
             style={{ gap: '6px' }}

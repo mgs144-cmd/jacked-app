@@ -28,7 +28,7 @@ export function WorkoutDetails({ exercises, postId }: WorkoutDetailsProps) {
     <div className="py-4 border-t border-white/5" style={{ marginTop: 20 }}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between text-left py-1"
+        className="w-full flex items-center justify-between text-left py-2 -my-1 active:scale-[0.99] touch-manipulation"
       >
         <div className="flex items-center gap-2">
           <Dumbbell className="w-5 h-5 text-[#ff5555]" />
