@@ -304,10 +304,10 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
-        <div className="flex flex-col mt-4 md:mt-5">
+        <div className="flex flex-col items-center mt-4 md:mt-5">
           {post.pr_exercise && (
             <span 
-              className="uppercase text-left text-base md:text-[15px] font-semibold tracking-wider"
+              className="uppercase text-center text-base md:text-[15px] font-semibold tracking-wider"
               style={{ color: 'rgba(255, 255, 255, 0.9)' }}
             >
               {post.pr_exercise}
@@ -363,7 +363,7 @@ export function PostCard({ post }: PostCardProps) {
           
           {post.pr_weight && post.pr_reps && post.pr_reps > 1 && (
             <div 
-              className="tabular-nums mt-2.5 md:mt-3"
+              className="tabular-nums mt-2.5 md:mt-3 text-center"
               style={{ fontSize: '13px', opacity: 0.6 }}
             >
               Est. 1RM: <span className="font-medium">{calculateOneRepMax(post.pr_weight, post.pr_reps)} lbs</span>
@@ -437,8 +437,8 @@ export function PostCard({ post }: PostCardProps) {
           className="mt-4 md:mt-5 pb-4 md:pb-5 border-b border-white/5"
         >
           <p 
-            className="text-[15px] md:text-[15px] leading-[1.4] md:leading-normal"
-            style={{ color: 'rgba(255, 255, 255, 0.8)' }}
+            className="text-base md:text-lg leading-[1.4] font-medium"
+            style={{ color: 'rgba(255, 255, 255, 0.85)' }}
           >
             {post.content}
           </p>
