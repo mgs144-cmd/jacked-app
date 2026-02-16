@@ -132,68 +132,60 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/3 rounded-full blur-3xl"></div>
-      </div>
-
+    <div 
+      className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden"
+      style={{ background: 'linear-gradient(180deg, #0d0a08 0%, #1a0f0a 50%, #2d1510 100%)' }}
+    >
       <div className="max-w-md w-full space-y-8 relative z-10">
-        {/* Header */}
         <div className="text-center">
-          <h1 className="text-5xl md:text-6xl font-logo tracking-[0.2em] text-center text-white mb-4 text-glow">
-            JACKED
-          </h1>
-          <p className="text-gray-400 text-lg font-medium">
+          <Link href="/" className="inline-block">
+            <h1 
+              className="text-4xl md:text-5xl font-bold tracking-wider uppercase text-white mb-3 hover:opacity-90 transition-opacity"
+              style={{ fontFamily: 'var(--font-black-ops-one)' }}
+            >
+              JACKED
+            </h1>
+          </Link>
+          <p className="text-white/70 text-base font-normal">
             Join the community
           </p>
         </div>
 
-        {/* Signup form */}
-        <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl p-8 border border-gray-800/60 card-elevated">
-          <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="bg-white/[0.03] backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-red-950/50 border border-primary/50 text-red-400 px-4 py-3 rounded-xl text-sm font-medium backdrop-blur-sm">
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="fullName" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
-                  FULL NAME (OPTIONAL)
-                </label>
+                <label htmlFor="fullName" className="block text-sm font-medium text-white/70 mb-1.5">Full name (optional)</label>
                 <input
                   id="fullName"
                   name="fullName"
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="input-field w-full"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#dc2626] focus:border-transparent"
                   placeholder="Your name"
                 />
               </div>
-
               <div>
-                <label htmlFor="username" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
-                  USERNAME (OPTIONAL)
-                </label>
+                <label htmlFor="username" className="block text-sm font-medium text-white/70 mb-1.5">Username (optional)</label>
                 <input
                   id="username"
                   name="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="input-field w-full"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#dc2626] focus:border-transparent"
                   placeholder="Choose a username"
                 />
               </div>
-
               <div>
-                <label htmlFor="email" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
-                  EMAIL ADDRESS
-                </label>
+                <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-1.5">Email</label>
                 <input
                   id="email"
                   name="email"
@@ -202,15 +194,12 @@ export default function SignUpPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="input-field w-full"
-                  placeholder="your@email.com"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#dc2626] focus:border-transparent"
+                  placeholder="you@email.com"
                 />
               </div>
-
               <div>
-                <label htmlFor="password" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
-                  PASSWORD
-                </label>
+                <label htmlFor="password" className="block text-sm font-medium text-white/70 mb-1.5">Password</label>
                 <input
                   id="password"
                   name="password"
@@ -220,7 +209,7 @@ export default function SignUpPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   minLength={6}
-                  className="input-field w-full"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#dc2626] focus:border-transparent"
                   placeholder="Min. 6 characters"
                 />
               </div>
@@ -229,48 +218,29 @@ export default function SignUpPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-primary flex items-center justify-center space-x-2 py-4 text-base font-bold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3.5 bg-[#dc2626] hover:bg-[#b91c1c] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>CREATING ACCOUNT...</span>
+                  Creating account...
                 </>
               ) : (
-                <span>CREATE ACCOUNT</span>
+                'Create account'
               )}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-400">
-              Already have an account?{' '}
-              <Link 
-                href="/auth/login" 
-                className="text-primary font-bold hover:text-white transition-colors hover:underline"
-              >
-                Sign in
-              </Link>
-            </p>
-          </div>
+          <p className="mt-6 text-center text-sm text-white/60">
+            Already have an account?{' '}
+            <Link href="/auth/login" className="text-[#dc2626] font-medium hover:text-[#ef4444] transition-colors">Sign in</Link>
+          </p>
         </div>
 
-        {/* Footer tagline */}
-        <p className="text-center text-gray-600 text-sm font-medium mb-4">
-          The social network for lifters
-        </p>
-        
-        {/* Legal links */}
-        <div className="flex items-center justify-center space-x-6 text-xs text-gray-500">
-          <Link href="/terms" className="hover:text-white transition-colors">
-            Terms
-          </Link>
-          <Link href="/privacy" className="hover:text-white transition-colors">
-            Privacy
-          </Link>
-          <Link href="/refund" className="hover:text-white transition-colors">
-            Refund
-          </Link>
+        <div className="flex items-center justify-center gap-6 text-xs text-white/40">
+          <Link href="/terms" className="hover:text-white/60 transition-colors">Terms</Link>
+          <Link href="/privacy" className="hover:text-white/60 transition-colors">Privacy</Link>
+          <Link href="/refund" className="hover:text-white/60 transition-colors">Refund</Link>
         </div>
       </div>
     </div>

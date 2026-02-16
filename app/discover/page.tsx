@@ -3,7 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/Navbar'
 import { UserCard } from '@/components/UserCard'
 import { DiscoverClient } from '@/components/DiscoverClient'
-import { TrendingUp, Users } from 'lucide-react'
 
 export default async function DiscoverPage() {
   const supabase = await createClient()
@@ -73,17 +72,13 @@ export default async function DiscoverPage() {
     .limit(10)
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:pt-16">
+    <div className="min-h-screen pb-20 md:pb-0 md:pt-14">
       <Navbar />
       
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8 pb-6 border-b border-default">
-          <div className="flex items-center space-x-2.5 mb-2">
-            <Users className="w-6 h-6 text-red-600" />
-            <h1 className="text-2xl font-semibold text-primary tracking-tight">Discover</h1>
-          </div>
-          <p className="text-secondary text-sm">Find and follow other lifters</p>
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-white tracking-tight">Discover</h1>
+          <p className="text-[#a1a1a1] text-sm mt-0.5">Find and follow other lifters</p>
         </div>
 
         {/* Search and User Lists */}

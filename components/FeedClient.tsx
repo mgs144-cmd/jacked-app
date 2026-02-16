@@ -19,35 +19,32 @@ export function FeedClient({ allPosts, followingPosts, publicPosts }: FeedClient
 
   return (
     <PullToRefresh>
-      <div className="max-w-3xl mx-auto px-4 py-6 md:py-8">
-        {/* Page header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
-                Your Feed
-              </h1>
-            </div>
-          </div>
+      <div className="max-w-2xl mx-auto px-4 py-6 md:py-8">
+        {/* Page header - minimal */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-white tracking-tight">
+            Feed
+          </h1>
+          <p className="text-[#a1a1a1] text-sm mt-0.5">
+            {view === 'friends' ? 'Posts from people you follow' : 'Community posts'}
+          </p>
         </div>
 
-        {/* Feed Toggle */}
         <FeedToggle view={view} onViewChange={setView} />
 
-        {/* Posts */}
         {!displayedPosts || displayedPosts.length === 0 ? (
-          <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-12 text-center card-elevated">
-            <p className="text-gray-400 text-lg font-semibold mb-2">
+          <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-12 text-center">
+            <p className="text-[#a1a1a1] font-medium mb-1">
               {view === 'friends' ? 'No posts from friends yet' : 'No posts yet'}
             </p>
-            <p className="text-gray-600 text-sm">
+            <p className="text-[#6b6b6b] text-sm">
               {view === 'friends' 
-                ? 'Follow some users to see their posts here!' 
-                : 'Be the first to share your progress!'}
+                ? 'Follow people to see their posts here' 
+                : 'Be the first to share your progress'}
             </p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {displayedPosts.map((post: any) => (
               <PostCard key={post.id} post={post} />
             ))}

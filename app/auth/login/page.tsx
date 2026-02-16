@@ -39,37 +39,39 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/3 rounded-full blur-3xl"></div>
-      </div>
-
+    <div 
+      className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden"
+      style={{ background: 'linear-gradient(180deg, #0d0a08 0%, #1a0f0a 50%, #2d1510 100%)' }}
+    >
       <div className="max-w-md w-full space-y-8 relative z-10">
         {/* Logo and header */}
         <div className="text-center">
-          <h1 className="text-5xl md:text-6xl font-logo tracking-[0.2em] text-center text-white mb-4 text-glow">
-            JACKED
-          </h1>
-          <p className="text-gray-400 text-lg font-medium">
+          <Link href="/" className="inline-block">
+            <h1 
+              className="text-4xl md:text-5xl font-bold tracking-wider uppercase text-white mb-3 hover:opacity-90 transition-opacity"
+              style={{ fontFamily: 'var(--font-black-ops-one)' }}
+            >
+              JACKED
+            </h1>
+          </Link>
+          <p className="text-white/70 text-base font-normal">
             Welcome back, lifter
           </p>
         </div>
 
-        {/* Login form */}
-        <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl p-8 border border-gray-800/60 card-elevated">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Login form - minimal */}
+        <div className="bg-white/[0.03] backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="bg-red-950/50 border border-primary/50 text-red-400 px-4 py-3 rounded-xl text-sm font-medium backdrop-blur-sm">
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
 
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
-                  EMAIL ADDRESS
+                <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-1.5">
+                  Email
                 </label>
                 <input
                   id="email"
@@ -79,14 +81,14 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="input-field w-full"
-                  placeholder="your@email.com"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#dc2626] focus:border-transparent transition-colors"
+                  placeholder="you@email.com"
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
-                  PASSWORD
+                <label htmlFor="password" className="block text-sm font-medium text-white/70 mb-1.5">
+                  Password
                 </label>
                 <input
                   id="password"
@@ -96,7 +98,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input-field w-full"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#dc2626] focus:border-transparent transition-colors"
                   placeholder="••••••••"
                 />
               </div>
@@ -105,7 +107,7 @@ export default function LoginPage() {
             <div className="text-right">
               <Link 
                 href="/auth/forgot-password" 
-                className="text-sm text-primary font-bold hover:text-white transition-colors hover:underline"
+                className="text-sm text-[#dc2626] font-medium hover:text-[#ef4444] transition-colors"
               >
                 Forgot password?
               </Link>
@@ -114,34 +116,28 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-primary flex items-center justify-center space-x-2 py-4 text-base font-bold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3.5 bg-[#dc2626] hover:bg-[#b91c1c] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>SIGNING IN...</span>
+                  Signing in...
                 </>
               ) : (
-                <span>SIGN IN</span>
+                'Sign in'
               )}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-400">
-              Don&apos;t have an account?{' '}
-              <Link 
-                href="/auth/signup" 
-                className="text-primary font-bold hover:text-white transition-colors hover:underline"
-              >
-                Sign up
-              </Link>
-            </p>
-          </div>
+          <p className="mt-6 text-center text-sm text-white/60">
+            Don&apos;t have an account?{' '}
+            <Link href="/auth/signup" className="text-[#dc2626] font-medium hover:text-[#ef4444] transition-colors">
+              Sign up
+            </Link>
+          </p>
         </div>
 
-        {/* Footer tagline */}
-        <p className="text-center text-gray-600 text-sm font-medium">
+        <p className="text-center text-white/40 text-sm">
           The social network for lifters
         </p>
       </div>

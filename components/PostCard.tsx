@@ -166,30 +166,27 @@ export function PostCard({ post }: PostCardProps) {
   const isDeadcemberPost = post.is_deadcember_post
 
   return (
-    <article className={`rounded-2xl border overflow-hidden shadow-lg transition-all duration-200 hover:shadow-xl ${
+    <article className={`rounded-2xl overflow-hidden transition-all duration-200 ${
       isDeadcemberPost
-        ? 'bg-gradient-to-br from-red-950/20 via-gray-900/60 to-gray-900/60 border-primary/80'
+        ? 'bg-white/[0.03] border border-[#dc2626]/40'
         : isPRPost 
-        ? 'bg-[#0a0a0a] border-red-600/20' 
-        : 'bg-gray-900/60 border-gray-800/60'
+        ? 'bg-white/[0.02] border border-white/5' 
+        : 'bg-white/[0.02] border border-white/5'
     }`}>
-      {/* Deadcember Badge */}
       {isDeadcemberPost && (
-        <div className="bg-gradient-to-r from-primary via-red-700 to-primary px-5 py-3 flex items-center justify-center space-x-2">
-          <Trophy className="w-5 h-5 text-white" />
-          <span className="text-white font-black text-base tracking-wider">DEADCEMBER</span>
+        <div className="bg-[#dc2626]/20 px-5 py-2.5 flex items-center justify-center space-x-2 border-b border-[#dc2626]/30">
+          <Trophy className="w-4 h-4 text-[#dc2626]" />
+          <span className="text-[#dc2626] font-semibold text-sm tracking-wide">Deadcember</span>
         </div>
       )}
 
-      {/* PR Accent Strip - Thin, minimal */}
       {isPRPost && !isDeadcemberPost && (
-        <div className="h-1 bg-gradient-to-r from-red-600 via-red-500 to-red-600"></div>
+        <div className="h-0.5 bg-[#dc2626]/40" />
       )}
 
-      {/* Header - Clean single row */}
-      <div className="flex items-center justify-between p-6 pb-4">
+      <div className="flex items-center justify-between px-5 py-4">
         <Link href={profileLink} className="flex items-center space-x-3 group">
-          <div className="w-10 h-10 rounded-full bg-gray-800 overflow-hidden ring-1 ring-gray-700/50">
+          <div className="w-10 h-10 rounded-full bg-white/5 overflow-hidden ring-1 ring-white/10">
             {profile.avatar_url ? (
               <Image
                 src={profile.avatar_url}
@@ -199,7 +196,7 @@ export function PostCard({ post }: PostCardProps) {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-400 font-semibold text-sm">
+              <div className="w-full h-full flex items-center justify-center bg-white/10 text-[#a1a1a1] font-medium text-sm">
                 {profile.username?.[0]?.toUpperCase() || 'U'}
               </div>
             )}
@@ -219,26 +216,26 @@ export function PostCard({ post }: PostCardProps) {
           <div className="relative">
             <button 
               onClick={() => setShowMenu(!showMenu)}
-              className="text-gray-500 hover:text-white hover:bg-gray-800/60 p-2 rounded-lg transition-all duration-300"
+              className="text-[#a1a1a1] hover:text-white hover:bg-white/5 p-2 rounded-lg transition-colors"
             >
               <MoreVertical className="w-5 h-5" />
             </button>
             
             {showMenu && (
-              <div className="absolute right-0 top-full mt-2 w-56 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl z-10 overflow-hidden">
+              <div className="absolute right-0 top-full mt-2 w-56 bg-[#111] border border-white/10 rounded-xl shadow-2xl z-10 overflow-hidden">
                 <Link
                   href={`/post/${post.id}/edit`}
-                  className="w-full px-4 py-3 text-left text-white hover:bg-gray-800/60 transition-colors flex items-center space-x-2"
+                  className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center space-x-2"
                   onClick={() => setShowMenu(false)}
                 >
                   <Edit className="w-4 h-4" />
                   <span className="font-semibold">Edit Post</span>
                 </Link>
-                <div className="h-px bg-gray-800"></div>
+                <div className="h-px bg-white/10"></div>
                 <button
                   onClick={handleTogglePrivacy}
                   disabled={isUpdatingPrivacy}
-                  className="w-full px-4 py-3 text-left text-white hover:bg-gray-800/60 transition-colors flex items-center justify-between disabled:opacity-50"
+                  className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center justify-between disabled:opacity-50"
                 >
                   <div className="flex items-center space-x-2">
                     {isPrivate ? (
@@ -257,11 +254,11 @@ export function PostCard({ post }: PostCardProps) {
                     {isUpdatingPrivacy ? 'Updating...' : 'Change'}
                   </span>
                 </button>
-                <div className="h-px bg-gray-800"></div>
+                <div className="h-px bg-white/10"></div>
                 <button
                   onClick={handleToggleArchive}
                   disabled={isArchiving}
-                  className="w-full px-4 py-3 text-left text-white hover:bg-gray-800/60 transition-colors flex items-center justify-between disabled:opacity-50"
+                  className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center justify-between disabled:opacity-50"
                 >
                   <div className="flex items-center space-x-2">
                     {isArchived ? (
@@ -280,11 +277,11 @@ export function PostCard({ post }: PostCardProps) {
                     {isArchiving ? 'Updating...' : ''}
                   </span>
                 </button>
-                <div className="h-px bg-gray-800"></div>
+                <div className="h-px bg-white/10"></div>
                 <button
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-950/30 transition-colors flex items-center space-x-2 disabled:opacity-50"
+                  className="w-full px-4 py-3 text-left text-[#dc2626] hover:bg-[#dc2626]/10 transition-colors flex items-center space-x-2 disabled:opacity-50"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span className="font-semibold">{isDeleting ? 'Deleting...' : 'Delete Post'}</span>
@@ -305,9 +302,9 @@ export function PostCard({ post }: PostCardProps) {
                 {post.pr_exercise}
               </span>
             )}
-            <div className="flex items-center space-x-1.5 px-2 py-0.5 bg-red-600/10 rounded border border-red-600/20">
-              <Trophy className="w-3 h-3 text-red-500" />
-              <span className="text-[10px] font-bold text-red-500 uppercase tracking-wider">PR</span>
+            <div className="flex items-center space-x-1.5 px-2 py-0.5 bg-[#dc2626]/10 rounded border border-[#dc2626]/20">
+              <Trophy className="w-3 h-3 text-[#dc2626]" />
+              <span className="text-[10px] font-semibold text-[#dc2626] uppercase tracking-wider">PR</span>
             </div>
           </div>
           
@@ -384,21 +381,20 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       )}
 
-      {/* Deadcember Stats */}
       {isDeadcemberPost && (post.deadcember_volume || post.deadcember_personal_total) && (
-        <div className="px-5 py-6 bg-gradient-to-br from-red-950/30 via-gray-900/60 to-gray-900/60 border-b border-primary/30">
+        <div className="px-5 py-5 bg-[#dc2626]/5 border-b border-[#dc2626]/20">
           <div className="space-y-4">
             {post.deadcember_volume && (
               <div className="text-center">
-                <p className="text-gray-400 text-xs font-bold tracking-wider uppercase mb-2">This Workout</p>
-                <p className="text-3xl md:text-4xl font-black text-primary">
+                <p className="text-[#a1a1a1] text-xs font-medium tracking-wide uppercase mb-2">This Workout</p>
+                <p className="text-3xl md:text-4xl font-bold text-[#dc2626]">
                   {post.deadcember_volume.toLocaleString()} lbs
                 </p>
               </div>
             )}
             {post.deadcember_personal_total && (
-              <div className="text-center pt-4 border-t border-primary/20">
-                <p className="text-gray-400 text-xs font-bold tracking-wider uppercase mb-2">Personal Total</p>
+              <div className="text-center pt-4 border-t border-[#dc2626]/20">
+                <p className="text-[#a1a1a1] text-xs font-medium tracking-wide uppercase mb-2">Personal Total</p>
                 <p className="text-2xl md:text-3xl font-black text-white">
                   {post.deadcember_personal_total.toLocaleString()} lbs
                 </p>
@@ -409,10 +405,10 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {/* Content */}
-      {post.content && (
-        <div className="px-5 py-4 border-b border-gray-800/40">
-          <p className="text-gray-100 leading-relaxed">
-            <span className="font-bold text-primary mr-2">{profile.username}</span>
+          {post.content && (
+        <div className="px-5 py-4 border-b border-white/5">
+          <p className="text-white/90 leading-relaxed">
+            <span className="font-semibold text-[#dc2626] mr-2">{profile.username}</span>
             {post.content}
           </p>
         </div>
@@ -423,16 +419,13 @@ export function PostCard({ post }: PostCardProps) {
         <WorkoutDetails exercises={post.workout_exercises} postId={post.id} />
       )}
 
-      {/* Engagement Bar */}
-      <div className="px-5 py-4 flex items-center justify-between border-b border-gray-800/40">
+      <div className="px-5 py-4 flex items-center justify-between border-b border-white/5">
         <div className="flex items-center space-x-6">
           <button
             onClick={handleLike}
             disabled={isLiking}
-            className={`flex items-center space-x-2 group transition-all duration-300 ${
-              liked
-                ? 'text-primary'
-                : 'text-gray-400 hover:text-primary'
+            className={`flex items-center space-x-2 group transition-all duration-200 ${
+              liked ? 'text-[#dc2626]' : 'text-[#a1a1a1] hover:text-[#dc2626]'
             }`}
           >
             <Heart 
@@ -460,10 +453,10 @@ export function PostCard({ post }: PostCardProps) {
               e.stopPropagation()
               setShowCommentForm(!showCommentForm)
             }}
-            className="flex items-center space-x-2 text-gray-400 hover:text-white transition-all duration-300 group"
+            className="flex items-center space-x-2 text-[#a1a1a1] hover:text-white transition-all duration-200 group"
           >
             <MessageCircle 
-              className={`w-7 h-7 md:w-6 md:h-6 group-hover:scale-110 transition-all duration-300 ${showCommentForm ? 'text-primary' : ''}`}
+              className={`w-7 h-7 md:w-6 md:h-6 group-hover:scale-110 transition-all duration-200 ${showCommentForm ? 'text-[#dc2626]' : ''}`}
               strokeWidth={2.5}
             />
             {commentCount > 0 && (
@@ -475,7 +468,7 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* Inline Comment Form */}
       {showCommentForm && user && (
-        <div className="px-5 py-3 border-t border-gray-800/40">
+        <div className="px-5 py-3 border-t border-white/5">
           <CommentForm 
             postId={post.id} 
             userId={user.id}

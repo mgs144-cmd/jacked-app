@@ -68,14 +68,12 @@ export default async function ProfilePage() {
   }))
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
+    <div className="min-h-screen pb-20 md:pb-0 md:pt-14">
       <Navbar />
       
-      {/* Full-bleed Banner Section */}
       <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-        {/* Banner Image */}
         {(profile as any)?.banner_url ? (
-          <div className="relative w-full h-56 md:h-72 lg:h-80 bg-surface-dark">
+          <div className="relative w-full h-48 md:h-64 bg-[#111]">
             <Image
               src={(profile as any).banner_url}
               alt="Profile banner"
@@ -85,59 +83,54 @@ export default async function ProfilePage() {
             />
           </div>
         ) : (
-          <div className="w-full h-56 md:h-72 lg:h-80 bg-surface-dark"></div>
+          <div className="w-full h-48 md:h-64 bg-[#111]"></div>
         )}
       </div>
 
       {/* Profile Content Container - Centered */}
       <div className="max-w-4xl mx-auto relative z-10 px-4 md:px-6">
-        {/* Avatar - Overlapping Banner Bottom */}
-        <div className="relative -mt-16 md:-mt-20 mb-4">
-          <div className="flex items-end space-x-4">
-            <div className="relative">
-              <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-surface-hover overflow-hidden shadow-2xl border-4 border-white">
-                {(profile as any)?.avatar_url ? (
-                  <Image
-                    src={(profile as any).avatar_url}
-                    alt={(profile as any).username || 'Profile'}
-                    width={144}
-                    height={144}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-surface-hover text-primary text-4xl md:text-5xl font-semibold">
-                    {(profile as any)?.username?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || 'U'}
-                  </div>
-                )}
+        {/* Avatar - Centered, Overlapping Banner */}
+        <div className="relative -mt-14 md:-mt-16 mb-6 flex flex-col items-center">
+          <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white/5 overflow-hidden shadow-xl border-4 border-[#090909] ring-2 ring-white/10 mb-4">
+            {(profile as any)?.avatar_url ? (
+              <Image
+                src={(profile as any).avatar_url}
+                alt={(profile as any).username || 'Profile'}
+                width={144}
+                height={144}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-white/10 text-[#dc2626] text-3xl md:text-4xl font-semibold">
+                {(profile as any)?.username?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || 'U'}
               </div>
+            )}
+          </div>
+          
+          {/* User Info - Centered */}
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-2 mb-2">
+              <h1 className="text-2xl md:text-3xl font-black text-white">
+                {(profile as any)?.username || (profile as any)?.full_name || 'User'}
+              </h1>
             </div>
-            
-            <div className="flex-1 pb-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center space-x-2 mb-1">
-                    <h1 className="text-2xl md:text-3xl font-black text-white">
-                      {(profile as any)?.username || (profile as any)?.full_name || 'User'}
-                    </h1>
-                  </div>
-                  {(profile as any)?.full_name && (profile as any).full_name !== (profile as any).username && (
-                    <p className="text-gray-400 text-sm">{(profile as any).full_name}</p>
-                  )}
-                </div>
-                <Link
-                  href="/settings"
-                  className="btn-secondary px-3 py-2 text-sm flex items-center space-x-2"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span className="hidden md:inline">Edit</span>
-                </Link>
-              </div>
-            </div>
+            {(profile as any)?.full_name && (profile as any).full_name !== (profile as any).username && (
+              <p className="text-gray-400 text-sm mb-3">{(profile as any).full_name}</p>
+            )}
           </div>
         </div>
 
-        {/* Profile Info Section */}
-        <div className="space-y-3 mb-4">
+        {/* Edit Button - Top Right */}
+        <Link
+          href="/settings"
+          className="absolute top-0 right-4 md:right-8 px-4 py-2 text-sm font-medium bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 flex items-center space-x-2"
+        >
+          <Settings className="w-4 h-4" />
+          <span className="hidden md:inline">Edit</span>
+        </Link>
+
+        {/* Profile Info Section - Centered */}
+        <div className="space-y-3 mb-4 flex flex-col items-center">
           {/* Bio */}
           {(profile as any)?.bio && (
             <p className="text-gray-300 text-sm leading-relaxed max-w-2xl">{(profile as any).bio}</p>
@@ -204,16 +197,16 @@ export default async function ProfilePage() {
 
         {/* Posts Section */}
         <div>
-          <h2 className="text-xl font-black text-white tracking-tight mb-4 flex items-center space-x-2">
-            <TrendingUp className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold text-white tracking-tight mb-4 flex items-center space-x-2">
+            <TrendingUp className="w-5 h-5 text-[#dc2626]" />
             <span>Posts</span>
           </h2>
 
           {postsWithCounts && postsWithCounts.length === 0 ? (
-            <div className="bg-gray-900/40 backdrop-blur-sm rounded-xl border border-gray-800/40 p-8 text-center">
-              <p className="text-gray-400 font-medium mb-3">No posts yet</p>
-              <Link href="/create" className="btn-primary inline-block px-6 py-2 text-sm">
-                <span className="font-bold">Create First Post</span>
+            <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-8 text-center">
+              <p className="text-[#a1a1a1] font-medium mb-3">No posts yet</p>
+              <Link href="/create" className="inline-block px-6 py-2.5 bg-[#dc2626] hover:bg-[#b91c1c] text-white font-medium rounded-lg text-sm">
+                Create first post
               </Link>
             </div>
           ) : (

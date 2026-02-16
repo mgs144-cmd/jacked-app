@@ -9,28 +9,24 @@ interface FeedToggleProps {
 
 export function FeedToggle({ view, onViewChange }: FeedToggleProps) {
   return (
-    <div className="flex items-center space-x-2 p-1 bg-gray-900/60 rounded-xl border border-gray-800/60 mb-6">
+    <div className="flex items-center gap-1 p-1 bg-white/5 rounded-xl border border-white/5 mb-6">
       <button
         onClick={() => onViewChange('friends')}
-        className={`flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 ${
-          view === 'friends'
-            ? 'bg-gradient-primary text-white shadow-lg'
-            : 'text-gray-400 hover:text-white'
+        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+          view === 'friends' ? 'bg-[#dc2626] text-white' : 'text-[#a1a1a1] hover:text-white hover:bg-white/5'
         }`}
       >
         <Users className="w-4 h-4" />
-        <span className="font-bold text-sm">Friends Only</span>
+        Friends
       </button>
       <button
         onClick={() => onViewChange('community')}
-        className={`flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 ${
-          view === 'community'
-            ? 'bg-gradient-primary text-white shadow-lg'
-            : 'text-gray-400 hover:text-white'
+        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+          view === 'community' ? 'bg-[#dc2626] text-white' : 'text-[#a1a1a1] hover:text-white hover:bg-white/5'
         }`}
       >
         <Globe className="w-4 h-4" />
-        <span className="font-bold text-sm">Community</span>
+        Community
       </button>
     </div>
   )

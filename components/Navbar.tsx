@@ -8,9 +8,10 @@ import { JackedLogo, JackedLogoCompact } from './JackedLogo'
 
 export function Navbar() {
   const pathname = usePathname()
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
 
-  if (!user) return null
+  // Only hide when we're certain user isn't logged in (avoids navbar flash while auth loads)
+  if (!user && !loading) return null
 
   const navItems = [
     { href: '/feed', icon: Home, label: 'Feed' },
@@ -21,46 +22,40 @@ export function Navbar() {
 
   return (
     <>
-      {/* Desktop Navigation */}
-      <nav className="hidden md:block fixed top-0 left-0 right-0 bg-surface border-b border-default z-50 backdrop-blur-xl bg-opacity-90">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/feed" className="flex items-center space-x-2 group">
+      {/* Desktop Navigation - minimal, Strava-style */}
+      <nav className="hidden md:block fixed top-0 left-0 right-0 bg-[#090909]/95 border-b border-white/5 z-50 backdrop-blur-xl">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="flex items-center justify-between h-14">
+            <Link href="/feed" className="flex items-center group">
               <JackedLogo />
             </Link>
 
-            {/* Navigation Links */}
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center gap-1">
               {navItems.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href
-                
                 if (item.isPrimary) {
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="btn btn-primary btn-sm ml-2"
+                      className="ml-2 px-4 py-2 bg-[#dc2626] hover:bg-[#b91c1c] text-white text-sm font-medium rounded-lg transition-colors"
                     >
-                      <Icon className="w-4 h-4 mr-1.5" />
-                      <span>{item.label}</span>
+                      <Icon className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+                      {item.label}
                     </Link>
                   )
                 }
-                
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`relative nav-link ${isActive ? 'nav-link-active' : ''}`}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      isActive ? 'text-white bg-white/5' : 'text-[#a1a1a1] hover:text-white hover:bg-white/5'
+                    }`}
                   >
                     <Icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                    {/* Active state underline */}
-                    {isActive && (
-                      <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-red-600 rounded-full" />
-                    )}
+                    {item.label}
                   </Link>
                 )
               })}
@@ -69,34 +64,30 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-default z-50 backdrop-blur-xl bg-opacity-95">
-        <div className="flex items-center justify-around px-2 py-2 safe-area-pb">
+      {/* Mobile Navigation - clean bottom bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#090909]/98 border-t border-white/5 z-50 backdrop-blur-xl safe-area-pb">
+        <div className="flex items-center justify-around px-2 py-3">
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
-            
             if (item.isPrimary) {
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex flex-col items-center justify-center p-2 rounded-lg bg-red-600 text-white active-scale"
+                  className="flex flex-col items-center justify-center p-2 rounded-xl bg-[#dc2626] text-white active:scale-95 transition-transform"
                 >
                   <Icon className="w-6 h-6" strokeWidth={2} />
                   <span className="text-[10px] font-medium mt-0.5">{item.label}</span>
                 </Link>
               )
             }
-            
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center p-2 rounded-lg transition-colors ${
-                  isActive
-                    ? 'text-primary'
-                    : 'text-secondary'
+                className={`flex flex-col items-center justify-center p-2 rounded-xl transition-colors ${
+                  isActive ? 'text-[#dc2626]' : 'text-[#a1a1a1]'
                 }`}
               >
                 <Icon className="w-6 h-6" strokeWidth={2} />
