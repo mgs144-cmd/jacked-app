@@ -251,27 +251,25 @@ function CreatePage() {
   }
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
+    <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-[#1a1a1a]">
       <Navbar />
       
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        {/* Header */}
+      <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-black text-white tracking-tight mb-3">Create Post</h1>
-          <p className="text-gray-400 font-medium">Share your progress with the community</p>
+          <h1 className="text-2xl font-semibold text-white tracking-tight mb-1">Create Post</h1>
+          <p className="text-[#a1a1a1] text-sm">Share your progress with the community</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-red-950/50 border border-primary/50 text-red-400 px-6 py-4 rounded-xl font-medium backdrop-blur-sm">
+            <div className="bg-[#ff5555]/10 border border-[#ff5555]/30 text-[#ff5555] px-6 py-4 rounded-[12px] font-medium">
               {error}
             </div>
           )}
 
-          {/* Media Preview */}
           {mediaPreview && (
-            <div className="relative bg-gray-900/60 backdrop-blur-sm rounded-2xl overflow-hidden border border-gray-800/60 card-elevated">
-              <div className="relative w-full aspect-square bg-black">
+            <div className="relative rounded-[12px] overflow-hidden border border-white/5" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+              <div className="relative w-full aspect-square bg-[#1a1a1a]">
                 {mediaType === 'video' ? (
                   <video
                     src={mediaPreview}
@@ -290,25 +288,24 @@ function CreatePage() {
               <button
                 type="button"
                 onClick={handleRemoveMedia}
-                className="absolute top-4 right-4 w-10 h-10 bg-black/80 backdrop-blur-sm hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all"
+                className="absolute top-4 right-4 w-10 h-10 bg-black/80 backdrop-blur-sm hover:bg-[#ff5555] text-white rounded-full flex items-center justify-center transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
           )}
 
-          {/* Media Upload */}
           {!mediaPreview && (
-            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border-2 border-dashed border-gray-800/60 p-12 text-center card-elevated hover:border-primary/30 transition-all">
+            <div className="rounded-[12px] border-2 border-dashed border-white/10 p-12 text-center bg-white/[0.02] hover:border-[#ff5555]/30 transition-all" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
               <label className="cursor-pointer flex flex-col items-center space-y-4">
-                <div className="w-20 h-20 rounded-2xl bg-gray-800/60 flex items-center justify-center">
-                  <Upload className="w-10 h-10 text-gray-500" />
+                <div className="w-20 h-20 rounded-[12px] bg-white/5 flex items-center justify-center">
+                  <Upload className="w-10 h-10 text-[#a1a1a1]" />
                 </div>
                 <div>
-                  <p className="text-white font-bold text-lg mb-1">Upload Photo or Video</p>
-                  <p className="text-gray-500 text-sm font-medium">Click to browse or drag and drop</p>
+                  <p className="text-white font-semibold text-base mb-1">Upload Photo or Video</p>
+                  <p className="text-[#a1a1a1] text-sm">Click to browse or drag and drop</p>
                 </div>
-                <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <div className="flex items-center space-x-4 text-sm text-[#6b6b6b]">
                   <div className="flex items-center space-x-1">
                     <ImageIcon className="w-4 h-4" />
                     <span>JPG, PNG</span>
@@ -328,51 +325,47 @@ function CreatePage() {
             </div>
           )}
 
-          {/* PR Post Toggle */}
-          <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-4">
+          <div className="rounded-[12px] border border-white/5 p-6 bg-white/[0.02]" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
             <label className="flex items-center space-x-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isPRPost}
                 onChange={(e) => setIsPRPost(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-700 bg-gray-800 text-primary focus:ring-primary focus:ring-offset-0"
+                className="w-5 h-5 rounded border-white/20 bg-white/5 text-[#ff5555] focus:ring-[#ff5555] focus:ring-offset-0"
               />
               <div className="flex items-center space-x-2">
-                <Trophy className="w-5 h-5 text-primary" />
-                <span className="text-white font-bold">This is a Personal Record (PR) Post</span>
+                <Trophy className="w-5 h-5 text-[#ff5555]" />
+                <span className="text-white font-semibold">This is a Personal Record (PR) Post</span>
               </div>
             </label>
-            <p className="text-xs text-gray-500 mt-2 ml-8">PR posts will be highlighted in the feed</p>
+            <p className="text-xs text-[#a1a1a1] mt-2 ml-8">PR posts will be highlighted in the feed</p>
           </div>
 
-          {/* Deadcember Post Toggle */}
-          <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-4">
+          <div className="rounded-[12px] border border-white/5 p-6 bg-white/[0.02]" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
             <label className="flex items-center space-x-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isDeadcemberPost}
                 onChange={(e) => setIsDeadcemberPost(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-700 bg-gray-800 text-primary focus:ring-primary focus:ring-offset-0"
+                className="w-5 h-5 rounded border-white/20 bg-white/5 text-[#ff5555] focus:ring-[#ff5555] focus:ring-offset-0"
               />
               <div className="flex items-center space-x-2">
-                <Trophy className="w-5 h-5 text-yellow-500" />
-                <span className="text-white font-bold">This is a Deadcember Post</span>
+                <Trophy className="w-5 h-5 text-amber-400" />
+                <span className="text-white font-semibold">This is a Deadcember Post</span>
               </div>
             </label>
-            <p className="text-xs text-gray-500 mt-2 ml-8">Track your December deadlift volume</p>
+            <p className="text-xs text-[#a1a1a1] mt-2 ml-8">Track your December deadlift volume</p>
           </div>
 
-          {/* Deadcember Volume - Only show if Deadcember post */}
           {isDeadcemberPost && (
-            <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-yellow-600/30 p-6 space-y-4">
+            <div className="rounded-[12px] border border-amber-500/30 p-6 space-y-4 bg-amber-500/5" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
               <div className="flex items-center space-x-2 mb-4">
-                <Trophy className="w-6 h-6 text-yellow-500" />
-                <h3 className="text-white font-bold text-lg">Deadcember Details</h3>
+                <Trophy className="w-6 h-6 text-amber-400" />
+                <h3 className="text-white font-semibold text-lg">Deadcember Details</h3>
               </div>
 
-              {/* Visibility Options */}
-              <div className="bg-gray-800/50 rounded-lg p-4 space-y-3">
-                <label className="block text-sm font-bold text-gray-300 mb-3">POST VISIBILITY</label>
+              <div className="rounded-lg p-4 space-y-3 bg-white/5">
+                <label className="block text-sm font-medium text-[#a1a1a1] mb-3">Post visibility</label>
                 <div className="space-y-2">
                   <label className="flex items-start space-x-3 cursor-pointer group">
                     <input
@@ -421,7 +414,7 @@ function CreatePage() {
               
               {/* Deadlift Variation */}
               <div>
-                <label className="block text-sm font-bold text-gray-300 mb-2">DEADLIFT VARIATION</label>
+                <label className="block text-sm font-medium text-[#a1a1a1] mb-2">Deadlift variation</label>
                 <select
                   value={deadliftVariation}
                   onChange={(e) => setDeadliftVariation(e.target.value)}
@@ -441,10 +434,10 @@ function CreatePage() {
 
               {/* Sets Tracker */}
               <div>
-                <label className="block text-sm font-bold text-gray-300 mb-3">SETS</label>
+                <label className="block text-sm font-medium text-[#a1a1a1] mb-3">Sets</label>
                 <div className="space-y-3">
                   {deadliftSets.map((set, index) => (
-                    <div key={index} className="flex items-center gap-3 bg-gray-800/50 p-3 rounded-lg">
+                    <div key={index} className="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5">
                       <span className="text-gray-400 font-bold min-w-[60px]">Set {index + 1}</span>
                       <input
                         type="number"
@@ -507,9 +500,9 @@ function CreatePage() {
 
           {/* PR Details - Only show if PR post */}
           {isPRPost && (
-            <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-primary/30 p-6 space-y-4 glow-red-sm">
+            <div className="rounded-[12px] border border-[#ff5555]/30 p-6 space-y-4 bg-[#ff5555]/5" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
               <div className="flex items-center space-x-2 mb-4">
-                <Trophy className="w-6 h-6 text-primary" />
+                <Trophy className="w-6 h-6 text-[#ff5555]" />
                 <h3 className="text-white font-bold text-lg">PR Details</h3>
               </div>
               <div>
@@ -609,10 +602,10 @@ function CreatePage() {
 export default function CreatePageWithSuspense() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen pb-20 md:pb-0 md:pt-24 flex items-center justify-center">
+      <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-[#1a1a1a] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading...</p>
+          <div className="w-16 h-16 border-4 border-[#ff5555] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#a1a1a1]">Loading...</p>
         </div>
       </div>
     }>

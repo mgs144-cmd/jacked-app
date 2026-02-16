@@ -68,7 +68,7 @@ export default async function ProfilePage() {
   }))
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:pt-14">
+    <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-[#1a1a1a]">
       <Navbar />
       
       <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">

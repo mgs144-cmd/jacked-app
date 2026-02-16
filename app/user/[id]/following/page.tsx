@@ -86,14 +86,14 @@ export default async function FollowingPage({
   }))
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
+    <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-[#1a1a1a]">
       <Navbar />
       
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-3">
-            <Users className="w-8 h-8 text-primary" />
-            <h1 className="text-4xl font-black text-white tracking-tight">
+            <Users className="w-6 h-6 text-[#ff5555]" />
+            <h1 className="text-2xl font-semibold text-white">
               {profileData.username || profileData.full_name || 'User'}&apos;s Following
             </h1>
           </div>
@@ -114,10 +114,10 @@ export default async function FollowingPage({
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gray-800/60 rounded-full flex items-center justify-center">
-              <Users className="w-8 h-8 text-gray-600" />
+            <div className="w-16 h-16 mx-auto mb-4 bg-white/5 rounded-full flex items-center justify-center border border-white/5">
+              <Users className="w-8 h-8 text-[#6b6b6b]" />
             </div>
-            <p className="text-gray-400 font-semibold">Not following anyone yet</p>
+            <p className="text-[#a1a1a1] font-medium">Not following anyone yet</p>
           </div>
         )}
       </div>

@@ -33,7 +33,7 @@ export function FeedClient({ allPosts, followingPosts, publicPosts }: FeedClient
         <FeedToggle view={view} onViewChange={setView} />
 
         {!displayedPosts || displayedPosts.length === 0 ? (
-          <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-12 text-center">
+          <div className="rounded-[12px] border border-white/5 bg-[#1a1a1a] p-12 text-center" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
             <p className="text-[#a1a1a1] font-medium mb-1">
               {view === 'friends' ? 'No posts from friends yet' : 'No posts yet'}
             </p>

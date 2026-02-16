@@ -60,8 +60,8 @@ export function LikesModal({ postId, isOpen, onClose }: LikesModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-md max-h-[80vh] flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-gray-800">
+      <div className="bg-[#1a1a1a] rounded-[12px] border border-white/5 w-full max-w-md max-h-[80vh] flex flex-col" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        <div className="flex items-center justify-between p-4 border-b border-white/5">
           <h3 className="text-white font-bold text-lg">Likes</h3>
           <button
             onClick={onClose}
@@ -74,11 +74,11 @@ export function LikesModal({ postId, isOpen, onClose }: LikesModalProps) {
         <div className="flex-1 overflow-y-auto p-4">
           {loading ? (
             <div className="text-center py-12">
-              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <div className="w-8 h-8 border-2 border-[#ff5555] border-t-transparent rounded-full animate-spin mx-auto"></div>
             </div>
           ) : likes.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-400">No likes yet</p>
+              <p className="text-[#a1a1a1]">No likes yet</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -87,10 +87,10 @@ export function LikesModal({ postId, isOpen, onClose }: LikesModalProps) {
                   key={like.id}
                   href={`/user/${like.user_id}`}
                   onClick={onClose}
-                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800/60 transition-colors"
+                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-white/5 transition-colors"
                 >
                   <div className="relative">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden shadow-md">
+                    <div className="w-12 h-12 rounded-full bg-white/5 overflow-hidden ring-1 ring-white/10">
                       {like.profile.avatar_url ? (
                         <Image
                           src={like.profile.avatar_url}
@@ -100,7 +100,7 @@ export function LikesModal({ postId, isOpen, onClose }: LikesModalProps) {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-gray-300 font-bold text-lg">
+                        <div className="w-full h-full flex items-center justify-center bg-white/10 text-[#ff5555] font-semibold text-lg">
                           {like.profile.username?.[0]?.toUpperCase() || 'U'}
                         </div>
                       )}

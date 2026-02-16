@@ -23,7 +23,7 @@ export function Navbar() {
   return (
     <>
       {/* Desktop Navigation - minimal, Strava-style */}
-      <nav className="hidden md:block fixed top-0 left-0 right-0 bg-[#090909]/95 border-b border-white/5 z-50 backdrop-blur-xl">
+      <nav className="hidden md:block fixed top-0 left-0 right-0 bg-[#1a1a1a]/95 border-b border-white/5 z-50 backdrop-blur-xl">
         <div className="max-w-4xl mx-auto px-6">
           <div className="flex items-center justify-between h-14">
             <Link href="/feed" className="flex items-center group">
@@ -65,7 +65,7 @@ export function Navbar() {
       </nav>
 
       {/* Mobile Navigation - clean bottom bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#090909]/98 border-t border-white/5 z-50 backdrop-blur-xl safe-area-pb">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#1a1a1a]/98 border-t border-white/5 z-50 backdrop-blur-xl safe-area-pb">
         <div className="flex items-center justify-around px-2 py-3">
           {navItems.map((item) => {
             const Icon = item.icon

@@ -33,11 +33,11 @@ export default async function PostPage({
 
   if (postError || !post) {
     return (
-      <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
+      <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-[#1a1a1a]">
         <Navbar />
         <div className="max-w-2xl mx-auto px-4 py-8">
-          <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-12 text-center card-elevated">
-            <p className="text-gray-400 text-lg font-semibold">Post not found</p>
+          <div className="rounded-[12px] border border-white/5 bg-[#1a1a1a] p-12 text-center" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            <p className="text-[#a1a1a1] text-lg font-medium">Post not found</p>
           </div>
         </div>
       </div>
@@ -67,17 +67,15 @@ export default async function PostPage({
   }
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
+    <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-[#1a1a1a]">
       <Navbar />
       
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        {/* Post */}
-        <article className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 overflow-hidden card-elevated mb-6">
-          {/* Header */}
-          <div className="flex items-center justify-between p-5 border-b border-gray-800/40">
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <article className="rounded-[12px] border border-white/5 overflow-hidden mb-6 bg-[#1a1a1a]" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+          <div className="flex items-center justify-between p-6 border-b border-white/5">
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden shadow-md">
+                <div className="w-12 h-12 rounded-full bg-white/5 overflow-hidden ring-1 ring-white/10">
                   {profile.avatar_url ? (
                     <Image
                       src={profile.avatar_url}
@@ -87,7 +85,7 @@ export default async function PostPage({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-gray-300 font-bold text-lg">
+                    <div className="w-full h-full flex items-center justify-center bg-white/10 text-[#ff5555] font-semibold text-lg">
                       {profile.username?.[0]?.toUpperCase() || 'U'}
                     </div>
                   )}
@@ -106,9 +104,8 @@ export default async function PostPage({
             </div>
           </div>
 
-          {/* Media */}
           {(post as any).media_url && (
-            <div className="relative w-full aspect-square bg-black">
+            <div className="relative w-full aspect-square bg-[#1a1a1a]">
               {(post as any).media_type === 'video' ? (
                 <video
                   src={(post as any).media_url}
@@ -126,29 +123,27 @@ export default async function PostPage({
             </div>
           )}
 
-          {/* Content */}
           {(post as any).content && (
-            <div className="px-5 py-4">
-              <p className="text-gray-100 leading-relaxed">
-                <span className="font-bold text-primary mr-2">{profile.username}</span>
+            <div className="px-6 py-5">
+              <p className="text-white/90 leading-relaxed">
+                <span className="font-semibold text-[#ff5555] mr-2">{profile.username}</span>
                 {(post as any).content}
               </p>
             </div>
           )}
         </article>
 
-        {/* Comments Section */}
-        <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-6 card-elevated">
+        <div className="rounded-[12px] border border-white/5 p-6 bg-[#1a1a1a]" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
           <div className="flex items-center space-x-3 mb-6">
-            <MessageCircle className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-black text-white tracking-tight">
+            <MessageCircle className="w-6 h-6 text-[#ff5555]" />
+            <h2 className="text-xl font-semibold text-white">
               Comments ({comments?.length || 0})
             </h2>
           </div>
 
           <CommentForm postId={params.id} userId={session.user.id} />
 
-          <div className="border-t border-gray-800/40 pt-6">
+          <div className="border-t border-white/5 pt-6">
             <CommentList comments={comments || []} />
           </div>
         </div>

@@ -61,7 +61,7 @@ export function CommentForm({ postId, userId, onCommentAdded }: CommentFormProps
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       {error && (
-        <div className="bg-red-950/50 border border-primary/50 text-red-400 px-4 py-3 rounded-xl text-sm font-medium backdrop-blur-sm">
+        <div className="bg-[#ff5555]/10 border border-[#ff5555]/30 text-[#ff5555] px-4 py-3 rounded-[12px] text-sm font-medium">
           {error}
         </div>
       )}
@@ -77,7 +77,7 @@ export function CommentForm({ postId, userId, onCommentAdded }: CommentFormProps
           <button
             type="button"
             onClick={() => setSelectedGIF(null)}
-            className="absolute top-1 right-1 w-6 h-6 bg-black/80 rounded-full flex items-center justify-center text-white hover:bg-red-600 transition-colors"
+            className="absolute top-1 right-1 w-6 h-6 bg-black/80 rounded-full flex items-center justify-center text-white hover:bg-[#ff5555] transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -96,7 +96,7 @@ export function CommentForm({ postId, userId, onCommentAdded }: CommentFormProps
         <button
           type="button"
           onClick={() => setShowGIFPicker(true)}
-          className="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-12 h-12 flex items-center justify-center shrink-0 rounded-xl transition-colors"
+          className="bg-white/10 hover:bg-white/15 border border-white/10 w-12 h-12 flex items-center justify-center shrink-0 rounded-[12px] transition-colors"
           disabled={loading || !!selectedGIF}
           aria-label="Add GIF"
         >
@@ -109,7 +109,7 @@ export function CommentForm({ postId, userId, onCommentAdded }: CommentFormProps
         <button
           type="submit"
           disabled={loading || (!content.trim() && !selectedGIF)}
-          className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 w-12 md:w-auto md:px-6 h-12 flex items-center justify-center md:space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 rounded-xl transition-all text-white"
+          className="bg-[#ff5555] hover:bg-[#ff4444] w-12 md:w-auto md:px-6 h-12 flex items-center justify-center md:space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 rounded-[12px] transition-all text-white font-medium"
           aria-label="Post comment"
         >
           {loading ? (

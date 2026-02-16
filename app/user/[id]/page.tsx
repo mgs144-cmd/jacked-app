@@ -43,11 +43,11 @@ export default async function UserProfilePage({
 
   if (!profile) {
     return (
-      <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
+      <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-[#1a1a1a]">
         <Navbar />
         <div className="max-w-5xl mx-auto px-4 py-8">
-          <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-12 text-center card-elevated">
-            <p className="text-gray-400 text-lg font-semibold">User not found</p>
+          <div className="rounded-[12px] border border-white/5 bg-[#1a1a1a] p-12 text-center" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            <p className="text-[#a1a1a1] text-lg font-medium">User not found</p>
           </div>
         </div>
       </div>
@@ -113,14 +113,13 @@ export default async function UserProfilePage({
   const totalLikes = visiblePosts?.reduce((sum, post) => sum + post.like_count, 0) || 0
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:pt-24">
+    <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-[#1a1a1a]">
       <Navbar />
       
-      {/* Back Button */}
-      <div className="max-w-5xl mx-auto px-4 md:px-8 pt-6 md:pt-8">
+      <div className="max-w-2xl mx-auto px-4 md:px-8 pt-6 md:pt-8">
         <Link
           href="/discover"
-          className="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors mb-6 font-semibold"
+          className="inline-flex items-center space-x-2 text-[#a1a1a1] hover:text-white transition-colors mb-6 font-medium"
         >
           <ArrowLeft className="w-5 h-5" />
           <span>Back to Discover</span>
@@ -131,7 +130,7 @@ export default async function UserProfilePage({
       <div className="relative w-full">
         {/* Banner Image - Full Viewport Width */}
         {(profile as any)?.banner_url ? (
-          <div className="relative w-full h-48 md:h-64 bg-surface">
+          <div className="relative w-full h-48 md:h-64 bg-[#1a1a1a]">
             <Image
               src={(profile as any).banner_url}
               alt="Profile banner"
@@ -141,14 +140,14 @@ export default async function UserProfilePage({
             />
           </div>
         ) : (
-          <div className="w-full h-48 md:h-64 bg-surface"></div>
+          <div className="w-full h-48 md:h-64 bg-[#1a1a1a]"></div>
         )}
         
         {/* Profile Content - Constrained Width */}
         <div className="max-w-5xl mx-auto relative px-4 md:px-8">
             {/* Avatar - Overlapping Banner Bottom */}
             <div className="relative -mt-16 md:-mt-20 mb-4">
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-surface border-4 border-background overflow-hidden shadow-2xl">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-white/5 border-4 border-[#1a1a1a] overflow-hidden shadow-xl ring-2 ring-white/10">
                 {(profile as any)?.avatar_url ? (
                   <Image
                     src={(profile as any).avatar_url}
@@ -158,7 +157,7 @@ export default async function UserProfilePage({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-surface-hover text-primary text-5xl font-semibold">
+                  <div className="w-full h-full flex items-center justify-center bg-white/10 text-[#ff5555] text-4xl font-semibold">
                     {(profile as any)?.username?.[0]?.toUpperCase() || (profile as any)?.email?.[0]?.toUpperCase() || 'U'}
                   </div>
                 )}
@@ -166,7 +165,7 @@ export default async function UserProfilePage({
             </div>
 
             {/* Profile Info Section */}
-            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-6 md:p-8 mb-6 card-elevated">
+            <div className="rounded-[12px] border border-white/5 p-6 md:p-8 mb-6 bg-[#1a1a1a]" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div className="flex-1 w-full">
                   {/* Username and Follow Button */}
@@ -206,19 +205,19 @@ export default async function UserProfilePage({
                   )}
 
                   {/* Stats */}
-                  <div className="flex items-center space-x-8 pt-4 border-t border-gray-800/60">
+                  <div className="flex items-center space-x-8 pt-4 border-t border-white/5">
                     <div>
                       <p className="text-2xl font-black text-white">{visiblePosts?.length || 0}</p>
                       <p className="text-xs text-gray-500 font-semibold tracking-wide">POSTS</p>
                     </div>
                     {!(profile as any)?.hide_follower_count && (
                       <>
-                        <div className="h-10 w-px bg-gray-800"></div>
+                        <div className="h-10 w-px bg-white/10"></div>
                         <Link href={`/user/${params.id}/followers`} className="hover:opacity-80 transition-opacity">
                           <p className="text-2xl font-black text-white">{followerCount || 0}</p>
                           <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWERS</p>
                         </Link>
-                        <div className="h-10 w-px bg-gray-800"></div>
+                        <div className="h-10 w-px bg-white/10"></div>
                         <Link href={`/user/${params.id}/following`} className="hover:opacity-80 transition-opacity">
                           <p className="text-2xl font-black text-white">{followingCount || 0}</p>
                           <p className="text-xs text-gray-500 font-semibold tracking-wide">FOLLOWING</p>
@@ -227,7 +226,7 @@ export default async function UserProfilePage({
                     )}
                     <div className="h-10 w-px bg-gray-800"></div>
                     <div>
-                      <p className="text-2xl font-black text-primary">{totalLikes}</p>
+                      <p className="text-2xl font-bold text-[#ff5555]">{totalLikes}</p>
                       <p className="text-xs text-gray-500 font-semibold tracking-wide">TOTAL LIKES</p>
                     </div>
                   </div>
@@ -250,15 +249,15 @@ export default async function UserProfilePage({
 
         {/* Posts Section */}
         <div>
-          <h2 className="text-2xl font-black text-white tracking-tight mb-6">Posts</h2>
+          <h2 className="text-xl font-semibold text-white tracking-tight mb-6">Posts</h2>
 
           {visiblePosts && visiblePosts.length === 0 ? (
-            <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-12 text-center card-elevated">
-              <p className="text-gray-400 text-lg font-semibold mb-2">
+            <div className="rounded-[12px] border border-white/5 bg-[#1a1a1a] p-12 text-center" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+              <p className="text-[#a1a1a1] text-lg font-medium mb-2">
                 {isFollowing ? 'No posts yet' : 'No public posts'}
               </p>
               {!isFollowing && (
-                <p className="text-gray-600 text-sm">Follow to see their private posts</p>
+                <p className="text-[#6b6b6b] text-sm">Follow to see their private posts</p>
               )}
             </div>
           ) : (
