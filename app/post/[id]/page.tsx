@@ -125,10 +125,7 @@ export default async function PostPage({
 
           {(post as any).content && (
             <div className="px-6 py-5">
-              <p className="text-white/90 leading-relaxed">
-                <span className="font-semibold text-[#ff5555] mr-2">{profile.username}</span>
-                {(post as any).content}
-              </p>
+              <p className="text-white/90 leading-relaxed">{(post as any).content}</p>
             </div>
           )}
         </article>

@@ -167,7 +167,7 @@ export function PostCard({ post }: PostCardProps) {
 
   return (
     <article 
-      className="overflow-hidden transition-all duration-200 w-full max-w-[640px] rounded-lg md:rounded-xl p-5 md:p-7"
+      className="relative overflow-hidden transition-all duration-200 w-full max-w-[640px] rounded-lg md:rounded-xl p-5 md:p-7"
       style={{ 
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif",
         backgroundColor: '#1a1a1a',
@@ -200,8 +200,8 @@ export function PostCard({ post }: PostCardProps) {
               </div>
             )}
           </div>
-          <div className="ml-3 flex items-center gap-2 min-w-0 flex-1">
-            <span className="text-[16px] font-semibold text-white truncate" style={{ fontWeight: 600 }}>
+          <div className={`ml-3 flex items-center gap-2 min-w-0 flex-1 ${isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) ? 'pr-20' : ''}`}>
+            <span className="text-[15px] md:text-base font-semibold text-white truncate" style={{ fontWeight: 600 }}>
               {profile.username || profile.full_name || 'Unknown'}
             </span>
             <span className="text-gray-600 flex-shrink-0">•</span>
@@ -290,29 +290,25 @@ export function PostCard({ post }: PostCardProps) {
             )}
           </div>
         )}
-        {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
-          <div 
-            className="flex items-center gap-1.5 rounded-md border border-[#ff5555]/20 bg-[#ff5555]/10 cursor-default"
-            style={{ padding: '6px 12px' }}
-          >
-            <Trophy className="w-4 h-4 text-[#ff5555]" />
-            <span className="font-semibold text-[#ff5555] uppercase tracking-wider" style={{ fontSize: '13px' }}>PR</span>
-          </div>
-        )}
         </div>
       </div>
 
       {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
-        <div className="flex flex-col" style={{ marginTop: 20 }}>
+        <div 
+          className="absolute top-5 right-5 flex items-center gap-1.5 rounded-md border border-[#ff5555]/20 bg-[#ff5555]/10 cursor-default shrink-0"
+          style={{ padding: '6px 12px' }}
+        >
+          <Trophy className="w-4 h-4 text-[#ff5555]" />
+          <span className="font-semibold text-[#ff5555] uppercase tracking-wider" style={{ fontSize: '13px' }}>PR</span>
+        </div>
+      )}
+
+      {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
+        <div className="flex flex-col mt-4 md:mt-5">
           {post.pr_exercise && (
             <span 
-              className="uppercase"
-              style={{ 
-                fontSize: '15px', 
-                fontWeight: 600, 
-                letterSpacing: '0.8px', 
-                color: 'rgba(255, 255, 255, 0.9)' 
-              }}
+              className="uppercase text-left text-base md:text-[15px] font-semibold tracking-wider"
+              style={{ color: 'rgba(255, 255, 255, 0.9)' }}
             >
               {post.pr_exercise}
             </span>
@@ -320,12 +316,12 @@ export function PostCard({ post }: PostCardProps) {
           
           {(post.pr_weight || post.pr_reps) && (
             <div 
-              className="flex justify-center items-baseline gap-8 md:gap-12 mt-4"
+              className="flex justify-center items-baseline gap-8 md:gap-12 mt-3"
             >
               {post.pr_weight && (
                 <div className="flex flex-col items-center">
                   <div 
-                    className="text-white tabular-nums leading-none text-[56px] md:text-[76px] font-bold"
+                    className="text-white tabular-nums leading-none text-[68px] md:text-[76px] font-bold"
                   >
                     {post.pr_weight}
                   </div>
@@ -345,7 +341,7 @@ export function PostCard({ post }: PostCardProps) {
               {post.pr_reps && (
                 <div className="flex flex-col items-center">
                   <div 
-                    className="text-white tabular-nums leading-none text-[56px] md:text-[76px] font-bold"
+                    className="text-white tabular-nums leading-none text-[68px] md:text-[76px] font-bold"
                   >
                     {post.pr_reps}
                   </div>
@@ -367,8 +363,8 @@ export function PostCard({ post }: PostCardProps) {
           
           {post.pr_weight && post.pr_reps && post.pr_reps > 1 && (
             <div 
-              className="tabular-nums"
-              style={{ fontSize: '13px', opacity: 0.6, marginTop: 12 }}
+              className="tabular-nums mt-2.5 md:mt-3"
+              style={{ fontSize: '13px', opacity: 0.6 }}
             >
               Est. 1RM: <span className="font-medium">{calculateOneRepMax(post.pr_weight, post.pr_reps)} lbs</span>
             </div>
@@ -438,18 +434,11 @@ export function PostCard({ post }: PostCardProps) {
 
       {post.content && (
         <div 
-          style={{ 
-            marginTop: 20,
-            paddingBottom: 20,
-            borderBottom: '1px solid rgba(255,255,255,0.05)'
-          }}
+          className="mt-4 md:mt-5 pb-4 md:pb-5 border-b border-white/5"
         >
           <p 
-            style={{ 
-              fontSize: '15px', 
-              lineHeight: 1.5, 
-              color: 'rgba(255, 255, 255, 0.8)' 
-            }}
+            className="text-[15px] md:text-[15px] leading-[1.4] md:leading-normal"
+            style={{ color: 'rgba(255, 255, 255, 0.8)' }}
           >
             {post.content}
           </p>
@@ -462,23 +451,21 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       <div 
-        className="flex items-center pt-5 border-t border-white/5"
-        style={{ marginTop: 20 }}
+        className="flex items-center min-h-[44px] pt-4 md:pt-5 border-t border-white/5 mt-4 md:mt-5"
       >
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-5">
           <button
             onClick={handleLike}
             disabled={isLiking}
-            className={`flex items-center group transition-all duration-200 active:scale-95 touch-manipulation ${
+            className={`flex items-center min-h-[44px] -my-2 py-2 group transition-all duration-200 active:scale-95 touch-manipulation ${
               liked ? 'text-[#ff5555]' : 'text-[#a1a1a1] hover:text-[#ff5555]'
             }`}
             style={{ gap: '6px' }}
           >
             <Heart 
-              className={`transition-all duration-200 group-hover:scale-110 ${
+              className={`transition-all duration-200 group-hover:scale-110 w-6 h-6 md:w-[22px] md:h-[22px] ${
                 liked ? 'fill-current' : ''
               }`}
-              style={{ width: 22, height: 22 }}
               strokeWidth={2.5}
             />
             {likeCount > 0 ? (
@@ -502,14 +489,13 @@ export function PostCard({ post }: PostCardProps) {
               e.stopPropagation()
               setShowCommentForm(!showCommentForm)
             }}
-            className={`flex items-center group transition-all duration-200 active:scale-95 touch-manipulation ${
+            className={`flex items-center min-h-[44px] -my-2 py-2 group transition-all duration-200 active:scale-95 touch-manipulation ${
               showCommentForm ? 'text-[#ff5555]' : 'text-[#a1a1a1] hover:text-[#ff5555]'
             }`}
             style={{ gap: '6px' }}
           >
             <MessageCircle 
-              className="group-hover:scale-110 transition-all duration-200"
-              style={{ width: 22, height: 22 }}
+              className="group-hover:scale-110 transition-all duration-200 w-6 h-6 md:w-[22px] md:h-[22px]"
               strokeWidth={2.5}
             />
             <span className="text-sm font-medium tabular-nums">{commentCount}</span>

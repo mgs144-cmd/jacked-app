@@ -356,6 +356,10 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 /* ===== DEPRECATED CLASSES (kept for compatibility) ===== */
 
 .card-elevated {

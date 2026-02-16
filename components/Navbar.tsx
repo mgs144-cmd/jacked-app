@@ -66,7 +66,7 @@ export function Navbar() {
 
       {/* Mobile Navigation - clean bottom bar */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#1a1a1a]/98 border-t border-white/5 z-50 backdrop-blur-xl safe-area-pb">
-        <div className="flex items-center justify-around px-2 py-3">
+        <div className="flex items-center justify-around px-4 py-2 min-h-[48px]">
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
@@ -75,10 +75,10 @@ export function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex flex-col items-center justify-center p-2 rounded-xl bg-[#ff5555] text-white active:scale-95 transition-transform"
+                  className="flex flex-col items-center justify-center min-h-[48px] min-w-[48px] p-2 rounded-xl bg-[#ff5555] text-white active:scale-95 transition-transform"
                 >
                   <Icon className="w-6 h-6" strokeWidth={2} />
-                  <span className="text-[10px] font-medium mt-0.5">{item.label}</span>
+                  <span className="text-[11px] font-medium mt-0.5">{item.label}</span>
                 </Link>
               )
             }
@@ -86,12 +86,12 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center p-2 rounded-xl transition-colors ${
+                className={`flex flex-col items-center justify-center min-h-[48px] min-w-[48px] p-2 rounded-xl transition-colors ${
                   isActive ? 'text-[#ff5555]' : 'text-[#a1a1a1]'
                 }`}
               >
                 <Icon className="w-6 h-6" strokeWidth={2} />
-                <span className="text-[10px] font-medium mt-0.5">{item.label}</span>
+                <span className="text-[11px] font-medium mt-0.5">{item.label}</span>
               </Link>
             )
           })}

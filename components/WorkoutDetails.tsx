@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, Dumbbell, Activity } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 interface WorkoutExercise {
   id?: string
@@ -31,7 +31,6 @@ export function WorkoutDetails({ exercises, postId }: WorkoutDetailsProps) {
         className="w-full flex items-center justify-between text-left py-2 -my-1 active:scale-[0.99] touch-manipulation"
       >
         <div className="flex items-center gap-2">
-          <Dumbbell className="w-5 h-5 text-[#ff5555]" />
           <span className="text-white font-semibold text-base">
             Workout Details ({exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'})
           </span>
@@ -52,7 +51,6 @@ export function WorkoutDetails({ exercises, postId }: WorkoutDetailsProps) {
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-[#ff5555] flex-shrink-0 mt-0.5" />
                   <h4 className="text-[18px] font-semibold text-white">{exercise.exercise_name}</h4>
                 </div>
                 {(exercise.sets || exercise.reps || exercise.weight) && (
