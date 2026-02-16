@@ -39,7 +39,7 @@ export function Navbar() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="ml-2 px-4 py-2 bg-[#dc2626] hover:bg-[#b91c1c] text-white text-sm font-medium rounded-lg transition-colors"
+                      className="ml-2 px-4 py-2 bg-[#ff5555] hover:bg-[#ff4444] text-white text-sm font-medium rounded-lg transition-colors"
                     >
                       <Icon className="w-4 h-4 inline mr-1.5 -mt-0.5" />
                       {item.label}
@@ -75,7 +75,7 @@ export function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex flex-col items-center justify-center p-2 rounded-xl bg-[#dc2626] text-white active:scale-95 transition-transform"
+                  className="flex flex-col items-center justify-center p-2 rounded-xl bg-[#ff5555] text-white active:scale-95 transition-transform"
                 >
                   <Icon className="w-6 h-6" strokeWidth={2} />
                   <span className="text-[10px] font-medium mt-0.5">{item.label}</span>
@@ -87,7 +87,7 @@ export function Navbar() {
                 key={item.href}
                 href={item.href}
                 className={`flex flex-col items-center justify-center p-2 rounded-xl transition-colors ${
-                  isActive ? 'text-[#dc2626]' : 'text-[#a1a1a1]'
+                  isActive ? 'text-[#ff5555]' : 'text-[#a1a1a1]'
                 }`}
               >
                 <Icon className="w-6 h-6" strokeWidth={2} />

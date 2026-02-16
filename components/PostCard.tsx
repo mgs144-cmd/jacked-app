@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import { Heart, MessageCircle, MoreVertical, Crown, Trash2, Trophy, Globe, Lock, Edit, Archive, ArchiveRestore } from 'lucide-react'
+import { Heart, MessageCircle, MoreVertical, Trash2, Trophy, Globe, Lock, Edit, Archive, ArchiveRestore, Dumbbell } from 'lucide-react'
 import { PostMusicPlayer } from './PostMusicPlayer'
 import { WorkoutDetails } from './WorkoutDetails'
 import { LikesModal } from './LikesModal'
@@ -166,25 +166,18 @@ export function PostCard({ post }: PostCardProps) {
   const isDeadcemberPost = post.is_deadcember_post
 
   return (
-    <article className={`rounded-2xl overflow-hidden transition-all duration-200 ${
-      isDeadcemberPost
-        ? 'bg-white/[0.03] border border-[#dc2626]/40'
-        : isPRPost 
-        ? 'bg-white/[0.02] border border-white/5' 
-        : 'bg-white/[0.02] border border-white/5'
-    }`}>
+    <article 
+      className="rounded-[12px] overflow-hidden transition-all duration-200 hover:shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:scale-[1.01] bg-[#1a1a1a]"
+      style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.05)' }}
+    >
       {isDeadcemberPost && (
-        <div className="bg-[#dc2626]/20 px-5 py-2.5 flex items-center justify-center space-x-2 border-b border-[#dc2626]/30">
-          <Trophy className="w-4 h-4 text-[#dc2626]" />
-          <span className="text-[#dc2626] font-semibold text-sm tracking-wide">Deadcember</span>
+        <div className="bg-[#ff5555]/15 px-6 py-3 flex items-center justify-center gap-2 border-b border-white/5">
+          <Trophy className="w-4 h-4 text-[#ff5555]" />
+          <span className="text-[#ff5555] font-semibold text-sm tracking-wide">Deadcember</span>
         </div>
       )}
 
-      {isPRPost && !isDeadcemberPost && (
-        <div className="h-0.5 bg-[#dc2626]/40" />
-      )}
-
-      <div className="flex items-center justify-between px-5 py-4">
+      <div className="flex items-center justify-between px-6 py-6">
         <Link href={profileLink} className="flex items-center space-x-3 group">
           <div className="w-10 h-10 rounded-full bg-white/5 overflow-hidden ring-1 ring-white/10">
             {profile.avatar_url ? (
@@ -281,7 +274,7 @@ export function PostCard({ post }: PostCardProps) {
                 <button
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="w-full px-4 py-3 text-left text-[#dc2626] hover:bg-[#dc2626]/10 transition-colors flex items-center space-x-2 disabled:opacity-50"
+                  className="w-full px-4 py-3 text-left text-[#ff5555] hover:bg-[#ff5555]/10 transition-colors flex items-center space-x-2 disabled:opacity-50"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span className="font-semibold">{isDeleting ? 'Deleting...' : 'Delete Post'}</span>
@@ -292,55 +285,50 @@ export function PostCard({ post }: PostCardProps) {
         )}
       </div>
 
-      {/* PR Stats - Technical, Data-Forward Typography */}
+      {/* PR Stats */}
       {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
-        <div className="px-6 pb-6 pt-2">
-          {/* Exercise label + PR badge */}
-          <div className="flex items-center justify-between mb-4">
+        <div className="px-6 py-6 flex flex-col gap-4 mt-4">
+          <div className="flex items-center justify-between gap-4">
             {post.pr_exercise && (
-              <span className="text-sm font-semibold text-gray-400 uppercase tracking-wide">
-                {post.pr_exercise}
-              </span>
+              <div className="flex items-center gap-2">
+                <Dumbbell className="w-5 h-5 text-[#ff5555] flex-shrink-0" />
+                <span className="text-[18px] font-semibold text-white">
+                  {post.pr_exercise}
+                </span>
+              </div>
             )}
-            <div className="flex items-center space-x-1.5 px-2 py-0.5 bg-[#dc2626]/10 rounded border border-[#dc2626]/20">
-              <Trophy className="w-3 h-3 text-[#dc2626]" />
-              <span className="text-[10px] font-semibold text-[#dc2626] uppercase tracking-wider">PR</span>
+            <div 
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#ff5555]/10 rounded-md border border-[#ff5555]/20 transition-all duration-200 hover:scale-105 hover:bg-[#ff5555]/15 cursor-default"
+            >
+              <Trophy className="w-4 h-4 text-[#ff5555]" />
+              <span className="text-xs font-semibold text-[#ff5555] uppercase tracking-wider">PR</span>
             </div>
           </div>
           
-          {/* Large numeric data - condensed, tabular */}
           {(post.pr_weight || post.pr_reps) && (
-            <div className="flex items-baseline space-x-10 mb-3">
+            <div className="flex items-baseline gap-10">
               {post.pr_weight && (
                 <div>
-                  <div 
-                    className="text-[64px] md:text-[72px] font-extrabold text-white tabular-nums leading-none" 
-                    style={{ letterSpacing: '-0.02em' }}
-                  >
+                  <div className="text-[48px] font-bold text-white tabular-nums leading-none" style={{ letterSpacing: '-0.02em' }}>
                     {post.pr_weight}
                   </div>
-                  <div className="text-sm font-semibold text-gray-500 uppercase mt-1.5">LBS</div>
+                  <div className="text-sm font-semibold text-gray-500 uppercase mt-1">LBS</div>
                 </div>
               )}
-              
               {post.pr_reps && (
                 <div>
-                  <div 
-                    className="text-[64px] md:text-[72px] font-extrabold text-white tabular-nums leading-none" 
-                    style={{ letterSpacing: '-0.02em' }}
-                  >
+                  <div className="text-[48px] font-bold text-white tabular-nums leading-none" style={{ letterSpacing: '-0.02em' }}>
                     {post.pr_reps}
                   </div>
-                  <div className="text-sm font-semibold text-gray-500 uppercase mt-1.5">REPS</div>
+                  <div className="text-sm font-semibold text-gray-500 uppercase mt-1">REPS</div>
                 </div>
               )}
             </div>
           )}
           
-          {/* Secondary metric - subtle */}
           {post.pr_weight && post.pr_reps && post.pr_reps > 1 && (
-            <div className="text-[13px] text-gray-600 font-normal">
-              Est. 1RM: <span className="text-gray-500 font-medium tabular-nums">{calculateOneRepMax(post.pr_weight, post.pr_reps)} lbs</span>
+            <div className="text-[13px] text-gray-500">
+              Est. 1RM: <span className="text-gray-400 font-medium tabular-nums">{calculateOneRepMax(post.pr_weight, post.pr_reps)} lbs</span>
             </div>
           )}
         </div>
@@ -348,6 +336,7 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* Song/Music Info */}
       {(post.song_title || post.song_artist) && (
+        <div className="mt-4">
         <PostMusicPlayer
           songTitle={post.song_title}
           songArtist={post.song_artist}
@@ -357,11 +346,12 @@ export function PostCard({ post }: PostCardProps) {
           postId={post.id}
           startTime={post.song_start_time || undefined}
         />
+        </div>
       )}
 
       {/* Media */}
       {post.media_url && (
-        <div className="relative w-full aspect-square bg-black">
+        <div className="relative w-full aspect-square bg-[#1a1a1a] mt-4">
           {post.media_type === 'video' ? (
             <video
               src={post.media_url}
@@ -382,18 +372,18 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {isDeadcemberPost && (post.deadcember_volume || post.deadcember_personal_total) && (
-        <div className="px-5 py-5 bg-[#dc2626]/5 border-b border-[#dc2626]/20">
+        <div className="px-6 py-5 bg-[#ff5555]/5 border-b border-white/5">
           <div className="space-y-4">
             {post.deadcember_volume && (
               <div className="text-center">
                 <p className="text-[#a1a1a1] text-xs font-medium tracking-wide uppercase mb-2">This Workout</p>
-                <p className="text-3xl md:text-4xl font-bold text-[#dc2626]">
+                <p className="text-3xl md:text-4xl font-bold text-[#ff5555]">
                   {post.deadcember_volume.toLocaleString()} lbs
                 </p>
               </div>
             )}
             {post.deadcember_personal_total && (
-              <div className="text-center pt-4 border-t border-[#dc2626]/20">
+              <div className="text-center pt-4 border-t border-white/5">
                 <p className="text-[#a1a1a1] text-xs font-medium tracking-wide uppercase mb-2">Personal Total</p>
                 <p className="text-2xl md:text-3xl font-black text-white">
                   {post.deadcember_personal_total.toLocaleString()} lbs
@@ -405,10 +395,10 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {/* Content */}
-          {post.content && (
-        <div className="px-5 py-4 border-b border-white/5">
+      {post.content && (
+        <div className="px-6 py-5 border-b border-white/5 mt-4">
           <p className="text-white/90 leading-relaxed">
-            <span className="font-semibold text-[#dc2626] mr-2">{profile.username}</span>
+            <span className="font-semibold text-[#ff5555] mr-2">{profile.username}</span>
             {post.content}
           </p>
         </div>
@@ -419,32 +409,34 @@ export function PostCard({ post }: PostCardProps) {
         <WorkoutDetails exercises={post.workout_exercises} postId={post.id} />
       )}
 
-      <div className="px-5 py-4 flex items-center justify-between border-b border-white/5">
-        <div className="flex items-center space-x-6">
+      <div className="px-6 py-5 flex items-center gap-4 border-t border-white/5 mt-4">
+        <div className="flex items-center gap-8">
           <button
             onClick={handleLike}
             disabled={isLiking}
-            className={`flex items-center space-x-2 group transition-all duration-200 ${
-              liked ? 'text-[#dc2626]' : 'text-[#a1a1a1] hover:text-[#dc2626]'
+            className={`flex items-center gap-2 group transition-all duration-200 ${
+              liked ? 'text-[#ff5555]' : 'text-[#a1a1a1] hover:text-[#ff5555]'
             }`}
           >
             <Heart 
-              className={`w-6 h-6 transition-all duration-300 group-hover:scale-110 ${
+              className={`w-5 h-5 transition-all duration-200 group-hover:scale-110 ${
                 liked ? 'fill-current' : ''
               }`}
               strokeWidth={2.5}
             />
-            {likeCount > 0 && (
-              <button
+            {likeCount > 0 ? (
+              <span
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
                   setShowLikesModal(true)
                 }}
-                className="font-bold text-sm hover:underline"
+                className="text-sm font-medium tabular-nums hover:underline cursor-pointer"
               >
                 {likeCount}
-              </button>
+              </span>
+            ) : (
+              <span className="text-sm font-medium tabular-nums">{likeCount}</span>
             )}
           </button>
           <button
@@ -453,22 +445,22 @@ export function PostCard({ post }: PostCardProps) {
               e.stopPropagation()
               setShowCommentForm(!showCommentForm)
             }}
-            className="flex items-center space-x-2 text-[#a1a1a1] hover:text-white transition-all duration-200 group"
+            className={`flex items-center gap-2 group transition-all duration-200 ${
+              showCommentForm ? 'text-[#ff5555]' : 'text-[#a1a1a1] hover:text-[#ff5555]'
+            }`}
           >
             <MessageCircle 
-              className={`w-7 h-7 md:w-6 md:h-6 group-hover:scale-110 transition-all duration-200 ${showCommentForm ? 'text-[#dc2626]' : ''}`}
+              className="w-5 h-5 group-hover:scale-110 transition-all duration-200"
               strokeWidth={2.5}
             />
-            {commentCount > 0 && (
-              <span className="font-bold text-sm">{commentCount}</span>
-            )}
+            <span className="text-sm font-medium tabular-nums">{commentCount}</span>
           </button>
         </div>
       </div>
 
       {/* Inline Comment Form */}
       {showCommentForm && user && (
-        <div className="px-5 py-3 border-t border-white/5">
+        <div className="px-6 py-4 border-t border-white/5">
           <CommentForm 
             postId={post.id} 
             userId={user.id}
@@ -482,7 +474,7 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* Top 3 Comments */}
       {post.top_comments && post.top_comments.length > 0 && (
-        <div className="px-5 py-3 space-y-2">
+        <div className="px-6 py-4 space-y-3">
           {post.top_comments.map((comment: any) => {
             const commentProfile = comment.profile || { username: 'unknown', avatar_url: null }
             const isGIF = comment.content && comment.content.startsWith('http') && (comment.content.includes('giphy.com') || comment.content.includes('.gif'))

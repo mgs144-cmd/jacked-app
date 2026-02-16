@@ -101,7 +101,7 @@ export default async function ProfilePage() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-white/10 text-[#dc2626] text-3xl md:text-4xl font-semibold">
+              <div className="w-full h-full flex items-center justify-center bg-white/10 text-[#ff5555] text-3xl md:text-4xl font-semibold">
                 {(profile as any)?.username?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || 'U'}
               </div>
             )}
@@ -198,14 +198,14 @@ export default async function ProfilePage() {
         {/* Posts Section */}
         <div>
           <h2 className="text-lg font-semibold text-white tracking-tight mb-4 flex items-center space-x-2">
-            <TrendingUp className="w-5 h-5 text-[#dc2626]" />
+            <TrendingUp className="w-5 h-5 text-[#ff5555]" />
             <span>Posts</span>
           </h2>
 
           {postsWithCounts && postsWithCounts.length === 0 ? (
             <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-8 text-center">
               <p className="text-[#a1a1a1] font-medium mb-3">No posts yet</p>
-              <Link href="/create" className="inline-block px-6 py-2.5 bg-[#dc2626] hover:bg-[#b91c1c] text-white font-medium rounded-lg text-sm">
+              <Link href="/create" className="inline-block px-6 py-2.5 bg-[#ff5555] hover:bg-[#ff4444] text-white font-medium rounded-lg text-sm">
                 Create first post
               </Link>
             </div>

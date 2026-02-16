@@ -13,7 +13,7 @@ export function FeedToggle({ view, onViewChange }: FeedToggleProps) {
       <button
         onClick={() => onViewChange('friends')}
         className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-          view === 'friends' ? 'bg-[#dc2626] text-white' : 'text-[#a1a1a1] hover:text-white hover:bg-white/5'
+          view === 'friends' ? 'bg-[#ff5555] text-white' : 'text-[#a1a1a1] hover:text-white hover:bg-white/5'
         }`}
       >
         <Users className="w-4 h-4" />
@@ -22,7 +22,7 @@ export function FeedToggle({ view, onViewChange }: FeedToggleProps) {
       <button
         onClick={() => onViewChange('community')}
         className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-          view === 'community' ? 'bg-[#dc2626] text-white' : 'text-[#a1a1a1] hover:text-white hover:bg-white/5'
+          view === 'community' ? 'bg-[#ff5555] text-white' : 'text-[#a1a1a1] hover:text-white hover:bg-white/5'
         }`}
       >
         <Globe className="w-4 h-4" />

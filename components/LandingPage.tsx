@@ -23,7 +23,7 @@ export function LandingPage() {
           </Link>
           <Link 
             href="/auth/signup" 
-            className="text-sm font-semibold text-white bg-[#dc2626] hover:bg-[#b91c1c] px-4 py-2 rounded-lg transition-colors tracking-wide"
+            className="text-sm font-semibold text-white bg-[#ff5555] hover:bg-[#ff4444] px-4 py-2 rounded-lg transition-colors tracking-wide"
           >
             Sign up
           </Link>
@@ -50,7 +50,7 @@ export function LandingPage() {
           </p>
           <Link
             href="/auth/signup"
-            className="inline-flex items-center justify-center px-10 py-4 bg-[#dc2626] hover:bg-[#b91c1c] text-white font-semibold text-base rounded-lg transition-colors tracking-wide"
+            className="inline-flex items-center justify-center px-10 py-4 bg-[#ff5555] hover:bg-[#ff4444] text-white font-semibold text-base rounded-lg transition-colors tracking-wide"
           >
             Get Started
           </Link>

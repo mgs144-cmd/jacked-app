@@ -81,7 +81,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#dc2626] focus:border-transparent transition-colors"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#ff5555] focus:border-transparent transition-colors"
                   placeholder="you@email.com"
                 />
               </div>
@@ -98,7 +98,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#dc2626] focus:border-transparent transition-colors"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#ff5555] focus:border-transparent transition-colors"
                   placeholder="••••••••"
                 />
               </div>
@@ -107,7 +107,7 @@ export default function LoginPage() {
             <div className="text-right">
               <Link 
                 href="/auth/forgot-password" 
-                className="text-sm text-[#dc2626] font-medium hover:text-[#ef4444] transition-colors"
+                className="text-sm text-[#ff5555] font-medium hover:text-[#ff6666] transition-colors"
               >
                 Forgot password?
               </Link>
@@ -116,7 +116,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-[#dc2626] hover:bg-[#b91c1c] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-[#ff5555] hover:bg-[#ff4444] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -131,7 +131,7 @@ export default function LoginPage() {
 
           <p className="mt-6 text-center text-sm text-white/60">
             Don&apos;t have an account?{' '}
-            <Link href="/auth/signup" className="text-[#dc2626] font-medium hover:text-[#ef4444] transition-colors">
+            <Link href="/auth/signup" className="text-[#ff5555] font-medium hover:text-[#ff6666] transition-colors">
               Sign up
             </Link>
           </p>

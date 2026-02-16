@@ -168,7 +168,7 @@ export default function SignUpPage() {
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#dc2626] focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#ff5555] focus:border-transparent"
                   placeholder="Your name"
                 />
               </div>
@@ -180,7 +180,7 @@ export default function SignUpPage() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#dc2626] focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#ff5555] focus:border-transparent"
                   placeholder="Choose a username"
                 />
               </div>
@@ -194,7 +194,7 @@ export default function SignUpPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#dc2626] focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#ff5555] focus:border-transparent"
                   placeholder="you@email.com"
                 />
               </div>
@@ -209,7 +209,7 @@ export default function SignUpPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   minLength={6}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#dc2626] focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#ff5555] focus:border-transparent"
                   placeholder="Min. 6 characters"
                 />
               </div>
@@ -218,7 +218,7 @@ export default function SignUpPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-[#dc2626] hover:bg-[#b91c1c] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-[#ff5555] hover:bg-[#ff4444] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -233,7 +233,7 @@ export default function SignUpPage() {
 
           <p className="mt-6 text-center text-sm text-white/60">
             Already have an account?{' '}
-            <Link href="/auth/login" className="text-[#dc2626] font-medium hover:text-[#ef4444] transition-colors">Sign in</Link>
+            <Link href="/auth/login" className="text-[#ff5555] font-medium hover:text-[#ff6666] transition-colors">Sign in</Link>
           </p>
         </div>
 
