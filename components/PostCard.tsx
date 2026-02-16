@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import { Heart, MessageCircle, MoreVertical, Trash2, Trophy, Globe, Lock, Edit, Archive, ArchiveRestore, Dumbbell } from 'lucide-react'
+import { Heart, MessageCircle, MoreVertical, Trash2, Trophy, Globe, Lock, Edit, Archive, ArchiveRestore } from 'lucide-react'
 import { PostMusicPlayer } from './PostMusicPlayer'
 import { WorkoutDetails } from './WorkoutDetails'
 import { LikesModal } from './LikesModal'
@@ -167,25 +167,30 @@ export function PostCard({ post }: PostCardProps) {
 
   return (
     <article 
-      className="rounded-[12px] overflow-hidden transition-all duration-200 hover:shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:scale-[1.01] bg-[#1a1a1a]"
-      style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.05)' }}
+      className="overflow-hidden transition-all duration-200"
+      style={{ 
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif",
+        backgroundColor: '#1c1c1c',
+        borderRadius: '16px',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)'
+      }}
     >
       {isDeadcemberPost && (
-        <div className="bg-[#ff5555]/15 px-6 py-3 flex items-center justify-center gap-2 border-b border-white/5">
+        <div className="bg-[#ff5555]/15 px-8 py-3 flex items-center justify-center gap-2 border-b border-white/5">
           <Trophy className="w-4 h-4 text-[#ff5555]" />
           <span className="text-[#ff5555] font-semibold text-sm tracking-wide">Deadcember</span>
         </div>
       )}
 
-      <div className="flex items-center justify-between px-6 py-6">
-        <Link href={profileLink} className="flex items-center space-x-3 group">
-          <div className="w-10 h-10 rounded-full bg-white/5 overflow-hidden ring-1 ring-white/10">
+      <div className="flex items-center justify-between p-8">
+        <Link href={profileLink} className="flex items-center group">
+          <div className="w-[50px] h-[50px] rounded-full bg-white/5 overflow-hidden ring-1 ring-white/10 flex-shrink-0">
             {profile.avatar_url ? (
               <Image
                 src={profile.avatar_url}
                 alt={profile.username}
-                width={40}
-                height={40}
+                width={50}
+                height={50}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -194,17 +199,18 @@ export function PostCard({ post }: PostCardProps) {
               </div>
             )}
           </div>
-          <div className="flex items-center space-x-2">
-            <span className="font-semibold text-white text-[14px] group-hover:text-white/80 transition-colors">
+          <div className="ml-3 flex items-center gap-2">
+            <span className="text-[16px] font-semibold text-white" style={{ fontWeight: 600 }}>
               {profile.username || profile.full_name || 'Unknown'}
             </span>
             <span className="text-gray-600">•</span>
-            <span className="text-[13px] text-gray-500 font-normal">
+            <span className="text-[14px] font-normal" style={{ opacity: 0.6 }}>
               {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
             </span>
           </div>
         </Link>
         
+        <div className="flex items-center gap-2">
         {isOwner && (
           <div className="relative">
             <button 
@@ -283,52 +289,90 @@ export function PostCard({ post }: PostCardProps) {
             )}
           </div>
         )}
+        {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
+          <div 
+            className="flex items-center gap-1.5 rounded-md border border-[#ff5555]/20 bg-[#ff5555]/10 cursor-default"
+            style={{ padding: '6px 12px' }}
+          >
+            <Trophy className="w-4 h-4 text-[#ff5555]" />
+            <span className="font-semibold text-[#ff5555] uppercase tracking-wider" style={{ fontSize: '13px' }}>PR</span>
+          </div>
+        )}
+        </div>
       </div>
 
-      {/* PR Stats */}
       {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
-        <div className="px-6 py-6 flex flex-col gap-4 mt-4">
-          <div className="flex items-center justify-between gap-4">
-            {post.pr_exercise && (
-              <div className="flex items-center gap-2">
-                <Dumbbell className="w-5 h-5 text-[#ff5555] flex-shrink-0" />
-                <span className="text-[18px] font-semibold text-white">
-                  {post.pr_exercise}
-                </span>
-              </div>
-            )}
-            <div 
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#ff5555]/10 rounded-md border border-[#ff5555]/20 transition-all duration-200 hover:scale-105 hover:bg-[#ff5555]/15 cursor-default"
+        <div className="px-8 flex flex-col" style={{ marginTop: '24px' }}>
+          {post.pr_exercise && (
+            <span 
+              className="uppercase"
+              style={{ 
+                fontSize: '15px', 
+                fontWeight: 600, 
+                letterSpacing: '0.8px', 
+                color: 'rgba(255, 255, 255, 0.9)' 
+              }}
             >
-              <Trophy className="w-4 h-4 text-[#ff5555]" />
-              <span className="text-xs font-semibold text-[#ff5555] uppercase tracking-wider">PR</span>
-            </div>
-          </div>
+              {post.pr_exercise}
+            </span>
+          )}
           
           {(post.pr_weight || post.pr_reps) && (
-            <div className="flex items-baseline gap-10">
+            <div 
+              className="flex justify-center items-baseline"
+              style={{ gap: '60px', marginTop: '16px' }}
+            >
               {post.pr_weight && (
-                <div>
-                  <div className="text-[48px] font-bold text-white tabular-nums leading-none" style={{ letterSpacing: '-0.02em' }}>
+                <div className="flex flex-col items-center">
+                  <div 
+                    className="text-white tabular-nums leading-none"
+                    style={{ fontSize: '76px', fontWeight: 700 }}
+                  >
                     {post.pr_weight}
                   </div>
-                  <div className="text-sm font-semibold text-gray-500 uppercase mt-1">LBS</div>
+                  <span 
+                    className="uppercase"
+                    style={{ 
+                      fontSize: '11px', 
+                      letterSpacing: '1px', 
+                      opacity: 0.5, 
+                      marginTop: '4px' 
+                    }}
+                  >
+                    LBS
+                  </span>
                 </div>
               )}
               {post.pr_reps && (
-                <div>
-                  <div className="text-[48px] font-bold text-white tabular-nums leading-none" style={{ letterSpacing: '-0.02em' }}>
+                <div className="flex flex-col items-center">
+                  <div 
+                    className="text-white tabular-nums leading-none"
+                    style={{ fontSize: '76px', fontWeight: 700 }}
+                  >
                     {post.pr_reps}
                   </div>
-                  <div className="text-sm font-semibold text-gray-500 uppercase mt-1">REPS</div>
+                  <span 
+                    className="uppercase"
+                    style={{ 
+                      fontSize: '11px', 
+                      letterSpacing: '1px', 
+                      opacity: 0.5, 
+                      marginTop: '4px' 
+                    }}
+                  >
+                    REPS
+                  </span>
                 </div>
               )}
             </div>
           )}
           
           {post.pr_weight && post.pr_reps && post.pr_reps > 1 && (
-            <div className="text-[13px] text-gray-500">
-              Est. 1RM: <span className="text-gray-400 font-medium tabular-nums">{calculateOneRepMax(post.pr_weight, post.pr_reps)} lbs</span>
+            <div 
+              className="tabular-nums"
+              style={{ fontSize: '13px', opacity: 0.6, marginTop: '16px' }}
+            >
+              Est. 1RM: <span className="font-medium">{calculateOneRepMax(post.pr_weight, post.pr_reps)} lbs</span>
             </div>
           )}
         </div>
@@ -372,7 +416,7 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {isDeadcemberPost && (post.deadcember_volume || post.deadcember_personal_total) && (
-        <div className="px-6 py-5 bg-[#ff5555]/5 border-b border-white/5">
+        <div className="px-8 py-5 bg-[#ff5555]/5 border-b border-white/5">
           <div className="space-y-4">
             {post.deadcember_volume && (
               <div className="text-center">
@@ -394,11 +438,22 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       )}
 
-      {/* Content */}
       {post.content && (
-        <div className="px-6 py-5 border-b border-white/5 mt-4">
-          <p className="text-white/90 leading-relaxed">
-            <span className="font-semibold text-[#ff5555] mr-2">{profile.username}</span>
+        <div 
+          className="px-8 pt-5"
+          style={{ 
+            marginTop: '20px',
+            paddingBottom: '20px',
+            borderBottom: '1px solid rgba(255,255,255,0.05)'
+          }}
+        >
+          <p 
+            style={{ 
+              fontSize: '15px', 
+              lineHeight: 1.5, 
+              color: 'rgba(255, 255, 255, 0.8)' 
+            }}
+          >
             {post.content}
           </p>
         </div>
@@ -409,19 +464,24 @@ export function PostCard({ post }: PostCardProps) {
         <WorkoutDetails exercises={post.workout_exercises} postId={post.id} />
       )}
 
-      <div className="px-6 py-5 flex items-center gap-4 border-t border-white/5 mt-4">
+      <div 
+        className="px-8 py-5 flex items-center border-t border-white/5"
+        style={{ marginTop: '20px' }}
+      >
         <div className="flex items-center gap-8">
           <button
             onClick={handleLike}
             disabled={isLiking}
-            className={`flex items-center gap-2 group transition-all duration-200 ${
+            className={`flex items-center group transition-all duration-200 ${
               liked ? 'text-[#ff5555]' : 'text-[#a1a1a1] hover:text-[#ff5555]'
-            }`}
+            }            `}
+            style={{ gap: '6px' }}
           >
             <Heart 
-              className={`w-5 h-5 transition-all duration-200 group-hover:scale-110 ${
+              className={`transition-all duration-200 group-hover:scale-110 ${
                 liked ? 'fill-current' : ''
               }`}
+              style={{ width: 22, height: 22 }}
               strokeWidth={2.5}
             />
             {likeCount > 0 ? (
@@ -445,12 +505,14 @@ export function PostCard({ post }: PostCardProps) {
               e.stopPropagation()
               setShowCommentForm(!showCommentForm)
             }}
-            className={`flex items-center gap-2 group transition-all duration-200 ${
+            className={`flex items-center group transition-all duration-200 ${
               showCommentForm ? 'text-[#ff5555]' : 'text-[#a1a1a1] hover:text-[#ff5555]'
             }`}
+            style={{ gap: '6px' }}
           >
             <MessageCircle 
-              className="w-5 h-5 group-hover:scale-110 transition-all duration-200"
+              className="group-hover:scale-110 transition-all duration-200"
+              style={{ width: 22, height: 22 }}
               strokeWidth={2.5}
             />
             <span className="text-sm font-medium tabular-nums">{commentCount}</span>
@@ -460,7 +522,7 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* Inline Comment Form */}
       {showCommentForm && user && (
-        <div className="px-6 py-4 border-t border-white/5">
+        <div className="px-8 py-4 border-t border-white/5">
           <CommentForm 
             postId={post.id} 
             userId={user.id}
@@ -474,7 +536,7 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* Top 3 Comments */}
       {post.top_comments && post.top_comments.length > 0 && (
-        <div className="px-6 py-4 space-y-3">
+        <div className="px-8 py-4 space-y-3">
           {post.top_comments.map((comment: any) => {
             const commentProfile = comment.profile || { username: 'unknown', avatar_url: null }
             const isGIF = comment.content && comment.content.startsWith('http') && (comment.content.includes('giphy.com') || comment.content.includes('.gif'))

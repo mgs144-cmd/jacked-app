@@ -25,7 +25,7 @@ export function WorkoutDetails({ exercises, postId }: WorkoutDetailsProps) {
   const sortedExercises = [...exercises].sort((a, b) => a.order_index - b.order_index)
 
   return (
-    <div className="px-6 py-4 border-t border-white/5 mt-4">
+    <div className="px-8 py-4 border-t border-white/5 mt-4">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between text-left py-1"
