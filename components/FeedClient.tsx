@@ -19,13 +19,12 @@ export function FeedClient({ allPosts, followingPosts, publicPosts }: FeedClient
 
   return (
     <PullToRefresh>
-      <div className="max-w-2xl mx-auto px-4 py-6 md:py-8">
-        {/* Page header - minimal */}
-        <div className="mb-6">
+      <div className="w-full max-w-[640px] mx-auto px-5 py-6 md:py-8">
+        <div className="text-left" style={{ marginBottom: 16 }}>
           <h1 className="text-2xl font-semibold text-white tracking-tight">
             Feed
           </h1>
-          <p className="text-[#a1a1a1] text-sm mt-0.5">
+          <p className="text-[#a1a1a1] text-sm" style={{ marginTop: 4 }}>
             {view === 'friends' ? 'Posts from people you follow' : 'Community posts'}
           </p>
         </div>
@@ -44,7 +43,7 @@ export function FeedClient({ allPosts, followingPosts, publicPosts }: FeedClient
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="flex flex-col" style={{ gap: 16 }}>
             {displayedPosts.map((post: any) => (
               <PostCard key={post.id} post={post} />
             ))}

@@ -167,22 +167,26 @@ export function PostCard({ post }: PostCardProps) {
 
   return (
     <article 
-      className="overflow-hidden transition-all duration-200"
+      className="overflow-hidden transition-all duration-200 w-full max-w-[640px]"
       style={{ 
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif",
-        backgroundColor: '#1c1c1c',
-        borderRadius: '16px',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)'
+        backgroundColor: '#1a1a1a',
+        borderRadius: 12,
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+        padding: 28
       }}
     >
       {isDeadcemberPost && (
-        <div className="bg-[#ff5555]/15 px-8 py-3 flex items-center justify-center gap-2 border-b border-white/5">
+        <div 
+          className="bg-[#ff5555]/15 py-3 flex items-center justify-center gap-2 border-b border-white/5" 
+          style={{ marginLeft: -28, marginRight: -28, marginTop: -28, paddingLeft: 28, paddingRight: 28 }}
+        >
           <Trophy className="w-4 h-4 text-[#ff5555]" />
           <span className="text-[#ff5555] font-semibold text-sm tracking-wide">Deadcember</span>
         </div>
       )}
 
-      <div className="flex items-center justify-between p-8">
+      <div className="flex items-center justify-between">
         <Link href={profileLink} className="flex items-center group">
           <div className="w-[50px] h-[50px] rounded-full bg-white/5 overflow-hidden ring-1 ring-white/10 flex-shrink-0">
             {profile.avatar_url ? (
@@ -302,7 +306,7 @@ export function PostCard({ post }: PostCardProps) {
       </div>
 
       {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
-        <div className="px-8 flex flex-col" style={{ marginTop: '24px' }}>
+        <div className="flex flex-col" style={{ marginTop: 20 }}>
           {post.pr_exercise && (
             <span 
               className="uppercase"
@@ -320,7 +324,7 @@ export function PostCard({ post }: PostCardProps) {
           {(post.pr_weight || post.pr_reps) && (
             <div 
               className="flex justify-center items-baseline"
-              style={{ gap: '60px', marginTop: '16px' }}
+              style={{ gap: 48, marginTop: 16 }}
             >
               {post.pr_weight && (
                 <div className="flex flex-col items-center">
@@ -370,7 +374,7 @@ export function PostCard({ post }: PostCardProps) {
           {post.pr_weight && post.pr_reps && post.pr_reps > 1 && (
             <div 
               className="tabular-nums"
-              style={{ fontSize: '13px', opacity: 0.6, marginTop: '16px' }}
+              style={{ fontSize: '13px', opacity: 0.6, marginTop: 12 }}
             >
               Est. 1RM: <span className="font-medium">{calculateOneRepMax(post.pr_weight, post.pr_reps)} lbs</span>
             </div>
@@ -416,7 +420,7 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {isDeadcemberPost && (post.deadcember_volume || post.deadcember_personal_total) && (
-        <div className="px-8 py-5 bg-[#ff5555]/5 border-b border-white/5">
+        <div className="py-5 bg-[#ff5555]/5 border-b border-white/5">
           <div className="space-y-4">
             {post.deadcember_volume && (
               <div className="text-center">
@@ -440,10 +444,9 @@ export function PostCard({ post }: PostCardProps) {
 
       {post.content && (
         <div 
-          className="px-8 pt-5"
           style={{ 
-            marginTop: '20px',
-            paddingBottom: '20px',
+            marginTop: 20,
+            paddingBottom: 20,
             borderBottom: '1px solid rgba(255,255,255,0.05)'
           }}
         >
@@ -465,8 +468,8 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       <div 
-        className="px-8 py-5 flex items-center border-t border-white/5"
-        style={{ marginTop: '20px' }}
+        className="flex items-center pt-5 border-t border-white/5"
+        style={{ marginTop: 20 }}
       >
         <div className="flex items-center gap-8">
           <button
@@ -522,7 +525,7 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* Inline Comment Form */}
       {showCommentForm && user && (
-        <div className="px-8 py-4 border-t border-white/5">
+        <div className="py-4 border-t border-white/5">
           <CommentForm 
             postId={post.id} 
             userId={user.id}
@@ -536,7 +539,7 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* Top 3 Comments */}
       {post.top_comments && post.top_comments.length > 0 && (
-        <div className="px-8 py-4 space-y-3">
+        <div className="py-4 space-y-3">
           {post.top_comments.map((comment: any) => {
             const commentProfile = comment.profile || { username: 'unknown', avatar_url: null }
             const isGIF = comment.content && comment.content.startsWith('http') && (comment.content.includes('giphy.com') || comment.content.includes('.gif'))
