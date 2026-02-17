@@ -4,13 +4,16 @@ import { useEffect } from 'react'
 
 export function PWAInstallPrompt() {
   useEffect(() => {
-    // Register service worker
+    // Register service worker - updateViaCache: 'none' ensures browser always fetches fresh sw.js
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('/sw.js')
+          .register('/sw.js', { updateViaCache: 'none' })
           .then((registration) => {
             console.log('Service Worker registered:', registration.scope)
+            // Check for updates when user returns to the tab
+            const onFocus = () => registration.update()
+            window.addEventListener('focus', onFocus)
           })
           .catch((error) => {
             console.log('Service Worker registration failed:', error)

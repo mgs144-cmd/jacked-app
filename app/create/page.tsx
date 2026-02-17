@@ -35,7 +35,7 @@ function CreatePage() {
 
     return () => clearTimeout(timer)
   }, [songStartTime])
-  const [isPrivate, setIsPrivate] = useState(false)
+  const [visibility, setVisibility] = useState<'public' | 'followers' | 'log'>('public')
   const [isPRPost, setIsPRPost] = useState(false)
   const [isDeadcemberPost, setIsDeadcemberPost] = useState(false)
   const [deadcemberVolume, setDeadcemberVolume] = useState('')
@@ -168,7 +168,8 @@ function CreatePage() {
         song_url: selectedSong?.url || null,
         song_album_art_url: selectedSong?.albumArt || null,
         song_start_time: songStartTime || null,
-        is_private: deadcemberVisibility === 'private' ? true : isPrivate,
+        is_private: deadcemberVisibility === 'private' ? true : visibility === 'followers',
+        is_log_only: deadcemberVisibility === 'private' ? true : visibility === 'log',
         is_pr_post: isPRPost,
         pr_exercise: isPRPost ? prExercise.trim() : null,
         pr_weight: isPRPost && prWeight ? parseFloat(prWeight) : null,
@@ -548,7 +549,7 @@ function CreatePage() {
           {/* Music Selector - Removed for presentation (not working yet) */}
 
           {/* Privacy Toggle */}
-          <PrivacyToggle isPrivate={isPrivate} onChange={setIsPrivate} />
+          <PrivacyToggle visibility={visibility} onChange={setVisibility} />
 
           {/* Caption */}
           <div>
