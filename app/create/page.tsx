@@ -40,6 +40,7 @@ function CreatePage() {
   const [prExercise, setPRExercise] = useState('')
   const [prWeight, setPRWeight] = useState('')
   const [prReps, setPRReps] = useState('')
+  const [prRpe, setPrRpe] = useState('')
   const [workoutExercises, setWorkoutExercises] = useState<Array<{ exercise_name: string; sets_data: Array<{ weight: number | null; reps: number | null }>; order_index: number }>>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -121,6 +122,7 @@ function CreatePage() {
         pr_exercise: isPRPost ? prExercise.trim() : null,
         pr_weight: isPRPost && prWeight ? parseFloat(prWeight) : null,
         pr_reps: isPRPost && prReps ? parseInt(prReps) : null,
+        pr_rpe: isPRPost && prRpe ? parseFloat(prRpe) : null,
       }
 
       // Only include spotify_id if it exists and column exists in database
@@ -316,6 +318,19 @@ function CreatePage() {
                     className="input-field w-full"
                   />
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2">RPE (optional)</label>
+                <select
+                  value={prRpe}
+                  onChange={(e) => setPrRpe(e.target.value)}
+                  className="input-field w-full"
+                >
+                  <option value="">Not specified (assume max)</option>
+                  {[10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6].map((v) => (
+                    <option key={v} value={v}>RPE {v} {v === 10 ? '(max)' : ''}</option>
+                  ))}
+                </select>
               </div>
             </div>
           )}

@@ -12,7 +12,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
 import { useRouter } from 'next/navigation'
-import { calculateOneRepMax } from '@/utils/oneRepMax'
+import { calculateOneRepMax, calculateOneRepMaxWithRPE } from '@/utils/oneRepMax'
 
 interface PostCardProps {
   post: any
@@ -366,7 +366,7 @@ export function PostCard({ post }: PostCardProps) {
               className="tabular-nums mt-2.5 md:mt-3 text-center"
               style={{ fontSize: '13px', opacity: 0.6 }}
             >
-              Est. 1RM: <span className="font-medium">{calculateOneRepMax(post.pr_weight, post.pr_reps)} lbs</span>
+              Est. 1RM: <span className="font-medium">{calculateOneRepMaxWithRPE(post.pr_weight, post.pr_reps, post.pr_rpe)} lbs</span>
             </div>
           )}
         </div>
