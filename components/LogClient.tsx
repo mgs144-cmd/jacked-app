@@ -20,9 +20,10 @@ import {
   Target,
   TrendingUp,
   Share2,
+  Trash2,
 } from 'lucide-react'
 import { ExerciseAutocomplete } from './ExerciseAutocomplete'
-import { PostCard } from './PostCard'
+import { LogPostCard } from './LogPostCard'
 import { calculateOneRepMaxWithRPE } from '@/utils/oneRepMax'
 
 interface LogClientProps {
@@ -42,9 +43,9 @@ export function LogClient({
   const supabase = createClient()
   const [activeTab, setActiveTab] = useState<'log' | 'progress' | 'goals' | 'history'>('log')
   const [exercise, setExercise] = useState('')
-  const [weight, setWeight] = useState('')
-  const [reps, setReps] = useState('')
-  const [rpe, setRpe] = useState('')
+  const [sets, setSets] = useState<{ weight: string; reps: string; rpe: string }[]>([
+    { weight: '', reps: '', rpe: '' },
+  ])
   const [loading, setLoading] = useState(false)
   const [selectedChartExercise, setSelectedChartExercise] = useState<string | null>(null)
   const [showGoalForm, setShowGoalForm] = useState(false)
@@ -74,13 +75,15 @@ export function LogClient({
       reps: Number(log.reps),
     })
   })
-  // Sort and dedupe by date (keep latest per day)
+  // Sort and dedupe by date (keep best e1RM per day for progress)
   Object.keys(chartDataByExercise).forEach((ex) => {
     const arr = chartDataByExercise[ex]
     arr.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     const byDate: Record<string, typeof arr[0]> = {}
     arr.forEach((d) => {
-      byDate[d.date] = d
+      if (!byDate[d.date] || d.e1RM > byDate[d.date].e1RM) {
+        byDate[d.date] = d
+      }
     })
     chartDataByExercise[ex] = Object.values(byDate).sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -89,22 +92,23 @@ export function LogClient({
 
   const handleLogLift = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!exercise.trim() || !weight || !reps) return
+    const validSets = sets.filter((s) => s.weight && s.reps)
+    if (!exercise.trim() || validSets.length === 0) return
     setLoading(true)
     try {
-      const { error } = await (supabase.from('lift_logs') as any).insert({
+      const loggedAt = new Date().toISOString()
+      const rows = validSets.map((s) => ({
         user_id: userId,
         exercise_name: exercise.trim(),
-        weight: parseFloat(weight),
-        reps: parseInt(reps),
-        rpe: rpe ? parseFloat(rpe) : null,
-        logged_at: new Date().toISOString(),
-      })
+        weight: parseFloat(s.weight),
+        reps: parseInt(s.reps),
+        rpe: s.rpe ? parseFloat(s.rpe) : null,
+        logged_at: loggedAt,
+      }))
+      const { error } = await (supabase.from('lift_logs') as any).insert(rows)
       if (error) throw error
       setExercise('')
-      setWeight('')
-      setReps('')
-      setRpe('')
+      setSets([{ weight: '', reps: '', rpe: '' }])
       router.refresh()
     } catch (err: any) {
       alert(err.message || 'Failed to log lift')
@@ -112,6 +116,11 @@ export function LogClient({
       setLoading(false)
     }
   }
+
+  const addSet = () => setSets((prev) => [...prev, { weight: '', reps: '', rpe: '' }])
+  const removeSet = (i: number) => setSets((prev) => prev.filter((_, idx) => idx !== i))
+  const updateSet = (i: number, field: 'weight' | 'reps' | 'rpe', value: string) =>
+    setSets((prev) => prev.map((s, idx) => (idx === i ? { ...s, [field]: value } : s)))
 
   const handleSetGoal = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -186,21 +195,25 @@ export function LogClient({
   const getGoalProgress = (exerciseName: string) => {
     const goal = liftGoals.find((g) => g.exercise_name === exerciseName)
     if (!goal) return null
-    const logs = liftLogs.filter((l) => l.exercise_name === exerciseName)
-    if (logs.length === 0) return { goal, current: 0, target: calculateOneRepMaxWithRPE(Number(goal.target_weight), Number(goal.target_reps), 10), percent: 0 }
-    const latest = logs[0]
-    const current = calculateOneRepMaxWithRPE(
-      Number(latest.weight),
-      Number(latest.reps),
-      latest.rpe ? Number(latest.rpe) : 10
-    )
     const target = calculateOneRepMaxWithRPE(
       Number(goal.target_weight),
       Number(goal.target_reps),
       10
     )
-    const percent = target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0
-    return { goal, current, target, percent }
+    const logs = liftLogs.filter((l) => l.exercise_name === exerciseName)
+    if (logs.length === 0) return { goal, current: 0, target, percent: 0 }
+    // Progress = best e1RM across all logs (not just latest)
+    const bestE1RM = Math.max(
+      ...logs.map((log) =>
+        calculateOneRepMaxWithRPE(
+          Number(log.weight),
+          Number(log.reps),
+          log.rpe ? Number(log.rpe) : 10
+        )
+      )
+    )
+    const percent = target > 0 ? Math.min(100, Math.round((bestE1RM / target) * 100)) : 0
+    return { goal, current: bestE1RM, target, percent }
   }
 
   const tabs = [
@@ -257,53 +270,76 @@ export function LogClient({
                 className="input-field w-full"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-[#a1a1a1] mb-2">Weight (lbs)</label>
-                <input
-                  type="number"
-                  value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
-                  placeholder="185"
-                  min="0"
-                  step="2.5"
-                  className="input-field w-full"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#a1a1a1] mb-2">Reps</label>
-                <input
-                  type="number"
-                  value={reps}
-                  onChange={(e) => setReps(e.target.value)}
-                  placeholder="5"
-                  min="1"
-                  className="input-field w-full"
-                  required
-                />
-              </div>
-            </div>
             <div>
-              <label className="block text-sm font-medium text-[#a1a1a1] mb-2">
-                RPE (optional) <span className="text-[#6b6b6b]">— 10 = max</span>
-              </label>
-              <select
-                value={rpe}
-                onChange={(e) => setRpe(e.target.value)}
-                className="input-field w-full"
-              >
-                <option value="">Not specified (assume max)</option>
-                {[10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6].map((v) => (
-                  <option key={v} value={v}>
-                    RPE {v} {v === 10 ? '(max effort)' : ''}
-                  </option>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-[#a1a1a1]">Sets</label>
+                <button
+                  type="button"
+                  onClick={addSet}
+                  className="text-sm text-[#ff5555] hover:text-[#ff4444] font-medium flex items-center gap-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add set
+                </button>
+              </div>
+              <div className="space-y-3">
+                {sets.map((s, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 p-3 rounded-lg bg-white/5 border border-white/5"
+                  >
+                    <span className="text-[#a1a1a1] text-sm w-6">{i + 1}.</span>
+                    <input
+                      type="number"
+                      value={s.weight}
+                      onChange={(e) => updateSet(i, 'weight', e.target.value)}
+                      placeholder="Weight"
+                      min="0"
+                      step="2.5"
+                      className="input-field flex-1 min-w-0"
+                    />
+                    <span className="text-[#6b6b6b] text-sm">×</span>
+                    <input
+                      type="number"
+                      value={s.reps}
+                      onChange={(e) => updateSet(i, 'reps', e.target.value)}
+                      placeholder="Reps"
+                      min="1"
+                      className="input-field w-16"
+                    />
+                    <select
+                      value={s.rpe}
+                      onChange={(e) => updateSet(i, 'rpe', e.target.value)}
+                      className="input-field w-24 flex-shrink-0"
+                      title="RPE"
+                    >
+                      <option value="">RPE</option>
+                      {[10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6].map((v) => (
+                        <option key={v} value={v}>
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                    {sets.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeSet(i)}
+                        className="p-1.5 text-[#a1a1a1] hover:text-[#ff5555] hover:bg-white/5 rounded-lg transition-colors"
+                        aria-label="Remove set"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 ))}
-              </select>
+              </div>
+              <p className="text-xs text-[#6b6b6b] mt-2">
+                RPE 10 = max effort. Lower RPE adjusts e1RM estimate.
+              </p>
             </div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || sets.every((s) => !s.weight || !s.reps)}
               className="w-full btn-primary py-3 font-bold flex items-center justify-center gap-2"
             >
               {loading ? (
@@ -311,7 +347,8 @@ export function LogClient({
               ) : (
                 <>
                   <Plus className="w-5 h-5" />
-                  Log Lift
+                  Log {sets.filter((s) => s.weight && s.reps).length || 1} set
+                  {sets.filter((s) => s.weight && s.reps).length !== 1 ? 's' : ''}
                 </>
               )}
             </button>
@@ -505,37 +542,66 @@ export function LogClient({
             <div className="rounded-xl border border-white/5 bg-[#1a1a1a] p-4">
               <h3 className="text-white font-semibold mb-3">Recent lifts</h3>
               <div className="space-y-2 max-h-64 overflow-y-auto">
-                {liftLogs.slice(0, 20).map((log) => (
-                  <div
-                    key={log.id}
-                    className="flex justify-between items-center py-2 border-b border-white/5 last:border-0 group"
-                  >
-                    <div>
-                      <span className="text-white font-medium">{log.exercise_name}</span>
-                      <span className="text-[#a1a1a1] text-sm ml-2">
-                        {log.weight} × {log.reps}
-                        {log.rpe ? ` @${log.rpe}` : ''}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[#ff5555] font-semibold tabular-nums">
-                        {calculateOneRepMaxWithRPE(
-                          Number(log.weight),
-                          Number(log.reps),
-                          log.rpe ? Number(log.rpe) : 10
-                        )}{' '}
-                        lbs
-                      </span>
-                      <button
-                        onClick={() => handleShareToFeed(log)}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/10 text-[#a1a1a1] hover:text-white transition-all"
-                        title="Share to feed"
+                {(() => {
+                  const grouped = liftLogs.slice(0, 60).reduce(
+                    (acc: { key: string; logs: any[] }[], log) => {
+                      const date = log.logged_at?.split('T')[0] || ''
+                      const key = `${log.exercise_name}|${date}`
+                      const existing = acc.find((g) => g.key === key)
+                      if (existing) existing.logs.push(log)
+                      else acc.push({ key, logs: [log] })
+                      return acc
+                    },
+                    [] as { key: string; logs: any[] }[]
+                  )
+                  return grouped.slice(0, 20).map(({ key, logs }) => {
+                    const log = logs[0]
+                    const bestLog = logs.reduce((best, l) => {
+                      const e = calculateOneRepMaxWithRPE(
+                        Number(l.weight),
+                        Number(l.reps),
+                        l.rpe ? Number(l.rpe) : 10
+                      )
+                      const bestE = calculateOneRepMaxWithRPE(
+                        Number(best.weight),
+                        Number(best.reps),
+                        best.rpe ? Number(best.rpe) : 10
+                      )
+                      return e > bestE ? l : best
+                    })
+                    const setsDisplay = logs
+                      .map((l) => `${l.weight}×${l.reps}${l.rpe ? `@${l.rpe}` : ''}`)
+                      .join(' · ')
+                    return (
+                      <div
+                        key={key}
+                        className="flex justify-between items-center py-2 border-b border-white/5 last:border-0 group"
                       >
-                        <Share2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                        <div>
+                          <span className="text-white font-medium">{log.exercise_name}</span>
+                          <span className="text-[#a1a1a1] text-sm ml-2">{setsDisplay}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[#ff5555] font-semibold tabular-nums">
+                            {calculateOneRepMaxWithRPE(
+                              Number(bestLog.weight),
+                              Number(bestLog.reps),
+                              bestLog.rpe ? Number(bestLog.rpe) : 10
+                            )}{' '}
+                            lbs
+                          </span>
+                          <button
+                            onClick={() => handleShareToFeed(bestLog)}
+                            className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/10 text-[#a1a1a1] hover:text-white transition-all"
+                            title="Share to feed"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })
+                })()}
               </div>
             </div>
           )}
@@ -545,7 +611,7 @@ export function LogClient({
               <h3 className="text-white font-semibold mb-3">Log-only posts</h3>
               <div className="flex flex-col gap-3">
                 {logPosts.map((post) => (
-                  <PostCard key={post.id} post={post} />
+                  <LogPostCard key={post.id} post={post} />
                 ))}
               </div>
             </div>
