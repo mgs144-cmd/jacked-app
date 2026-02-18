@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
 import { Navbar } from '@/components/Navbar'
@@ -37,11 +37,6 @@ function CreatePage() {
   }, [songStartTime])
   const [visibility, setVisibility] = useState<'public' | 'followers' | 'log'>('public')
   const [isPRPost, setIsPRPost] = useState(false)
-  const [isDeadcemberPost, setIsDeadcemberPost] = useState(false)
-  const [deadcemberVolume, setDeadcemberVolume] = useState('')
-  const [deadliftVariation, setDeadliftVariation] = useState('')
-  const [deadliftSets, setDeadliftSets] = useState<Array<{ weight: number; reps: number }>>([{ weight: 0, reps: 0 }])
-  const [deadcemberVisibility, setDeadcemberVisibility] = useState<'full' | 'volume-only' | 'private'>('full')
   const [prExercise, setPRExercise] = useState('')
   const [prWeight, setPRWeight] = useState('')
   const [prReps, setPRReps] = useState('')
@@ -49,17 +44,8 @@ function CreatePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
-  const searchParams = useSearchParams()
   const supabase = createClient()
   const { user } = useAuth()
-
-  // Check if coming from Deadcember page
-  useEffect(() => {
-    const isDeadcemberParam = searchParams.get('deadcember')
-    if (isDeadcemberParam === 'true') {
-      setIsDeadcemberPost(true)
-    }
-  }, [searchParams])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -82,50 +68,11 @@ function CreatePage() {
     setMediaType(null)
   }
 
-  // Auto-calculate Deadcember volume from sets
-  useEffect(() => {
-    if (isDeadcemberPost && deadliftSets.length > 0) {
-      const totalVolume = deadliftSets.reduce((sum, set) => {
-        return sum + (set.weight * set.reps)
-      }, 0)
-      setDeadcemberVolume(totalVolume.toString())
-    }
-  }, [deadliftSets, isDeadcemberPost])
-
-  const addDeadliftSet = () => {
-    setDeadliftSets([...deadliftSets, { weight: 0, reps: 0 }])
-  }
-
-  const removeDeadliftSet = (index: number) => {
-    if (deadliftSets.length > 1) {
-      setDeadliftSets(deadliftSets.filter((_, i) => i !== index))
-    }
-  }
-
-  const updateDeadliftSet = (index: number, field: 'weight' | 'reps', value: number) => {
-    const newSets = [...deadliftSets]
-    newSets[index][field] = value
-    setDeadliftSets(newSets)
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // For private Deadcember tracking, we still need volume
-    if (isDeadcemberPost && deadcemberVisibility === 'private' && !deadcemberVolume) {
-      setError('Please enter your deadlift volume for tracking')
-      return
-    }
-    
-    // For public posts, require content or media (unless it's a Deadcember post with volume)
-    if (deadcemberVisibility !== 'private' && !isDeadcemberPost && (!user || (!content.trim() && !mediaFile))) {
+    if (!user || (!content.trim() && !mediaFile)) {
       setError('Please add some content or media')
-      return
-    }
-    
-    // For Deadcember posts, require deadlift data
-    if (isDeadcemberPost && !deadcemberVolume && deadliftSets.every(set => set.weight === 0 && set.reps === 0)) {
-      setError('Please add deadlift data for your Deadcember post')
       return
     }
 
@@ -168,25 +115,12 @@ function CreatePage() {
         song_url: selectedSong?.url || null,
         song_album_art_url: selectedSong?.albumArt || null,
         song_start_time: songStartTime || null,
-        is_private: deadcemberVisibility === 'private' ? true : visibility === 'followers',
-        is_log_only: deadcemberVisibility === 'private' ? true : visibility === 'log',
+        is_private: visibility === 'followers',
+        is_log_only: visibility === 'log',
         is_pr_post: isPRPost,
         pr_exercise: isPRPost ? prExercise.trim() : null,
         pr_weight: isPRPost && prWeight ? parseFloat(prWeight) : null,
         pr_reps: isPRPost && prReps ? parseInt(prReps) : null,
-        is_deadcember_post: isDeadcemberPost,
-        deadcember_volume: isDeadcemberPost && deadcemberVolume ? parseFloat(deadcemberVolume) : null,
-      }
-
-      // Add deadlift details only if visibility is 'full'
-      if (isDeadcemberPost && deadcemberVisibility === 'full') {
-        try {
-          postInsertData.deadlift_variation = deadliftVariation || null
-          // Store sets as JSON
-          postInsertData.deadlift_sets = deadliftSets.filter(s => s.weight > 0 && s.reps > 0)
-        } catch (e) {
-          console.log('deadlift columns not available')
-        }
       }
 
       // Only include spotify_id if it exists and column exists in database
@@ -341,163 +275,6 @@ function CreatePage() {
             </label>
             <p className="text-xs text-[#a1a1a1] mt-2 ml-8">PR posts will be highlighted in the feed</p>
           </div>
-
-          <div className="rounded-[12px] border border-white/5 p-6 bg-white/[0.02]" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isDeadcemberPost}
-                onChange={(e) => setIsDeadcemberPost(e.target.checked)}
-                className="w-5 h-5 rounded border-white/20 bg-white/5 text-[#ff5555] focus:ring-[#ff5555] focus:ring-offset-0"
-              />
-              <div className="flex items-center space-x-2">
-                <Trophy className="w-5 h-5 text-amber-400" />
-                <span className="text-white font-semibold">This is a Deadcember Post</span>
-              </div>
-            </label>
-            <p className="text-xs text-[#a1a1a1] mt-2 ml-8">Track your December deadlift volume</p>
-          </div>
-
-          {isDeadcemberPost && (
-            <div className="rounded-[12px] border border-amber-500/30 p-6 space-y-4 bg-amber-500/5" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-              <div className="flex items-center space-x-2 mb-4">
-                <Trophy className="w-6 h-6 text-amber-400" />
-                <h3 className="text-white font-semibold text-lg">Deadcember Details</h3>
-              </div>
-
-              <div className="rounded-lg p-4 space-y-3 bg-white/5">
-                <label className="block text-sm font-medium text-[#a1a1a1] mb-3">Post visibility</label>
-                <div className="space-y-2">
-                  <label className="flex items-start space-x-3 cursor-pointer group">
-                    <input
-                      type="radio"
-                      name="deadcemberVisibility"
-                      value="full"
-                      checked={deadcemberVisibility === 'full'}
-                      onChange={(e) => setDeadcemberVisibility('full')}
-                      className="mt-1 w-4 h-4 text-primary focus:ring-primary"
-                    />
-                    <div className="flex-1">
-                      <p className="text-white font-semibold text-sm group-hover:text-primary transition-colors">Show Full Details</p>
-                      <p className="text-gray-500 text-xs mt-1">Post with set-by-set breakdown and total volume</p>
-                    </div>
-                  </label>
-                  <label className="flex items-start space-x-3 cursor-pointer group">
-                    <input
-                      type="radio"
-                      name="deadcemberVisibility"
-                      value="volume-only"
-                      checked={deadcemberVisibility === 'volume-only'}
-                      onChange={(e) => setDeadcemberVisibility('volume-only')}
-                      className="mt-1 w-4 h-4 text-primary focus:ring-primary"
-                    />
-                    <div className="flex-1">
-                      <p className="text-white font-semibold text-sm group-hover:text-primary transition-colors">Show Volume Only</p>
-                      <p className="text-gray-500 text-xs mt-1">Post with just the total volume (no set details)</p>
-                    </div>
-                  </label>
-                  <label className="flex items-start space-x-3 cursor-pointer group">
-                    <input
-                      type="radio"
-                      name="deadcemberVisibility"
-                      value="private"
-                      checked={deadcemberVisibility === 'private'}
-                      onChange={(e) => setDeadcemberVisibility('private')}
-                      className="mt-1 w-4 h-4 text-primary focus:ring-primary"
-                    />
-                    <div className="flex-1">
-                      <p className="text-white font-semibold text-sm group-hover:text-primary transition-colors">Private Tracking Only</p>
-                      <p className="text-gray-500 text-xs mt-1">Track volume privately (adds to your total + community total, no public post)</p>
-                    </div>
-                  </label>
-                </div>
-              </div>
-              
-              {/* Deadlift Variation */}
-              <div>
-                <label className="block text-sm font-medium text-[#a1a1a1] mb-2">Deadlift variation</label>
-                <select
-                  value={deadliftVariation}
-                  onChange={(e) => setDeadliftVariation(e.target.value)}
-                  className="input-field w-full"
-                >
-                  <option value="">Select variation...</option>
-                  <option value="Conventional Deadlift">Conventional Deadlift</option>
-                  <option value="Sumo Deadlift">Sumo Deadlift</option>
-                  <option value="Trap Bar Deadlift">Trap Bar Deadlift</option>
-                  <option value="Romanian Deadlift">Romanian Deadlift (RDL)</option>
-                  <option value="Stiff-Leg Deadlift">Stiff-Leg Deadlift</option>
-                  <option value="Deficit Deadlift">Deficit Deadlift</option>
-                  <option value="Rack Pull">Rack Pull</option>
-                  <option value="Snatch Grip Deadlift">Snatch Grip Deadlift</option>
-                </select>
-              </div>
-
-              {/* Sets Tracker */}
-              <div>
-                <label className="block text-sm font-medium text-[#a1a1a1] mb-3">Sets</label>
-                <div className="space-y-3">
-                  {deadliftSets.map((set, index) => (
-                    <div key={index} className="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5">
-                      <span className="text-gray-400 font-bold min-w-[60px]">Set {index + 1}</span>
-                      <input
-                        type="number"
-                        value={set.weight || ''}
-                        onChange={(e) => updateDeadliftSet(index, 'weight', parseFloat(e.target.value) || 0)}
-                        placeholder="Weight"
-                        min="0"
-                        step="5"
-                        className="input-field flex-1 py-2"
-                      />
-                      <span className="text-gray-500">lbs ×</span>
-                      <input
-                        type="number"
-                        value={set.reps || ''}
-                        onChange={(e) => updateDeadliftSet(index, 'reps', parseInt(e.target.value) || 0)}
-                        placeholder="Reps"
-                        min="1"
-                        className="input-field flex-1 py-2"
-                      />
-                      <span className="text-gray-500">reps</span>
-                      {deadliftSets.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeDeadliftSet(index)}
-                          className="text-red-400 hover:text-red-300 p-2"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={addDeadliftSet}
-                    className="w-full btn-secondary py-3 text-sm font-bold"
-                  >
-                    + ADD SET
-                  </button>
-                </div>
-              </div>
-
-              {/* Auto-calculated Volume Display */}
-              <div className="bg-yellow-950/20 border border-yellow-600/50 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300 font-semibold">Total Volume:</span>
-                  <span className="text-yellow-400 text-2xl font-black">
-                    {deadcemberVolume ? parseFloat(deadcemberVolume).toLocaleString() : '0'} lbs
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  {deadcemberVisibility === 'private' 
-                    ? 'Tracked privately - contributes to totals only'
-                    : deadcemberVisibility === 'volume-only'
-                    ? 'Only total volume will be shown publicly'
-                    : 'Full details will be shown in your post'}
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* PR Details - Only show if PR post */}
           {isPRPost && (
