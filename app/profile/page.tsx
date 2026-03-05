@@ -177,8 +177,8 @@ export default async function ProfilePage() {
         </div>
       </div>
 
-      {/* Content Section - Constrained Width */}
-      <div className="max-w-4xl mx-auto px-4 md:px-6 pb-8">
+      {/* Content Section - Same centered column as Feed (max-w-[640px]) */}
+      <div className="w-full max-w-[640px] mx-auto px-4 md:px-6 pb-8">
         {/* Top Lifts Display */}
         <div className="mb-6">
           <TopLiftsDisplay 
