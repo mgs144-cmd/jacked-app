@@ -74,7 +74,7 @@ export default async function LogPage() {
   })
 
   return (
-    <div className="min-h-screen pb-24 md:pb-0 md:pt-14 bg-[#121212]">
+    <div className="min-h-screen pb-24 md:pb-0 md:pt-14 bg-black">
       <Navbar />
       <LogClient
         liftLogs={liftLogs}

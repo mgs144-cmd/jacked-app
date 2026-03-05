@@ -170,22 +170,22 @@ export function PostCard({ post }: PostCardProps) {
       className="relative overflow-hidden transition-all duration-200 w-full max-w-[640px] rounded-lg md:rounded-xl p-5 md:p-7"
       style={{ 
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif",
-        backgroundColor: '#1a1a1a',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)'
+        backgroundColor: '#0a0a0a',
+        border: '1px solid rgba(255, 255, 255, 0.1)'
       }}
     >
       {isDeadcemberPost && (
         <div 
-          className="bg-[#ff5555]/15 py-3 flex items-center justify-center gap-2 border-b border-white/5 -mx-5 -mt-5 md:-mx-7 md:-mt-7 px-5 md:px-7"
+          className="bg-white/10 py-3 flex items-center justify-center gap-2 border-b border-white/10 -mx-5 -mt-5 md:-mx-7 md:-mt-7 px-5 md:px-7"
         >
-          <Trophy className="w-4 h-4 text-[#ff5555]" />
-          <span className="text-[#ff5555] font-semibold text-sm tracking-wide">Deadcember</span>
+          <Trophy className="w-4 h-4 text-white" />
+          <span className="text-white font-semibold text-sm tracking-wide">Deadcember</span>
         </div>
       )}
 
       <div className="flex items-center justify-between">
         <Link href={profileLink} className="flex items-center group">
-          <div className="w-[50px] h-[50px] rounded-full bg-white/5 overflow-hidden ring-1 ring-white/10 flex-shrink-0">
+            <div className="w-[50px] h-[50px] rounded-full bg-white/5 overflow-hidden ring-1 ring-white/10 flex-shrink-0">
             {profile.avatar_url ? (
               <Image
                 src={profile.avatar_url}
@@ -195,7 +195,7 @@ export function PostCard({ post }: PostCardProps) {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-white/10 text-[#a1a1a1] font-medium text-sm">
+              <div className="w-full h-full flex items-center justify-center bg-white/10 text-white/70 font-medium text-sm">
                 {profile.username?.[0]?.toUpperCase() || 'U'}
               </div>
             )}
@@ -204,7 +204,7 @@ export function PostCard({ post }: PostCardProps) {
             <span className="text-[15px] md:text-base font-semibold text-white truncate" style={{ fontWeight: 600 }}>
               {profile.username || profile.full_name || 'Unknown'}
             </span>
-            <span className="text-gray-600 flex-shrink-0">•</span>
+            <span className="text-white/50 flex-shrink-0">•</span>
             <span className="text-[14px] font-normal flex-shrink-0" style={{ opacity: 0.6 }}>
               {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
             </span>
@@ -216,13 +216,13 @@ export function PostCard({ post }: PostCardProps) {
           <div className="relative">
             <button 
               onClick={() => setShowMenu(!showMenu)}
-              className="text-[#a1a1a1] hover:text-white hover:bg-white/5 p-2 rounded-lg transition-colors"
+              className="text-white/70 hover:text-white hover:bg-white/5 p-2 rounded-lg transition-colors"
             >
               <MoreVertical className="w-5 h-5" />
             </button>
             
             {showMenu && (
-              <div className="absolute right-0 top-full mt-2 w-56 bg-[#111] border border-white/10 rounded-xl shadow-2xl z-10 overflow-hidden">
+              <div className="absolute right-0 top-full mt-2 w-56 bg-black border border-white/10 rounded-xl shadow-2xl z-10 overflow-hidden">
                 <Link
                   href={`/post/${post.id}/edit`}
                   className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center space-x-2"
@@ -250,7 +250,7 @@ export function PostCard({ post }: PostCardProps) {
                       </>
                     )}
                   </div>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-white/50">
                     {isUpdatingPrivacy ? 'Updating...' : 'Change'}
                   </span>
                 </button>
@@ -273,7 +273,7 @@ export function PostCard({ post }: PostCardProps) {
                       </>
                     )}
                   </div>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-white/50">
                     {isArchiving ? 'Updating...' : ''}
                   </span>
                 </button>
@@ -281,7 +281,7 @@ export function PostCard({ post }: PostCardProps) {
                 <button
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="w-full px-4 py-3 text-left text-[#ff5555] hover:bg-[#ff5555]/10 transition-colors flex items-center space-x-2 disabled:opacity-50"
+                  className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-500/10 transition-colors flex items-center space-x-2 disabled:opacity-50"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span className="font-semibold">{isDeleting ? 'Deleting...' : 'Delete Post'}</span>
@@ -295,11 +295,11 @@ export function PostCard({ post }: PostCardProps) {
 
       {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
         <div 
-          className="absolute top-5 right-5 flex items-center gap-1.5 rounded-md border border-[#ff5555]/20 bg-[#ff5555]/10 cursor-default shrink-0"
+          className="absolute top-5 right-5 flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 cursor-default shrink-0"
           style={{ padding: '6px 12px' }}
         >
-          <Trophy className="w-4 h-4 text-[#ff5555]" />
-          <span className="font-semibold text-[#ff5555] uppercase tracking-wider" style={{ fontSize: '13px' }}>PR</span>
+          <Trophy className="w-4 h-4 text-white" />
+          <span className="font-semibold text-white uppercase tracking-wider" style={{ fontSize: '13px' }}>PR</span>
         </div>
       )}
 
@@ -388,8 +388,8 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {/* Media */}
-      {post.media_url && (
-        <div className="relative w-full aspect-square bg-[#1a1a1a] mt-4">
+        {post.media_url && (
+        <div className="relative w-full aspect-square bg-black mt-4">
           {post.media_type === 'video' ? (
             <video
               src={post.media_url}
@@ -410,19 +410,19 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {isDeadcemberPost && (post.deadcember_volume || post.deadcember_personal_total) && (
-        <div className="py-5 bg-[#ff5555]/5 border-b border-white/5">
+        <div className="py-5 bg-white/5 border-b border-white/10">
           <div className="space-y-4">
             {post.deadcember_volume && (
               <div className="text-center">
-                <p className="text-[#a1a1a1] text-xs font-medium tracking-wide uppercase mb-2">This Workout</p>
-                <p className="text-3xl md:text-4xl font-bold text-[#ff5555]">
+                <p className="text-white/60 text-xs font-medium tracking-wide uppercase mb-2">This Workout</p>
+                <p className="text-3xl md:text-4xl font-bold text-white">
                   {post.deadcember_volume.toLocaleString()} lbs
                 </p>
               </div>
             )}
             {post.deadcember_personal_total && (
-              <div className="text-center pt-4 border-t border-white/5">
-                <p className="text-[#a1a1a1] text-xs font-medium tracking-wide uppercase mb-2">Personal Total</p>
+              <div className="text-center pt-4 border-t border-white/10">
+                <p className="text-white/60 text-xs font-medium tracking-wide uppercase mb-2">Personal Total</p>
                 <p className="text-2xl md:text-3xl font-black text-white">
                   {post.deadcember_personal_total.toLocaleString()} lbs
                 </p>
@@ -451,14 +451,14 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       <div 
-        className="flex items-center min-h-[44px] pt-4 md:pt-5 border-t border-white/5 mt-4 md:mt-5"
+        className="flex items-center min-h-[44px] pt-4 md:pt-5 border-t border-white/10 mt-4 md:mt-5"
       >
         <div className="flex items-center gap-5">
           <button
             onClick={handleLike}
             disabled={isLiking}
             className={`flex items-center min-h-[44px] -my-2 py-2 group transition-all duration-200 active:scale-95 touch-manipulation ${
-              liked ? 'text-[#ff5555]' : 'text-[#a1a1a1] hover:text-[#ff5555]'
+              liked ? 'text-white' : 'text-white/70 hover:text-white'
             }`}
             style={{ gap: '6px' }}
           >
@@ -490,7 +490,7 @@ export function PostCard({ post }: PostCardProps) {
               setShowCommentForm(!showCommentForm)
             }}
             className={`flex items-center min-h-[44px] -my-2 py-2 group transition-all duration-200 active:scale-95 touch-manipulation ${
-              showCommentForm ? 'text-[#ff5555]' : 'text-[#a1a1a1] hover:text-[#ff5555]'
+              showCommentForm ? 'text-white' : 'text-white/70 hover:text-white'
             }`}
             style={{ gap: '6px' }}
           >
@@ -505,7 +505,7 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* Inline Comment Form */}
       {showCommentForm && user && (
-        <div className="py-4 border-t border-white/5">
+        <div className="py-4 border-t border-white/10">
           <CommentForm 
             postId={post.id} 
             userId={user.id}
@@ -537,7 +537,7 @@ export function PostCard({ post }: PostCardProps) {
                     />
                   </div>
                 ) : (
-                  <span className="text-sm text-gray-300 flex-1">{comment.content}</span>
+                  <span className="text-sm text-white/80 flex-1">{comment.content}</span>
                 )}
               </div>
             )
@@ -545,7 +545,7 @@ export function PostCard({ post }: PostCardProps) {
           {commentCount > 3 && (
             <Link
               href={`/post/${post.id}`}
-              className="text-sm text-gray-500 hover:text-gray-300 font-medium transition-colors block mt-2"
+              className="text-sm text-white/50 hover:text-white/80 font-medium transition-colors block mt-2"
             >
               View all {commentCount} comments
             </Link>

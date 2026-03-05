@@ -132,10 +132,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden"
-      style={{ background: 'linear-gradient(180deg, #0d0a08 0%, #1a0f0a 50%, #2d1510 100%)' }}
-    >
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden bg-black">
       <div className="max-w-md w-full space-y-8 relative z-10">
         <div className="text-center">
           <Link href="/" className="inline-block">
@@ -168,7 +165,7 @@ export default function SignUpPage() {
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#ff5555] focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                   placeholder="Your name"
                 />
               </div>
@@ -180,7 +177,7 @@ export default function SignUpPage() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#ff5555] focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                   placeholder="Choose a username"
                 />
               </div>
@@ -194,7 +191,7 @@ export default function SignUpPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#ff5555] focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                   placeholder="you@email.com"
                 />
               </div>
@@ -209,7 +206,7 @@ export default function SignUpPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   minLength={6}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#ff5555] focus:border-transparent"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                   placeholder="Min. 6 characters"
                 />
               </div>
@@ -218,7 +215,7 @@ export default function SignUpPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-[#ff5555] hover:bg-[#ff4444] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-white hover:bg-white/90 text-black font-semibold rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -233,7 +230,7 @@ export default function SignUpPage() {
 
           <p className="mt-6 text-center text-sm text-white/60">
             Already have an account?{' '}
-            <Link href="/auth/login" className="text-[#ff5555] font-medium hover:text-[#ff6666] transition-colors">Sign in</Link>
+            <Link href="/auth/login" className="text-white font-medium hover:text-white/80 transition-colors">Sign in</Link>
           </p>
         </div>
 

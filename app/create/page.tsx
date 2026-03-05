@@ -188,7 +188,7 @@ function CreatePage() {
   }
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-[#1a1a1a]">
+    <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-black">
       <Navbar />
       
       <div className="max-w-2xl mx-auto px-4 py-8">
@@ -199,7 +199,7 @@ function CreatePage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-[#ff5555]/10 border border-[#ff5555]/30 text-[#ff5555] px-6 py-4 rounded-[12px] font-medium">
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-6 py-4 rounded-[12px] font-medium">
               {error}
             </div>
           )}
@@ -225,7 +225,7 @@ function CreatePage() {
               <button
                 type="button"
                 onClick={handleRemoveMedia}
-                className="absolute top-4 right-4 w-10 h-10 bg-black/80 backdrop-blur-sm hover:bg-[#ff5555] text-white rounded-full flex items-center justify-center transition-all"
+                className="absolute top-4 right-4 w-10 h-10 bg-black/80 backdrop-blur-sm hover:bg-white text-black rounded-full flex items-center justify-center transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -233,16 +233,16 @@ function CreatePage() {
           )}
 
           {!mediaPreview && (
-            <div className="rounded-[12px] border-2 border-dashed border-white/10 p-12 text-center bg-white/[0.02] hover:border-[#ff5555]/30 transition-all" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            <div className="rounded-[12px] border-2 border-dashed border-white/10 p-12 text-center bg-white/[0.02] hover:border-white/30 transition-all">
               <label className="cursor-pointer flex flex-col items-center space-y-4">
                 <div className="w-20 h-20 rounded-[12px] bg-white/5 flex items-center justify-center">
-                  <Upload className="w-10 h-10 text-[#a1a1a1]" />
+                  <Upload className="w-10 h-10 text-white/60" />
                 </div>
                 <div>
                   <p className="text-white font-semibold text-base mb-1">Upload Photo or Video</p>
-                  <p className="text-[#a1a1a1] text-sm">Click to browse or drag and drop</p>
+                  <p className="text-white/70 text-sm">Click to browse or drag and drop</p>
                 </div>
-                <div className="flex items-center space-x-4 text-sm text-[#6b6b6b]">
+                <div className="flex items-center space-x-4 text-sm text-white/50">
                   <div className="flex items-center space-x-1">
                     <ImageIcon className="w-4 h-4" />
                     <span>JPG, PNG</span>
@@ -268,21 +268,21 @@ function CreatePage() {
                 type="checkbox"
                 checked={isPRPost}
                 onChange={(e) => setIsPRPost(e.target.checked)}
-                className="w-5 h-5 rounded border-white/20 bg-white/5 text-[#ff5555] focus:ring-[#ff5555] focus:ring-offset-0"
+                className="w-5 h-5 rounded border-white/20 bg-white/5 text-white focus:ring-white focus:ring-offset-0"
               />
               <div className="flex items-center space-x-2">
-                <Trophy className="w-5 h-5 text-[#ff5555]" />
+                <Trophy className="w-5 h-5 text-white" />
                 <span className="text-white font-semibold">This is a Personal Record (PR) Post</span>
               </div>
             </label>
-            <p className="text-xs text-[#a1a1a1] mt-2 ml-8">PR posts will be highlighted in the feed</p>
+            <p className="text-xs text-white/70 mt-2 ml-8">PR posts will be highlighted in the feed</p>
           </div>
 
           {/* PR Details - Only show if PR post */}
           {isPRPost && (
-            <div className="rounded-[12px] border border-[#ff5555]/30 p-6 space-y-4 bg-[#ff5555]/5" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            <div className="rounded-[12px] border border-white/20 p-6 space-y-4 bg-white/5">
               <div className="flex items-center space-x-2 mb-4">
-                <Trophy className="w-6 h-6 text-[#ff5555]" />
+                <Trophy className="w-6 h-6 text-white" />
                 <h3 className="text-white font-bold text-lg">PR Details</h3>
               </div>
               <div>
@@ -395,10 +395,10 @@ function CreatePage() {
 export default function CreatePageWithSuspense() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-[#1a1a1a] flex items-center justify-center">
+      <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#ff5555] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-[#a1a1a1]">Loading...</p>
+          <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/70">Loading...</p>
         </div>
       </div>
     }>

@@ -76,23 +76,22 @@ export function LogPostCard({ post }: LogPostCardProps) {
 
   return (
     <article
-      className="relative rounded-lg md:rounded-xl p-5 md:p-6 border border-white/5 bg-[#1a1a1a]"
-      style={{ boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)' }}
+      className="relative rounded-lg md:rounded-xl p-5 md:p-6 border border-white/10 bg-white/[0.02]"
     >
       <div className="flex items-start justify-between gap-3">
-        <span className="text-sm text-[#a1a1a1]" style={{ opacity: 0.8 }}>
+        <span className="text-sm text-white/70">
           {format(new Date(post.created_at), 'MMM d, yyyy')}
         </span>
         {isOwner && (
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="text-[#a1a1a1] hover:text-white hover:bg-white/5 p-1.5 rounded-lg transition-colors"
+              className="text-white/70 hover:text-white hover:bg-white/5 p-1.5 rounded-lg transition-colors"
             >
               <MoreVertical className="w-5 h-5" />
             </button>
             {showMenu && (
-              <div className="absolute right-0 top-full mt-1 w-44 bg-[#111] border border-white/10 rounded-xl shadow-2xl z-10 overflow-hidden">
+              <div className="absolute right-0 top-full mt-1 w-44 bg-black border border-white/10 rounded-xl shadow-2xl z-10 overflow-hidden">
                 <Link
                   href={`/post/${post.id}/edit`}
                   className="flex items-center gap-2 px-4 py-3 text-white hover:bg-white/5 transition-colors"
@@ -104,7 +103,7 @@ export function LogPostCard({ post }: LogPostCardProps) {
                 <button
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="w-full flex items-center gap-2 px-4 py-3 text-left text-[#ff5555] hover:bg-[#ff5555]/10 transition-colors disabled:opacity-50"
+                  className="w-full flex items-center gap-2 px-4 py-3 text-left text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span className="font-medium text-sm">{isDeleting ? 'Deleting...' : 'Delete'}</span>
@@ -118,9 +117,9 @@ export function LogPostCard({ post }: LogPostCardProps) {
       {Object.keys(byExercise).length > 0 && (
         <div className="mt-4 space-y-3">
           {Object.entries(byExercise).map(([name, sets]) => (
-            <div key={name} className="border-b border-white/5 last:border-0 pb-2 last:pb-0">
+            <div key={name} className="border-b border-white/10 last:border-0 pb-2 last:pb-0">
               <span className="font-medium text-white">{name}</span>
-              <div className="text-[#a1a1a1] text-sm mt-1 tabular-nums">
+              <div className="text-white/70 text-sm mt-1 tabular-nums">
                 {sets
                   .map((s: any) => {
                     if (s.weight != null && s.reps != null) return `${s.weight}×${s.reps}`

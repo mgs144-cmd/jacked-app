@@ -90,7 +90,7 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
           />
           {searching && (
             <div className="absolute right-3.5 top-1/2 transform -translate-y-1/2">
-              <div className="w-4 h-4 border-2 border-[#ff5555] border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             </div>
           )}
         </div>
@@ -100,7 +100,7 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
       {isSearching && (
         <div className="mb-10">
           <div className="flex items-center space-x-2.5 mb-5">
-            <Search className="w-5 h-5 text-[#ff5555]" />
+            <Search className="w-5 h-5 text-white" />
             <h2 className="text-lg font-semibold text-white">
               Search Results {users.length > 0 && <span className="text-secondary font-normal">({users.length})</span>}
             </h2>
@@ -119,8 +119,8 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
               ))}
             </div>
           ) : (
-            <div className="rounded-[12px] border border-white/5 p-12 text-center bg-[#1a1a1a]">
-              <p className="text-[#a1a1a1] text-base font-medium">No users found for &quot;{query}&quot;</p>
+            <div className="rounded-[12px] border border-white/10 p-12 text-center bg-white/[0.02]">
+              <p className="text-white/70 text-base font-medium">No users found for &quot;{query}&quot;</p>
             </div>
           )}
         </div>
@@ -130,7 +130,7 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
       {!isSearching && suggestedUsers.length > 0 && (
         <div className="mb-10">
           <div className="flex items-center space-x-2.5 mb-5">
-            <TrendingUp className="w-5 h-5 text-[#ff5555]" />
+            <TrendingUp className="w-5 h-5 text-white" />
             <h2 className="text-lg font-semibold text-white">Suggested For You</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

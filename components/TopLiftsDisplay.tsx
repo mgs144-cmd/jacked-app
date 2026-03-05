@@ -27,8 +27,8 @@ export function TopLiftsDisplay({ topLift1, topLift2, topLift3 }: TopLiftsDispla
   return (
     <div className="card p-6">
       <div className="flex items-center space-x-2 mb-4">
-        <Dumbbell className="w-5 h-5 text-red-600" />
-        <h3 className="text-lg font-semibold text-primary tracking-tight">Top Lifts</h3>
+        <Dumbbell className="w-5 h-5 text-white" />
+        <h3 className="text-lg font-semibold text-white tracking-tight">Top Lifts</h3>
       </div>
       
       <div className="space-y-3">

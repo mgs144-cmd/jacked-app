@@ -21,7 +21,7 @@ export function BadgeDisplay({ badges }: BadgeDisplayProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-3">
-        <Award className="w-6 h-6 text-primary" />
+        <Award className="w-6 h-6 text-white" />
         <h2 className="text-2xl font-black text-white tracking-tight">Badges</h2>
       </div>
 
@@ -29,7 +29,7 @@ export function BadgeDisplay({ badges }: BadgeDisplayProps) {
         {badges.map((badge) => (
           <div
             key={badge.id}
-            className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-4 hover:border-primary/30 transition-all group"
+            className="bg-white/[0.02] backdrop-blur-sm rounded-xl border border-white/10 p-4 hover:border-white/20 transition-all group"
             title={badge.description || badge.name}
           >
             {badge.icon_url ? (
@@ -43,13 +43,13 @@ export function BadgeDisplay({ badges }: BadgeDisplayProps) {
                 />
               </div>
             ) : (
-              <div className="w-16 h-16 rounded-lg bg-gradient-primary flex items-center justify-center mb-2">
+              <div className="w-16 h-16 rounded-lg bg-white/10 flex items-center justify-center mb-2">
                 <Award className="w-8 h-8 text-white" />
               </div>
             )}
             <p className="text-white font-bold text-xs text-center">{badge.name}</p>
             {badge.description && (
-              <p className="text-gray-500 text-[10px] text-center mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <p className="text-white/50 text-[10px] text-center mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 {badge.description}
               </p>
             )}

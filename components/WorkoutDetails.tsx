@@ -25,7 +25,7 @@ export function WorkoutDetails({ exercises, postId }: WorkoutDetailsProps) {
   const sortedExercises = [...exercises].sort((a, b) => a.order_index - b.order_index)
 
   return (
-    <div className="py-4 border-t border-white/5" style={{ marginTop: 20 }}>
+    <div className="py-4 border-t border-white/10" style={{ marginTop: 20 }}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between text-left py-2 -my-1 active:scale-[0.99] touch-manipulation"
@@ -36,9 +36,9 @@ export function WorkoutDetails({ exercises, postId }: WorkoutDetailsProps) {
           </span>
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-5 h-5 text-[#a1a1a1]" />
+          <ChevronUp className="w-5 h-5 text-white/70" />
         ) : (
-          <ChevronDown className="w-5 h-5 text-[#a1a1a1]" />
+          <ChevronDown className="w-5 h-5 text-white/70" />
         )}
       </button>
 
@@ -47,14 +47,14 @@ export function WorkoutDetails({ exercises, postId }: WorkoutDetailsProps) {
           {sortedExercises.map((exercise, index) => (
             <div
               key={exercise.id || index}
-              className="bg-white/5 rounded-lg p-4 border border-white/5"
+              className="bg-white/5 rounded-lg p-4 border border-white/10"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <h4 className="text-[18px] font-semibold text-white">{exercise.exercise_name}</h4>
                 </div>
                 {(exercise.sets || exercise.reps || exercise.weight) && (
-                  <div className="flex items-center gap-4 text-sm text-[#a1a1a1]">
+                  <div className="flex items-center gap-4 text-sm text-white/70">
                     {exercise.sets != null && (
                       <span><span className="font-semibold text-white tabular-nums">{exercise.sets}</span> sets</span>
                     )}

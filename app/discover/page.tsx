@@ -72,7 +72,7 @@ export default async function DiscoverPage() {
     .limit(10)
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-[#1a1a1a]">
+    <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-black">
       <Navbar />
       
       <div className="max-w-2xl mx-auto px-4 py-8">

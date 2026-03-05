@@ -23,8 +23,8 @@ export function Navbar() {
 
   return (
     <>
-      {/* Desktop Navigation - minimal, Strava-style */}
-      <nav className="hidden md:block fixed top-0 left-0 right-0 bg-[#1a1a1a]/95 border-b border-white/5 z-50 backdrop-blur-xl">
+      {/* Desktop Navigation */}
+      <nav className="hidden md:block fixed top-0 left-0 right-0 bg-black/95 border-b border-white/10 z-50 backdrop-blur-xl">
         <div className="max-w-4xl mx-auto px-6">
           <div className="flex items-center justify-between h-14">
             <Link href="/feed" className="flex items-center group">
@@ -40,7 +40,7 @@ export function Navbar() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="ml-2 px-4 py-2 bg-[#ff5555] hover:bg-[#ff4444] text-white text-sm font-medium rounded-lg transition-colors"
+                      className="ml-2 px-4 py-2 bg-white hover:bg-white/90 text-black text-sm font-semibold rounded-full transition-colors"
                     >
                       <Icon className="w-4 h-4 inline mr-1.5 -mt-0.5" />
                       {item.label}
@@ -52,7 +52,7 @@ export function Navbar() {
                     key={item.href}
                     href={item.href}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      isActive ? 'text-white bg-white/5' : 'text-[#a1a1a1] hover:text-white hover:bg-white/5'
+                      isActive ? 'text-white bg-white/10' : 'text-white/70 hover:text-white hover:bg-white/5'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -65,8 +65,8 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Navigation - clean bottom bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#1a1a1a]/98 border-t border-white/5 z-50 backdrop-blur-xl safe-area-pb">
+      {/* Mobile Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/98 border-t border-white/10 z-50 backdrop-blur-xl safe-area-pb">
         <div className="flex items-center justify-around px-4 py-2 min-h-[48px]">
           {navItems.map((item) => {
             const Icon = item.icon
@@ -76,10 +76,10 @@ export function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex flex-col items-center justify-center min-h-[48px] min-w-[48px] p-2 rounded-xl bg-[#ff5555] text-white active:scale-95 transition-transform"
+                  className="flex flex-col items-center justify-center min-h-[48px] min-w-[48px] p-2 rounded-full bg-white text-black active:scale-95 transition-transform"
                 >
                   <Icon className="w-6 h-6" strokeWidth={2} />
-                  <span className="text-[11px] font-medium mt-0.5">{item.label}</span>
+                  <span className="text-[11px] font-semibold mt-0.5">{item.label}</span>
                 </Link>
               )
             }
@@ -88,7 +88,7 @@ export function Navbar() {
                 key={item.href}
                 href={item.href}
                 className={`flex flex-col items-center justify-center min-h-[48px] min-w-[48px] p-2 rounded-xl transition-colors ${
-                  isActive ? 'text-[#ff5555]' : 'text-[#a1a1a1]'
+                  isActive ? 'text-white' : 'text-white/60'
                 }`}
               >
                 <Icon className="w-6 h-6" strokeWidth={2} />

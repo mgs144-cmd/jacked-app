@@ -25,8 +25,8 @@ export const metadata: Metadata = {
     viewportFit: 'cover',
   },
   themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#950606' },
-    { media: '(prefers-color-scheme: light)', color: '#950606' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
+    { media: '(prefers-color-scheme: light)', color: '#000000' },
   ],
   icons: {
     icon: [

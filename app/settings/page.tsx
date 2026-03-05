@@ -403,15 +403,15 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center pb-20 md:pb-0 md:pt-14 bg-[#1a1a1a]">
+      <div className="min-h-screen flex items-center justify-center pb-20 md:pb-0 md:pt-14 bg-black">
         <Navbar />
-        <Loader2 className="w-8 h-8 animate-spin text-[#ff5555]" />
+        <Loader2 className="w-8 h-8 animate-spin text-white" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-[#1a1a1a]">
+    <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-black">
       <Navbar />
       
       {/* PR Selector Modal */}
@@ -447,15 +447,15 @@ export default function SettingsPage() {
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-3">
-            <Shield className="w-6 h-6 text-[#ff5555]" />
+            <Shield className="w-6 h-6 text-white" />
             <h1 className="text-2xl font-semibold text-white">Settings</h1>
           </div>
-          <p className="text-[#a1a1a1] text-sm">Manage your profile and account preferences</p>
+          <p className="text-white/70 text-sm">Manage your profile and account preferences</p>
         </div>
 
-        <div className="rounded-[12px] border border-white/5 overflow-hidden bg-[#1a1a1a]" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        <div className="rounded-[12px] border border-white/10 overflow-hidden bg-white/[0.02]">
           {error && (
-            <div className="bg-[#ff5555]/10 border-b border-[#ff5555]/30 text-[#ff5555] px-6 py-4">
+            <div className="bg-red-500/10 border-b border-red-500/30 text-red-400 px-6 py-4">
               <p className="font-semibold">{error}</p>
             </div>
           )}

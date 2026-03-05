@@ -259,10 +259,10 @@ export function LogClient({
     <div className="w-full max-w-[640px] mx-auto px-4 md:px-5 pt-4 pb-5 sm:pb-6 md:py-8 min-w-0">
       <div className="text-left mb-5">
         <h1 className="text-2xl font-semibold text-white tracking-tight flex items-center gap-2">
-          <ClipboardList className="w-7 h-7 text-[#ff5555]" />
+          <ClipboardList className="w-7 h-7 text-white" />
           Log
         </h1>
-        <p className="text-[#a1a1a1] text-sm mt-1">
+        <p className="text-white/70 text-sm mt-1">
           Track lifts, view progress, set goals. Share to feed when you want.
         </p>
       </div>
@@ -277,8 +277,8 @@ export function LogClient({
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 activeTab === tab.id
-                  ? 'bg-[#ff5555] text-white'
-                  : 'text-[#a1a1a1] hover:text-white hover:bg-white/5'
+                  ? 'bg-white text-black'
+                  : 'text-white/70 hover:text-white hover:bg-white/5'
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
@@ -290,11 +290,11 @@ export function LogClient({
 
       {/* Log Lift Form */}
       {activeTab === 'log' && (
-        <div className="rounded-xl border border-white/5 bg-[#1a1a1a] p-6 mb-6">
+        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-6 mb-6">
           <h2 className="text-lg font-semibold text-white mb-4">Quick Log</h2>
           <form onSubmit={handleLogLift} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#a1a1a1] mb-2">Exercise</label>
+              <label className="block text-sm font-medium text-white/70 mb-2">Exercise</label>
               <ExerciseAutocomplete
                 value={exercise}
                 onChange={setExercise}
@@ -304,7 +304,7 @@ export function LogClient({
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-[#a1a1a1]">Sets</label>
+                <label className="block text-sm font-medium text-white/70">Sets</label>
                 <button
                   type="button"
                   onClick={addSet}
@@ -320,7 +320,7 @@ export function LogClient({
                     key={i}
                     className="flex items-center gap-2 p-3 rounded-lg bg-white/5 border border-white/5"
                   >
-                    <span className="text-[#a1a1a1] text-sm w-6">{i + 1}.</span>
+                    <span className="text-white/70 text-sm w-6">{i + 1}.</span>
                     <input
                       type="number"
                       value={s.weight}
@@ -330,7 +330,7 @@ export function LogClient({
                       step="2.5"
                       className="input-field flex-1 min-w-0"
                     />
-                    <span className="text-[#6b6b6b] text-sm">×</span>
+                    <span className="text-white/50 text-sm">×</span>
                     <input
                       type="number"
                       value={s.reps}
@@ -356,7 +356,7 @@ export function LogClient({
                       <button
                         type="button"
                         onClick={() => removeSet(i)}
-                        className="p-1.5 text-[#a1a1a1] hover:text-[#ff5555] hover:bg-white/5 rounded-lg transition-colors"
+                        className="p-1.5 text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                         aria-label="Remove set"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -365,7 +365,7 @@ export function LogClient({
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-[#6b6b6b] mt-2">
+              <p className="text-xs text-white/50 mt-2">
                 RPE 10 = max effort. Lower RPE adjusts e1RM estimate.
               </p>
             </div>
@@ -392,13 +392,13 @@ export function LogClient({
       {activeTab === 'progress' && (
         <div className="space-y-6">
           {exercises.length === 0 ? (
-            <div className="rounded-xl border border-white/5 bg-[#1a1a1a] p-8 text-center">
-              <p className="text-[#a1a1a1]">Log some lifts to see progress charts.</p>
+            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-8 text-center">
+              <p className="text-white/70">Log some lifts to see progress charts.</p>
             </div>
           ) : (
             <>
               <div>
-                <label className="block text-sm font-medium text-[#a1a1a1] mb-2">Select exercise</label>
+                <label className="block text-sm font-medium text-white/70 mb-2">Select exercise</label>
                 <div className="flex flex-wrap gap-2">
                   {exercises.map((ex) => (
                     <button
@@ -406,8 +406,8 @@ export function LogClient({
                       onClick={() => setSelectedChartExercise(selectedChartExercise === ex ? null : ex)}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                         selectedChartExercise === ex
-                          ? 'bg-[#ff5555] text-white'
-                          : 'bg-white/5 text-[#a1a1a1] hover:bg-white/10'
+                          ? 'bg-white text-black'
+                          : 'bg-white/5 text-white/70 hover:bg-white/10'
                       }`}
                     >
                       {ex}
@@ -416,7 +416,7 @@ export function LogClient({
                 </div>
               </div>
               {selectedChartExercise && chartDataByExercise[selectedChartExercise]?.length > 0 && (
-                <div className="rounded-xl border border-white/5 bg-[#1a1a1a] p-4">
+                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
                   <h3 className="text-white font-semibold mb-4">{selectedChartExercise} — e1RM over time</h3>
                   <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
@@ -426,8 +426,8 @@ export function LogClient({
                       >
                         <defs>
                           <linearGradient id="colorE1RM" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#ff5555" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#ff5555" stopOpacity={0} />
+                            <stop offset="5%" stopColor="#ffffff" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#ffffff" stopOpacity={0} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#333" />
@@ -455,7 +455,7 @@ export function LogClient({
                         <Area
                           type="monotone"
                           dataKey="e1RM"
-                          stroke="#ff5555"
+                          stroke="#ffffff"
                           strokeWidth={2}
                           fill="url(#colorE1RM)"
                         />
@@ -465,7 +465,7 @@ export function LogClient({
                   <div className="mt-4 flex justify-end">
                     <Link
                       href="/create"
-                      className="text-sm text-[#ff5555] hover:text-[#ff4444] font-medium flex items-center gap-1"
+                      className="text-sm text-white hover:text-white/80 font-medium flex items-center gap-1"
                     >
                       <Share2 className="w-4 h-4" />
                       Share to feed
@@ -493,7 +493,7 @@ export function LogClient({
           </div>
 
           {showGoalForm && (
-            <form onSubmit={handleSetGoal} className="rounded-xl border border-white/5 bg-[#1a1a1a] p-6 space-y-4">
+            <form onSubmit={handleSetGoal} className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4">
               <ExerciseAutocomplete
                 value={goalExercise}
                 onChange={setGoalExercise}
@@ -502,7 +502,7 @@ export function LogClient({
               />
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-[#a1a1a1] mb-1">Target weight (lbs)</label>
+                  <label className="block text-sm text-white/70 mb-1">Target weight (lbs)</label>
                   <input
                     type="number"
                     value={goalWeight}
@@ -512,7 +512,7 @@ export function LogClient({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-[#a1a1a1] mb-1">Target reps</label>
+                  <label className="block text-sm text-white/70 mb-1">Target reps</label>
                   <input
                     type="number"
                     value={goalReps}
@@ -530,7 +530,7 @@ export function LogClient({
 
           <div className="space-y-3">
             {liftGoals.length === 0 && !showGoalForm ? (
-              <p className="text-[#a1a1a1] text-sm">No goals set. Add one above.</p>
+              <p className="text-white/70 text-sm">No goals set. Add one above.</p>
             ) : (
               liftGoals.map((goal) => {
                 const progress = getGoalProgress(goal.exercise_name)
@@ -544,19 +544,19 @@ export function LogClient({
                 return (
                   <div
                     key={goal.id}
-                    className="rounded-xl border border-white/5 bg-[#1a1a1a] p-4"
+                    className="rounded-xl border border-white/10 bg-white/[0.02] p-4"
                   >
                     <div className="flex justify-between items-start mb-2">
                       <span className="font-semibold text-white">{g.exercise_name}</span>
-                      <span className="text-[#ff5555] font-bold">{percent}%</span>
+                      <span className="text-white font-bold">{percent}%</span>
                     </div>
                     <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-2">
                       <div
-                        className="h-full bg-[#ff5555] rounded-full transition-all"
+                        className="h-full bg-white rounded-full transition-all"
                         style={{ width: `${Math.min(100, percent)}%` }}
                       />
                     </div>
-                    <p className="text-xs text-[#a1a1a1]">
+                    <p className="text-xs text-white/70">
                       {current} / {target} lbs e1RM
                     </p>
                   </div>
@@ -571,7 +571,7 @@ export function LogClient({
       {activeTab === 'history' && (
         <div className="space-y-4">
           {allLifts.length > 0 && (
-            <div className="rounded-xl border border-white/5 bg-[#1a1a1a] p-4">
+            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
               <h3 className="text-white font-semibold mb-3">Recent lifts</h3>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {(() => {
@@ -600,22 +600,22 @@ export function LogClient({
                       .join(' · ')
                     const canShare = bestLog.source === 'log' && bestLog._log
                     return (
-                      <div
+                        <div
                         key={key}
-                        className="flex justify-between items-center py-2 border-b border-white/5 last:border-0 group"
+                        className="flex justify-between items-center py-2 border-b border-white/10 last:border-0 group"
                       >
                         <div>
                           <span className="text-white font-medium">{log.exercise_name}</span>
-                          <span className="text-[#a1a1a1] text-sm ml-2">{setsDisplay}</span>
+                          <span className="text-white/70 text-sm ml-2">{setsDisplay}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[#ff5555] font-semibold tabular-nums">
+                          <span className="text-white font-semibold tabular-nums">
                             {calculateOneRepMaxWithRPE(bestLog.weight, bestLog.reps, bestLog.rpe ?? 10)} lbs
                           </span>
                           {canShare && (
                             <button
                               onClick={() => handleShareToFeed(bestLog._log)}
-                              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/10 text-[#a1a1a1] hover:text-white transition-all"
+                              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-all"
                               title="Share to feed"
                             >
                               <Share2 className="w-4 h-4" />
@@ -633,7 +633,7 @@ export function LogClient({
           {logPosts.length > 0 && (
             <div>
               <h3 className="text-white font-semibold mb-3">Activity</h3>
-              <p className="text-[#a1a1a1] text-sm mb-3">
+              <p className="text-white/70 text-sm mb-3">
                 Log-only, PRs, and workouts you&apos;ve posted
               </p>
               <div className="flex flex-col gap-3">
@@ -645,8 +645,8 @@ export function LogClient({
           )}
 
           {allLifts.length === 0 && logPosts.length === 0 && (
-            <div className="rounded-xl border border-white/5 bg-[#1a1a1a] p-8 text-center">
-              <p className="text-[#a1a1a1]">No history yet. Log a lift above.</p>
+            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-8 text-center">
+              <p className="text-white/70">No history yet. Log a lift above.</p>
             </div>
           )}
         </div>

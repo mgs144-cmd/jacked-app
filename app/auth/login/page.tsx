@@ -39,12 +39,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden"
-      style={{ background: 'linear-gradient(180deg, #0d0a08 0%, #1a0f0a 50%, #2d1510 100%)' }}
-    >
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden bg-black">
       <div className="max-w-md w-full space-y-8 relative z-10">
-        {/* Logo and header */}
         <div className="text-center">
           <Link href="/" className="inline-block">
             <h1 
@@ -59,7 +55,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Login form - minimal */}
         <div className="bg-white/[0.03] backdrop-blur-sm rounded-2xl p-8 border border-white/10">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
@@ -81,7 +76,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#ff5555] focus:border-transparent transition-colors"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-colors"
                   placeholder="you@email.com"
                 />
               </div>
@@ -98,7 +93,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#ff5555] focus:border-transparent transition-colors"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-colors"
                   placeholder="••••••••"
                 />
               </div>
@@ -107,7 +102,7 @@ export default function LoginPage() {
             <div className="text-right">
               <Link 
                 href="/auth/forgot-password" 
-                className="text-sm text-[#ff5555] font-medium hover:text-[#ff6666] transition-colors"
+                className="text-sm text-white font-medium hover:text-white/80 transition-colors"
               >
                 Forgot password?
               </Link>
@@ -116,7 +111,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-[#ff5555] hover:bg-[#ff4444] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-white hover:bg-white/90 text-black font-semibold rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -131,7 +126,7 @@ export default function LoginPage() {
 
           <p className="mt-6 text-center text-sm text-white/60">
             Don&apos;t have an account?{' '}
-            <Link href="/auth/signup" className="text-[#ff5555] font-medium hover:text-[#ff6666] transition-colors">
+            <Link href="/auth/signup" className="text-white font-medium hover:text-white/80 transition-colors">
               Sign up
             </Link>
           </p>
