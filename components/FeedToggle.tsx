@@ -1,6 +1,5 @@
 'use client'
 
-import { Users, Globe } from 'lucide-react'
 
 interface FeedToggleProps {
   view: 'friends' | 'community'
@@ -9,25 +8,22 @@ interface FeedToggleProps {
 
 export function FeedToggle({ view, onViewChange }: FeedToggleProps) {
   return (
-    <div 
-      className="flex items-center gap-1 py-0.5 px-1 bg-white/5 rounded-xl border border-white/10 w-full max-w-[640px] h-12"
-    >
+    <div className="flex items-center gap-0.5">
       <button
         onClick={() => onViewChange('friends')}
-        className={`flex-1 flex items-center justify-center gap-2 px-4 rounded-lg text-sm font-medium transition-all h-11 active:scale-[0.98] touch-manipulation ${
-          view === 'friends' ? 'bg-white text-black' : 'text-white/70 hover:text-white hover:bg-white/5'
+        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+          view === 'friends' ? 'text-white' : 'text-white/50 hover:text-white/80'
         }`}
       >
-        <Users className="w-4 h-4" />
         Friends
       </button>
+      <span className="text-white/30 text-xs">/</span>
       <button
         onClick={() => onViewChange('community')}
-        className={`flex-1 flex items-center justify-center gap-2 px-4 rounded-lg text-sm font-medium transition-all h-11 active:scale-[0.98] touch-manipulation ${
-          view === 'community' ? 'bg-white text-black' : 'text-white/70 hover:text-white hover:bg-white/5'
+        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+          view === 'community' ? 'text-white' : 'text-white/50 hover:text-white/80'
         }`}
       >
-        <Globe className="w-4 h-4" />
         Community
       </button>
     </div>

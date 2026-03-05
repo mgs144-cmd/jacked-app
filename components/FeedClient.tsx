@@ -19,33 +19,27 @@ export function FeedClient({ allPosts, followingPosts, publicPosts }: FeedClient
 
   return (
     <PullToRefresh>
-      <div className="w-full max-w-[640px] mx-auto px-4 md:px-5 pt-4 pb-5 sm:pb-6 md:py-8 min-w-0">
-        <div className="text-left mb-5">
-          <h1 className="text-2xl font-semibold text-white tracking-tight">
+      <div className="w-full max-w-[640px] mx-auto px-4 md:px-5 pt-3 pb-5 md:py-6 min-w-0">
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="text-lg font-medium text-white tracking-tight">
             Feed
           </h1>
-          <p className="text-[#a1a1a1] text-sm mt-1">
-            {view === 'friends' ? 'Posts from people you follow' : 'Community posts'}
-          </p>
-        </div>
-
-        <div className="mb-5 md:mb-6">
           <FeedToggle view={view} onViewChange={setView} />
         </div>
 
         {!displayedPosts || displayedPosts.length === 0 ? (
-          <div className="rounded-lg md:rounded-xl border border-white/10 bg-white/[0.02] p-8 sm:p-12 text-center">
-            <p className="text-white/70 font-medium mb-1">
+          <div className="py-12 text-center border-t border-white/5">
+            <p className="text-white/60 text-sm mb-0.5">
               {view === 'friends' ? 'No posts from friends yet' : 'No posts yet'}
             </p>
-            <p className="text-white/50 text-sm">
+            <p className="text-white/40 text-sm">
               {view === 'friends' 
                 ? 'Follow people to see their posts here' 
                 : 'Be the first to share your progress'}
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col divide-y divide-white/5">
             {displayedPosts.map((post: any) => (
               <PostCard key={post.id} post={post} />
             ))}

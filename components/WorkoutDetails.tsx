@@ -25,48 +25,32 @@ export function WorkoutDetails({ exercises, postId }: WorkoutDetailsProps) {
   const sortedExercises = [...exercises].sort((a, b) => a.order_index - b.order_index)
 
   return (
-    <div className="py-4 border-t border-white/10" style={{ marginTop: 20 }}>
+    <div className="mt-3 pt-3 border-t border-white/5">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between text-left py-2 -my-1 active:scale-[0.99] touch-manipulation"
+        className="w-full flex items-center justify-between text-left py-1 text-sm text-white/80 hover:text-white transition-colors"
       >
-        <div className="flex items-center gap-2">
-          <span className="text-white font-semibold text-base">
-            Workout Details ({exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'})
-          </span>
-        </div>
+        <span>Workout ({exercises.length})</span>
         {isExpanded ? (
-          <ChevronUp className="w-5 h-5 text-white/70" />
+          <ChevronUp className="w-4 h-4 text-white/50" />
         ) : (
-          <ChevronDown className="w-5 h-5 text-white/70" />
+          <ChevronDown className="w-4 h-4 text-white/50" />
         )}
       </button>
 
       {isExpanded && (
-        <div className="mt-4 space-y-4">
+        <div className="mt-2 space-y-2">
           {sortedExercises.map((exercise, index) => (
             <div
               key={exercise.id || index}
-              className="bg-white/5 rounded-lg p-4 border border-white/10"
+              className="flex items-center justify-between py-2 text-sm"
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-2">
-                  <h4 className="text-[18px] font-semibold text-white">{exercise.exercise_name}</h4>
-                </div>
-                {(exercise.sets || exercise.reps || exercise.weight) && (
-                  <div className="flex items-center gap-4 text-sm text-white/70">
-                    {exercise.sets != null && (
-                      <span><span className="font-semibold text-white tabular-nums">{exercise.sets}</span> sets</span>
-                    )}
-                    {exercise.reps != null && (
-                      <span><span className="font-semibold text-white tabular-nums">{exercise.reps}</span> reps</span>
-                    )}
-                    {exercise.weight != null && (
-                      <span><span className="font-semibold text-white tabular-nums">{exercise.weight}</span> lbs</span>
-                    )}
-                  </div>
-                )}
-              </div>
+              <span className="font-medium text-white">{exercise.exercise_name}</span>
+              {(exercise.sets || exercise.reps || exercise.weight) && (
+                <span className="text-white/60 tabular-nums">
+                  {[exercise.sets != null && `${exercise.sets}s`, exercise.reps != null && `${exercise.reps}r`, exercise.weight != null && `${exercise.weight}lb`].filter(Boolean).join(' · ')}
+                </span>
+              )}
             </div>
           ))}
         </div>
