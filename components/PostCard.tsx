@@ -173,6 +173,16 @@ export function PostCard({ post }: PostCardProps) {
     >
       {/* Card padding container */}
       <div className="p-5 md:p-6">
+        {/* PR flair: top center */}
+        {hasPRStats && (
+          <div className="flex justify-center mb-4">
+            <div className="inline-flex items-center gap-1.5">
+              <Trophy className="w-4 h-4 text-white/80" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-white/80">PR</span>
+            </div>
+          </div>
+        )}
+
         {/* Header: avatar, name, time, menu */}
         <div className="flex items-center justify-between gap-3">
           <Link href={profileLink} className="flex items-center min-w-0 flex-1">
@@ -192,10 +202,10 @@ export function PostCard({ post }: PostCardProps) {
               )}
             </div>
             <div className="ml-3 min-w-0 flex-1">
-              <p className="text-[15px] font-semibold text-white truncate">
+              <p className="text-[17px] md:text-lg font-bold text-white truncate">
                 {profile.username || profile.full_name || 'Unknown'}
               </p>
-              <p className="text-[13px] text-white/45 truncate">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 truncate">
                 {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
               </p>
             </div>
@@ -239,44 +249,38 @@ export function PostCard({ post }: PostCardProps) {
           </p>
         )}
 
-        {/* Performance block: lift numbers as hero */}
+        {/* Performance block: centered, no boxes */}
         {hasPRStats && (
-          <div className="mt-5 md:mt-6">
+          <div className="mt-5 md:mt-6 text-center">
             {post.pr_exercise && (
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 mb-3">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 mb-4">
                 {post.pr_exercise}
               </p>
             )}
             {(post.pr_weight != null || post.pr_reps != null) && (
-              <div className="grid grid-cols-2 gap-4 md:gap-6">
+              <div className="flex justify-center items-baseline gap-8 md:gap-12">
                 {post.pr_weight != null && (
-                  <div className="rounded-xl bg-white/[0.06] border border-white/[0.06] p-4 md:p-5 text-center">
+                  <div className="flex flex-col items-center">
                     <p className="text-5xl md:text-6xl font-bold tabular-nums text-white tracking-tight leading-none">
                       {post.pr_weight}
                     </p>
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-white/45 mt-2">LBS</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 mt-1.5">LBS</p>
                   </div>
                 )}
                 {post.pr_reps != null && (
-                  <div className="rounded-xl bg-white/[0.06] border border-white/[0.06] p-4 md:p-5 text-center">
+                  <div className="flex flex-col items-center">
                     <p className="text-5xl md:text-6xl font-bold tabular-nums text-white tracking-tight leading-none">
                       {post.pr_reps}
                     </p>
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-white/45 mt-2">REPS</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 mt-1.5">REPS</p>
                   </div>
                 )}
               </div>
             )}
             {post.pr_weight != null && post.pr_reps != null && post.pr_reps > 1 && (
-              <p className="text-[13px] text-white/45 mt-3 tabular-nums">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 mt-4 tabular-nums">
                 Est. 1RM <span className="font-semibold text-white/70">{calculateOneRepMaxWithRPE(post.pr_weight, post.pr_reps, post.pr_rpe)} lbs</span>
               </p>
-            )}
-            {isPRPost && (
-              <div className="inline-flex items-center gap-1.5 mt-3 rounded-full bg-white/10 px-2.5 py-1">
-                <Trophy className="w-3.5 h-3.5 text-white/80" />
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-white/80">PR</span>
-              </div>
             )}
           </div>
         )}

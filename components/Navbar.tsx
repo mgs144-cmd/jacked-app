@@ -16,8 +16,8 @@ export function Navbar() {
   const navItems = [
     { href: '/feed', icon: Home, label: 'Feed' },
     { href: '/log', icon: ClipboardList, label: 'Log' },
-    { href: '/discover', icon: Users, label: 'Discover' },
     { href: '/create', icon: PlusCircle, label: 'New', isPrimary: true },
+    { href: '/discover', icon: Users, label: 'Discover' },
     { href: '/profile', icon: User, label: 'Profile' },
   ]
 
