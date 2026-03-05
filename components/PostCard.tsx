@@ -374,7 +374,7 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {post.content && (
-        <p className="mt-3 text-sm leading-relaxed text-white/90">
+        <p className="mt-3 text-base md:text-lg leading-relaxed text-white/95 font-medium">
           {post.content}
         </p>
       )}
