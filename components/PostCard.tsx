@@ -200,17 +200,16 @@ export function PostCard({ post }: PostCardProps) {
               </p>
             </div>
           </Link>
-          {/* PR flair: same row as username/date, slightly larger */}
-          <div className="flex-1 flex items-center justify-center min-w-0">
+          {/* PR flair + menu: grouped on the right, PR just left of three dots */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             {hasPRStats && (
               <div className="inline-flex items-center gap-2">
                 <Trophy className="w-5 h-5 md:w-5 md:h-5 text-white/85" />
                 <span className="text-xs md:text-[13px] font-semibold uppercase tracking-wider text-white/85">PR</span>
               </div>
             )}
-          </div>
-          {isOwner && (
-            <div className="relative flex-shrink-0">
+            {isOwner && (
+            <div className="relative">
               <button 
                 onClick={() => setShowMenu(!showMenu)}
                 className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors"
@@ -238,7 +237,8 @@ export function PostCard({ post }: PostCardProps) {
                 </div>
               )}
             </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Caption */}
