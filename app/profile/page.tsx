@@ -73,7 +73,7 @@ export default async function ProfilePage() {
       
       <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
         {(profile as any)?.banner_url ? (
-          <div className="relative w-full h-48 md:h-64 bg-black">
+          <div className="relative w-full h-36 md:h-44 bg-black">
             <Image
               src={(profile as any).banner_url}
               alt="Profile banner"
@@ -83,39 +83,39 @@ export default async function ProfilePage() {
             />
           </div>
         ) : (
-          <div className="w-full h-48 md:h-64 bg-black"></div>
+          <div className="w-full h-36 md:h-44 bg-black"></div>
         )}
       </div>
 
-      {/* Profile Content Container - Centered */}
-      <div className="max-w-4xl mx-auto relative z-10 px-4 md:px-6">
-        {/* Avatar - Centered, Overlapping Banner */}
-        <div className="relative -mt-14 md:-mt-16 mb-6 flex flex-col items-center">
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white/5 overflow-hidden shadow-xl border-4 border-black ring-2 ring-white/10 mb-4">
+      {/* Profile Content Container - Centered, higher up */}
+      <div className="max-w-4xl mx-auto relative z-10 px-4 md:px-6 -mt-16 md:-mt-20">
+        {/* Avatar - Centered, Overlapping Banner, larger */}
+        <div className="flex flex-col items-center mb-4">
+          <div className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full bg-white/5 overflow-hidden shadow-xl border-4 border-black ring-2 ring-white/10 mb-4">
             {(profile as any)?.avatar_url ? (
               <Image
                 src={(profile as any).avatar_url}
                 alt={(profile as any).username || 'Profile'}
-                width={144}
-                height={144}
+                width={176}
+                height={176}
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-white/10 text-white text-3xl md:text-4xl font-semibold">
+              <div className="w-full h-full flex items-center justify-center bg-white/10 text-white text-4xl md:text-5xl font-semibold">
                 {(profile as any)?.username?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || 'U'}
               </div>
             )}
           </div>
           
-          {/* User Info - Centered */}
+          {/* User Info - Centered, larger */}
           <div className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <h1 className="text-2xl md:text-3xl font-black text-white">
+            <div className="flex items-center justify-center space-x-2 mb-1">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white">
                 {(profile as any)?.username || (profile as any)?.full_name || 'User'}
               </h1>
             </div>
             {(profile as any)?.full_name && (profile as any).full_name !== (profile as any).username && (
-              <p className="text-white/60 text-sm mb-3">{(profile as any).full_name}</p>
+              <p className="text-white/60 text-base md:text-lg mb-3">{(profile as any).full_name}</p>
             )}
           </div>
         </div>
@@ -129,27 +129,27 @@ export default async function ProfilePage() {
           <span className="hidden md:inline">Edit</span>
         </Link>
 
-        {/* Profile Info Section - Centered */}
+        {/* Profile Info Section - Centered, larger */}
         <div className="space-y-3 mb-4 flex flex-col items-center">
           {/* Bio */}
           {(profile as any)?.bio && (
-            <p className="text-white/80 text-sm leading-relaxed max-w-2xl">{(profile as any).bio}</p>
+            <p className="text-white/80 text-base leading-relaxed max-w-2xl">{(profile as any).bio}</p>
           )}
           
-          {/* Stats */}
-          <div className="flex items-center space-x-6 text-sm">
-            <div className="flex items-center space-x-1">
-              <span className="font-black text-white">{postsWithCounts?.length || 0}</span>
+          {/* Stats - larger */}
+          <div className="flex items-center justify-center gap-8 md:gap-10 text-base md:text-lg">
+            <div className="flex items-center space-x-1.5">
+              <span className="font-black text-white text-lg md:text-xl">{postsWithCounts?.length || 0}</span>
               <span className="text-white/50">posts</span>
             </div>
             {!(profile as any)?.hide_follower_count && (
               <>
-                <Link href={`/user/${session.user.id}/followers`} className="flex items-center space-x-1 hover:text-primary transition-colors">
-                  <span className="font-black text-white">{followerCount || 0}</span>
+                <Link href={`/user/${session.user.id}/followers`} className="flex items-center space-x-1.5 hover:text-primary transition-colors">
+                  <span className="font-black text-white text-lg md:text-xl">{followerCount || 0}</span>
                   <span className="text-white/50">followers</span>
                 </Link>
-                <Link href={`/user/${session.user.id}/following`} className="flex items-center space-x-1 hover:text-primary transition-colors">
-                  <span className="font-black text-white">{followingCount || 0}</span>
+                <Link href={`/user/${session.user.id}/following`} className="flex items-center space-x-1.5 hover:text-primary transition-colors">
+                  <span className="font-black text-white text-lg md:text-xl">{followingCount || 0}</span>
                   <span className="text-white/50">following</span>
                 </Link>
               </>

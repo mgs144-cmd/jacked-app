@@ -86,7 +86,8 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search users..."
-            className="input-field w-full pl-12 pr-10 text-sm placeholder:text-white/40"
+            className="input-field w-full text-sm placeholder:text-white/40 pr-10"
+            style={{ paddingLeft: '3.25rem' }}
           />
           {searching && (
             <div className="absolute right-3.5 top-1/2 transform -translate-y-1/2">
