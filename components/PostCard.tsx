@@ -358,10 +358,23 @@ export function PostCard({ post }: PostCardProps) {
           <span className="text-[13px] tabular-nums">{commentCount}</span>
         </button>
         </div>
+      </div>
 
-        {/* Inline Comment Form */}
+      {/* Media: full-bleed */}
+      {post.media_url && (
+        <div className="relative w-full aspect-square bg-black/50">
+          {post.media_type === 'video' ? (
+            <video src={post.media_url} controls className="w-full h-full object-cover" />
+          ) : (
+            <Image src={post.media_url} alt="Post" fill className="object-cover" />
+          )}
+        </div>
+      )}
+
+      {/* Comments: below media when post has media, below actions when no media */}
+      <div className={`p-5 md:p-6 ${post.media_url ? 'pt-0' : 'pt-0 mt-4 border-t border-white/[0.06]'}`}>
         {showCommentForm && user && (
-          <div className="pt-4 mt-4 border-t border-white/[0.06]">
+          <div className={post.media_url ? 'pt-4 border-t border-white/[0.06]' : ''}>
             <CommentForm 
               postId={post.id} 
               userId={user.id}
@@ -373,9 +386,8 @@ export function PostCard({ post }: PostCardProps) {
           </div>
         )}
 
-        {/* Top comments */}
         {post.top_comments && post.top_comments.length > 0 && (
-          <div className="mt-4 space-y-2">
+          <div className={`space-y-2 ${showCommentForm && user ? 'mt-4' : 'mt-0'}`}>
             {post.top_comments.map((comment: any) => {
               const commentProfile = comment.profile || { username: 'unknown', avatar_url: null }
               const isGIF = comment.content && comment.content.startsWith('http') && (comment.content.includes('giphy.com') || comment.content.includes('.gif'))
@@ -400,17 +412,6 @@ export function PostCard({ post }: PostCardProps) {
           </div>
         )}
       </div>
-
-      {/* Media: full-bleed below card content */}
-      {post.media_url && (
-        <div className="relative w-full aspect-square bg-black/50">
-          {post.media_type === 'video' ? (
-            <video src={post.media_url} controls className="w-full h-full object-cover" />
-          ) : (
-            <Image src={post.media_url} alt="Post" fill className="object-cover" />
-          )}
-        </div>
-      )}
 
       {/* Likes Modal */}
       <LikesModal
