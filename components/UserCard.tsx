@@ -28,8 +28,8 @@ export function UserCard({
       <div>
         {/* Flex column layout for consistent spacing */}
         <div className="flex flex-col space-y-4">
-          {/* Top section: Avatar + Name + Bio */}
-          <div className="flex items-start space-x-3">
+          {/* Top section: Avatar + Name (centered), Bio below */}
+          <div className="flex items-center gap-4">
             {/* Avatar */}
             <Link href={`/user/${user.id}`} className="flex-shrink-0">
               <div className="w-14 h-14 rounded-full bg-white/5 overflow-hidden ring-1 ring-white/10">
@@ -49,16 +49,15 @@ export function UserCard({
               </div>
             </Link>
 
-            {/* User Info */}
+            {/* User Info: username is main focus, vertically centered with avatar */}
             <div className="flex-1 min-w-0">
-              <Link href={`/user/${user.id}`} className="group/link">
-                <h3 className="font-semibold text-white text-[18px] truncate group-hover/link:text-white/90 transition-colors duration-150">
+              <Link href={`/user/${user.id}`} className="group/link block">
+                <h3 className="font-bold text-white text-xl md:text-2xl truncate group-hover/link:text-white/90 transition-colors duration-150">
                   {user.username || user.full_name || 'Unknown User'}
                 </h3>
               </Link>
-              
               {user.bio && (
-                <p className="text-secondary text-sm mt-1.5 line-clamp-2 leading-snug">
+                <p className="text-white/60 text-sm mt-1 line-clamp-2 leading-snug">
                   {user.bio}
                 </p>
               )}

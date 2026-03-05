@@ -80,13 +80,13 @@ export function DiscoverClient({ currentUserId, initialUsers, suggestedUsers, fo
       {/* Search Bar */}
       <div className="mb-8">
         <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-tertiary pointer-events-none" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search users..."
-            className="input-field w-full pl-11 pr-10 text-sm placeholder:text-tertiary"
+            className="input-field w-full pl-12 pr-10 text-sm placeholder:text-white/40"
           />
           {searching && (
             <div className="absolute right-3.5 top-1/2 transform -translate-y-1/2">
