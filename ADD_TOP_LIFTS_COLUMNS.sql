@@ -24,4 +24,3 @@ ADD COLUMN IF NOT EXISTS top_lift_3 JSONB;
 COMMENT ON COLUMN profiles.top_lift_1 IS 'First top lift to display on profile (JSONB: {exercise, weight, reps})';
 COMMENT ON COLUMN profiles.top_lift_2 IS 'Second top lift to display on profile (JSONB: {exercise, weight, reps})';
 COMMENT ON COLUMN profiles.top_lift_3 IS 'Third top lift to display on profile (JSONB: {exercise, weight, reps})';
-

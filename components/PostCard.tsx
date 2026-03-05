@@ -211,7 +211,7 @@ export function PostCard({ post }: PostCardProps) {
           </div>
         </Link>
         
-        <div className="flex items-center gap-2">
+        <div className={`flex items-center gap-2 ${isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) ? 'mr-20' : ''}`}>
         {isOwner && (
           <div className="relative">
             <button 
@@ -434,7 +434,7 @@ export function PostCard({ post }: PostCardProps) {
 
       {post.content && (
         <div 
-          className="mt-4 md:mt-5 pb-4 md:pb-5 border-b border-white/5"
+          className="mt-4 md:mt-5 pb-4 md:pb-5"
         >
           <p 
             className="text-base md:text-lg leading-[1.4] font-medium"

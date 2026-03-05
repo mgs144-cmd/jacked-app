@@ -53,26 +53,65 @@ export function LogClient({
   const [goalWeight, setGoalWeight] = useState('')
   const [goalReps, setGoalReps] = useState('1')
 
+  // Build combined lift data: lift_logs + PR posts + workout_exercises from posts
+  const allLifts: Array<{
+    exercise_name: string
+    weight: number
+    reps: number
+    rpe: number | null
+    date: string
+    source: 'log' | 'post'
+    _log?: any
+  }> = [
+    ...liftLogs.map((l) => ({
+      exercise_name: l.exercise_name,
+      weight: Number(l.weight),
+      reps: Number(l.reps),
+      rpe: l.rpe ? Number(l.rpe) : null,
+      date: l.logged_at?.split('T')[0] || l.logged_at,
+      source: 'log' as const,
+      _log: l,
+    })),
+    ...logPosts
+      .filter((p: any) => p.is_pr_post && p.pr_exercise && p.pr_weight != null && p.pr_reps != null)
+      .map((p: any) => ({
+        exercise_name: p.pr_exercise,
+        weight: Number(p.pr_weight || 0),
+        reps: Number(p.pr_reps || 1),
+        rpe: p.pr_rpe ? Number(p.pr_rpe) : null,
+        date: p.created_at?.split('T')[0] || p.created_at,
+        source: 'post' as const,
+      })),
+    ...logPosts.flatMap((p: any) =>
+      (p.workout_exercises || [])
+        .filter((we: any) => we.exercise_name && we.weight != null && we.reps != null && we.weight > 0 && we.reps > 0)
+        .map((we: any) => ({
+          exercise_name: we.exercise_name,
+          weight: Number(we.weight || 0),
+          reps: Number(we.reps || 1),
+          rpe: null,
+          date: p.created_at?.split('T')[0] || p.created_at,
+          source: 'post' as const,
+        }))
+    ),
+  ]
+
   // Get unique exercises for chart selector
-  const exercises = [...new Set(liftLogs.map((l) => l.exercise_name))].filter(Boolean).sort()
+  const exercises = [...new Set(allLifts.map((l) => l.exercise_name))].filter(Boolean).sort()
 
   // Build chart data: e1RM over time per exercise
   const chartDataByExercise: Record<string, { date: string; e1RM: number; weight: number; reps: number }[]> = {}
-  liftLogs.forEach((log) => {
+  allLifts.forEach((log) => {
     const ex = log.exercise_name
-    if (!ex) return
-    const e1RM = calculateOneRepMaxWithRPE(
-      Number(log.weight),
-      Number(log.reps),
-      log.rpe ? Number(log.rpe) : 10
-    )
-    const date = log.logged_at?.split('T')[0] || log.logged_at
+    if (!ex || log.weight <= 0 || log.reps <= 0) return
+    const e1RM = calculateOneRepMaxWithRPE(log.weight, log.reps, log.rpe ?? 10)
+    const date = log.date
     if (!chartDataByExercise[ex]) chartDataByExercise[ex] = []
     chartDataByExercise[ex].push({
       date,
       e1RM,
-      weight: Number(log.weight),
-      reps: Number(log.reps),
+      weight: log.weight,
+      reps: log.reps,
     })
   })
   // Sort and dedupe by date (keep best e1RM per day for progress)
@@ -200,17 +239,10 @@ export function LogClient({
       Number(goal.target_reps),
       10
     )
-    const logs = liftLogs.filter((l) => l.exercise_name === exerciseName)
+    const logs = allLifts.filter((l) => l.exercise_name === exerciseName && l.weight > 0)
     if (logs.length === 0) return { goal, current: 0, target, percent: 0 }
-    // Progress = best e1RM across all logs (not just latest)
     const bestE1RM = Math.max(
-      ...logs.map((log) =>
-        calculateOneRepMaxWithRPE(
-          Number(log.weight),
-          Number(log.reps),
-          log.rpe ? Number(log.rpe) : 10
-        )
-      )
+      ...logs.map((log) => calculateOneRepMaxWithRPE(log.weight, log.reps, log.rpe ?? 10))
     )
     const percent = target > 0 ? Math.min(100, Math.round((bestE1RM / target) * 100)) : 0
     return { goal, current: bestE1RM, target, percent }
@@ -535,43 +567,38 @@ export function LogClient({
         </div>
       )}
 
-      {/* History: recent logs + log posts */}
+      {/* History: recent lifts + all posted activity */}
       {activeTab === 'history' && (
         <div className="space-y-4">
-          {liftLogs.length > 0 && (
+          {allLifts.length > 0 && (
             <div className="rounded-xl border border-white/5 bg-[#1a1a1a] p-4">
               <h3 className="text-white font-semibold mb-3">Recent lifts</h3>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {(() => {
-                  const grouped = liftLogs.slice(0, 60).reduce(
-                    (acc: { key: string; logs: any[] }[], log) => {
-                      const date = log.logged_at?.split('T')[0] || ''
-                      const key = `${log.exercise_name}|${date}`
-                      const existing = acc.find((g) => g.key === key)
-                      if (existing) existing.logs.push(log)
-                      else acc.push({ key, logs: [log] })
-                      return acc
-                    },
-                    [] as { key: string; logs: any[] }[]
-                  )
+                  const grouped = allLifts
+                    .filter((l) => l.weight > 0)
+                    .slice(0, 80)
+                    .reduce(
+                      (acc: { key: string; logs: typeof allLifts }[], log) => {
+                        const key = `${log.exercise_name}|${log.date}`
+                        const existing = acc.find((g) => g.key === key)
+                        if (existing) existing.logs.push(log)
+                        else acc.push({ key, logs: [log] })
+                        return acc
+                      },
+                      []
+                    )
                   return grouped.slice(0, 20).map(({ key, logs }) => {
                     const log = logs[0]
                     const bestLog = logs.reduce((best, l) => {
-                      const e = calculateOneRepMaxWithRPE(
-                        Number(l.weight),
-                        Number(l.reps),
-                        l.rpe ? Number(l.rpe) : 10
-                      )
-                      const bestE = calculateOneRepMaxWithRPE(
-                        Number(best.weight),
-                        Number(best.reps),
-                        best.rpe ? Number(best.rpe) : 10
-                      )
+                      const e = calculateOneRepMaxWithRPE(l.weight, l.reps, l.rpe ?? 10)
+                      const bestE = calculateOneRepMaxWithRPE(best.weight, best.reps, best.rpe ?? 10)
                       return e > bestE ? l : best
                     })
                     const setsDisplay = logs
                       .map((l) => `${l.weight}×${l.reps}${l.rpe ? `@${l.rpe}` : ''}`)
                       .join(' · ')
+                    const canShare = bestLog.source === 'log' && bestLog._log
                     return (
                       <div
                         key={key}
@@ -583,20 +610,17 @@ export function LogClient({
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-[#ff5555] font-semibold tabular-nums">
-                            {calculateOneRepMaxWithRPE(
-                              Number(bestLog.weight),
-                              Number(bestLog.reps),
-                              bestLog.rpe ? Number(bestLog.rpe) : 10
-                            )}{' '}
-                            lbs
+                            {calculateOneRepMaxWithRPE(bestLog.weight, bestLog.reps, bestLog.rpe ?? 10)} lbs
                           </span>
-                          <button
-                            onClick={() => handleShareToFeed(bestLog)}
-                            className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/10 text-[#a1a1a1] hover:text-white transition-all"
-                            title="Share to feed"
-                          >
-                            <Share2 className="w-4 h-4" />
-                          </button>
+                          {canShare && (
+                            <button
+                              onClick={() => handleShareToFeed(bestLog._log)}
+                              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/10 text-[#a1a1a1] hover:text-white transition-all"
+                              title="Share to feed"
+                            >
+                              <Share2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     )
@@ -608,7 +632,10 @@ export function LogClient({
 
           {logPosts.length > 0 && (
             <div>
-              <h3 className="text-white font-semibold mb-3">Log-only posts</h3>
+              <h3 className="text-white font-semibold mb-3">Activity</h3>
+              <p className="text-[#a1a1a1] text-sm mb-3">
+                Log-only, PRs, and workouts you&apos;ve posted
+              </p>
               <div className="flex flex-col gap-3">
                 {logPosts.map((post) => (
                   <LogPostCard key={post.id} post={post} />
@@ -617,7 +644,7 @@ export function LogClient({
             </div>
           )}
 
-          {liftLogs.length === 0 && logPosts.length === 0 && (
+          {allLifts.length === 0 && logPosts.length === 0 && (
             <div className="rounded-xl border border-white/5 bg-[#1a1a1a] p-8 text-center">
               <p className="text-[#a1a1a1]">No history yet. Log a lift above.</p>
             </div>

@@ -21,7 +21,24 @@ export function LogPostCard({ post }: LogPostCardProps) {
 
   const isOwner = user?.id === post.user_id
   const exercises = post.workout_exercises || []
-  const sortedExercises = [...exercises].sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0))
+
+  // PR-only posts: use pr_exercise, pr_weight, pr_reps as a single "exercise"
+  const hasWorkout = exercises.length > 0
+  const hasPR = post.is_pr_post && post.pr_exercise && (post.pr_weight != null || post.pr_reps != null)
+  const displayExercises = hasWorkout
+    ? exercises
+    : hasPR
+      ? [
+          {
+            exercise_name: post.pr_exercise,
+            weight: post.pr_weight,
+            reps: post.pr_reps,
+            order_index: 0,
+          },
+        ]
+      : []
+
+  const sortedExercises = [...displayExercises].sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0))
 
   // Group by exercise_name for compact display
   const byExercise = sortedExercises.reduce((acc: Record<string, any[]>, ex: any) => {

@@ -39,8 +39,8 @@ export default async function LogPage() {
     console.warn('lift_logs or lift_goals tables may not exist yet:', e)
   }
 
-  // Also fetch log-only posts for display
-  const { data: logPosts } = await supabase
+  // Fetch all log-relevant posts: log-only, PR posts, and workout posts
+  const { data: allPosts } = await supabase
     .from('posts')
     .select(`
       *,
@@ -50,11 +50,18 @@ export default async function LogPage() {
       workout_exercises(*)
     `)
     .eq('user_id', session.user.id)
-    .eq('is_log_only', true)
     .or('is_archived.is.null,is_archived.eq.false')
     .order('created_at', { ascending: false })
+    .limit(150)
 
-  const postsWithCounts = logPosts?.map((post: any) => {
+  const logPosts = (allPosts || []).filter(
+    (post: any) =>
+      post.is_log_only === true ||
+      post.is_pr_post === true ||
+      (post.workout_exercises && post.workout_exercises.length > 0)
+  )
+
+  const postsWithCounts = logPosts.map((post: any) => {
     let profile = post.profiles
     if (Array.isArray(profile)) profile = profile[0] || null
     return {
@@ -64,7 +71,7 @@ export default async function LogPage() {
       comment_count: post.comments?.length || 0,
       top_comments: [],
     }
-  }) || []
+  })
 
   return (
     <div className="min-h-screen pb-24 md:pb-0 md:pt-14 bg-[#121212]">
