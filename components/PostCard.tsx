@@ -293,6 +293,12 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       )}
 
+      {post.content && (
+        <p className="mt-3 text-base md:text-lg leading-relaxed text-white/95 font-medium">
+          {post.content}
+        </p>
+      )}
+
       {isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps) && (
         <div className="flex flex-col items-center mt-3">
           {post.pr_exercise && (
@@ -371,12 +377,6 @@ export function PostCard({ post }: PostCardProps) {
             <span className="text-white/80"><span className="font-semibold text-white">{post.deadcember_personal_total.toLocaleString()}</span> total</span>
           )}
         </div>
-      )}
-
-      {post.content && (
-        <p className="mt-3 text-base md:text-lg leading-relaxed text-white/95 font-medium">
-          {post.content}
-        </p>
       )}
 
       {/* Workout Details */}
