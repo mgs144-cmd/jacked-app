@@ -315,49 +315,6 @@ export function PostCard({ post }: PostCardProps) {
         {post.workout_exercises && post.workout_exercises.length > 0 && (
           <WorkoutDetails exercises={post.workout_exercises} postId={post.id} />
         )}
-
-        {/* Actions: like, comment */}
-        <div className="flex items-center gap-6 pt-4 mt-4 border-t border-white/[0.06]">
-        <button
-          onClick={handleLike}
-          disabled={isLiking}
-          className={`flex items-center gap-2 py-1 transition-colors ${
-            liked ? 'text-white' : 'text-white/50 hover:text-white'
-          }`}
-        >
-          <Heart 
-            className={`w-4 h-4 ${liked ? 'fill-current' : ''}`}
-            strokeWidth={2}
-          />
-          {likeCount > 0 ? (
-            <span
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                setShowLikesModal(true)
-              }}
-              className="text-[13px] tabular-nums hover:underline cursor-pointer"
-            >
-              {likeCount}
-            </span>
-          ) : (
-            <span className="text-[13px] tabular-nums">{likeCount}</span>
-          )}
-        </button>
-        <button
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setShowCommentForm(!showCommentForm)
-          }}
-          className={`flex items-center gap-2 py-1 group transition-colors ${
-            showCommentForm ? 'text-white' : 'text-white/50 hover:text-white'
-          }`}
-        >
-          <MessageCircle className="w-4 h-4" strokeWidth={2} />
-          <span className="text-[13px] tabular-nums">{commentCount}</span>
-        </button>
-        </div>
       </div>
 
       {/* Media: full-bleed */}
@@ -371,10 +328,53 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       )}
 
-      {/* Comments: below media when post has media, below actions when no media */}
-      <div className={`p-5 md:p-6 ${post.media_url ? 'pt-0' : 'pt-0 mt-4 border-t border-white/[0.06]'}`}>
+      {/* Likes, comments, and comment list: always below media (or below content when no media) */}
+      <div className={`p-5 md:p-6 ${post.media_url ? 'pt-4' : 'pt-4 mt-4 border-t border-white/[0.06]'}`}>
+        {/* Actions: like, comment */}
+        <div className="flex items-center gap-6">
+          <button
+            onClick={handleLike}
+            disabled={isLiking}
+            className={`flex items-center gap-2 py-1 transition-colors ${
+              liked ? 'text-white' : 'text-white/50 hover:text-white'
+            }`}
+          >
+            <Heart 
+              className={`w-4 h-4 ${liked ? 'fill-current' : ''}`}
+              strokeWidth={2}
+            />
+            {likeCount > 0 ? (
+              <span
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setShowLikesModal(true)
+                }}
+                className="text-[13px] tabular-nums hover:underline cursor-pointer"
+              >
+                {likeCount}
+              </span>
+            ) : (
+              <span className="text-[13px] tabular-nums">{likeCount}</span>
+            )}
+          </button>
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setShowCommentForm(!showCommentForm)
+            }}
+            className={`flex items-center gap-2 py-1 group transition-colors ${
+              showCommentForm ? 'text-white' : 'text-white/50 hover:text-white'
+            }`}
+          >
+            <MessageCircle className="w-4 h-4" strokeWidth={2} />
+            <span className="text-[13px] tabular-nums">{commentCount}</span>
+          </button>
+        </div>
+
         {showCommentForm && user && (
-          <div className={post.media_url ? 'pt-4 border-t border-white/[0.06]' : ''}>
+          <div className="pt-4 mt-4 border-t border-white/[0.06]">
             <CommentForm 
               postId={post.id} 
               userId={user.id}
@@ -387,7 +387,7 @@ export function PostCard({ post }: PostCardProps) {
         )}
 
         {post.top_comments && post.top_comments.length > 0 && (
-          <div className={`space-y-2 ${showCommentForm && user ? 'mt-4' : 'mt-0'}`}>
+          <div className={`space-y-2 ${showCommentForm && user ? 'mt-4' : 'mt-4'}`}>
             {post.top_comments.map((comment: any) => {
               const commentProfile = comment.profile || { username: 'unknown', avatar_url: null }
               const isGIF = comment.content && comment.content.startsWith('http') && (comment.content.includes('giphy.com') || comment.content.includes('.gif'))
