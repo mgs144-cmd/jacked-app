@@ -19,17 +19,17 @@ export function FeedClient({ allPosts, followingPosts, publicPosts }: FeedClient
 
   return (
     <PullToRefresh>
-      <div className="w-full max-w-[640px] mx-auto px-4 md:px-5 pt-3 pb-5 md:py-6 min-w-0">
-        <div className="flex items-center justify-between mb-3">
-          <h1 className="text-lg font-medium text-white tracking-tight">
+      <div className="w-full max-w-[640px] mx-auto px-4 md:px-6 pt-6 pb-8 md:pt-8 md:pb-12 min-w-0">
+        <header className="flex items-center justify-between mb-6">
+          <h1 className="text-xl font-semibold text-white tracking-tight">
             Feed
           </h1>
           <FeedToggle view={view} onViewChange={setView} />
-        </div>
+        </header>
 
         {!displayedPosts || displayedPosts.length === 0 ? (
-          <div className="py-12 text-center border-t border-white/5">
-            <p className="text-white/60 text-sm mb-0.5">
+          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] py-16 px-6 text-center">
+            <p className="text-white/60 text-[15px] font-medium mb-1">
               {view === 'friends' ? 'No posts from friends yet' : 'No posts yet'}
             </p>
             <p className="text-white/40 text-sm">
@@ -39,18 +39,17 @@ export function FeedClient({ allPosts, followingPosts, publicPosts }: FeedClient
             </p>
           </div>
         ) : (
-          <div className="flex flex-col divide-y divide-white/5">
+          <div className="flex flex-col gap-5">
             {displayedPosts.map((post: any) => (
               <PostCard key={post.id} post={post} />
             ))}
           </div>
         )}
 
-        {/* Load more indicator */}
         {displayedPosts && displayedPosts.length >= 50 && (
           <div className="mt-8 text-center">
-            <button className="btn-secondary px-8 py-3">
-              <span className="font-bold">LOAD MORE</span>
+            <button className="rounded-full border border-white/10 bg-white/5 px-6 py-2.5 text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors">
+              Load more
             </button>
           </div>
         )}

@@ -25,30 +25,30 @@ export function WorkoutDetails({ exercises, postId }: WorkoutDetailsProps) {
   const sortedExercises = [...exercises].sort((a, b) => a.order_index - b.order_index)
 
   return (
-    <div className="mt-3 pt-3 border-t border-white/5">
+    <div className="mt-5 pt-5 border-t border-white/[0.06]">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between text-left py-1 text-sm text-white/80 hover:text-white transition-colors"
+        className="w-full flex items-center justify-between text-left py-1.5 text-[13px] font-medium text-white/60 hover:text-white/90 transition-colors"
       >
-        <span>Workout ({exercises.length})</span>
+        <span>Workout details ({exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'})</span>
         {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-white/50" />
+          <ChevronUp className="w-4 h-4 text-white/40" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-white/50" />
+          <ChevronDown className="w-4 h-4 text-white/40" />
         )}
       </button>
 
       {isExpanded && (
-        <div className="mt-2 space-y-2">
+        <div className="mt-3 space-y-1">
           {sortedExercises.map((exercise, index) => (
             <div
               key={exercise.id || index}
-              className="flex items-center justify-between py-2 text-sm"
+              className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-white/[0.04] text-[14px]"
             >
               <span className="font-medium text-white">{exercise.exercise_name}</span>
               {(exercise.sets || exercise.reps || exercise.weight) && (
-                <span className="text-white/60 tabular-nums">
-                  {[exercise.sets != null && `${exercise.sets}s`, exercise.reps != null && `${exercise.reps}r`, exercise.weight != null && `${exercise.weight}lb`].filter(Boolean).join(' · ')}
+                <span className="text-white/55 tabular-nums text-[13px]">
+                  {[exercise.sets != null && `${exercise.sets} sets`, exercise.reps != null && `${exercise.reps} reps`, exercise.weight != null && `${exercise.weight} lbs`].filter(Boolean).join(' · ')}
                 </span>
               )}
             </div>
