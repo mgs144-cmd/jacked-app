@@ -25,44 +25,39 @@ export function TopLiftsDisplay({ topLift1, topLift2, topLift3 }: TopLiftsDispla
   }
 
   return (
-    <div className="card p-6">
+    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 md:p-6">
       <div className="flex items-center space-x-2 mb-4">
         <Dumbbell className="w-5 h-5 text-white" />
         <h3 className="text-lg font-semibold text-white tracking-tight">Top Lifts</h3>
       </div>
       
-      <div className="space-y-3">
+      <div className="flex flex-row gap-3 md:gap-4 overflow-x-auto pb-1 -mx-1">
         {lifts.map((lift, index) => {
           const oneRM = lift.reps > 1 ? calculateOneRepMax(lift.weight, lift.reps) : null
           
           return (
             <div 
               key={index}
-              className="card p-4"
+              className="flex-1 min-w-[min(140px,100%)] rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-center"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-secondary mb-1">
-                    {lift.exercise}
-                  </div>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-2xl font-semibold text-primary tabular-nums">
-                      {lift.weight}
-                    </span>
-                    <span className="text-sm text-secondary font-medium">lbs</span>
-                    {lift.reps > 1 && (
-                      <span className="text-sm text-secondary">
-                        × {lift.reps} reps
-                      </span>
-                    )}
-                  </div>
-                  {oneRM && (
-                    <div className="mt-2 text-xs text-tertiary">
-                      Est. 1RM: <span className="text-red-600 font-semibold tabular-nums">{oneRM} lbs</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+              {/* Exercise name - matches PostCard */}
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 mb-2">
+                {lift.exercise}
+              </p>
+              {/* Weight - matches PostCard hero numbers */}
+              <p className="text-3xl md:text-4xl font-bold tabular-nums text-white tracking-tight leading-none">
+                {lift.weight}
+              </p>
+              {/* LBS + reps - matches PostCard labels */}
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 mt-1 tabular-nums">
+                LBS{lift.reps > 1 && <span className="normal-case font-normal"> × {lift.reps} reps</span>}
+              </p>
+              {/* Est. 1RM - matches PostCard */}
+              {oneRM && (
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 mt-2 tabular-nums">
+                  Est. 1RM <span className="font-semibold text-white/70 normal-case">{oneRM} lbs</span>
+                </p>
+              )}
             </div>
           )
         })}
