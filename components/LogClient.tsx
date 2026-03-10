@@ -1,36 +1,64 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
+import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import {
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Area,
-  AreaChart,
-} from 'recharts'
-import { format } from 'date-fns'
-import {
-  ClipboardList,
-  Plus,
-  Target,
-  TrendingUp,
-  Share2,
-  Trash2,
-} from 'lucide-react'
-import { ExerciseAutocomplete } from './ExerciseAutocomplete'
-import { LogPostCard } from './LogPostCard'
 import { calculateOneRepMaxWithRPE } from '@/utils/oneRepMax'
+import type { LogSegment, WorkoutExerciseEntry, SetEntry } from '@/components/log/types'
+import { LogSegmentedTabs } from '@/components/log/LogSegmentedTabs'
+import { QuickLogView } from '@/components/log/QuickLogView'
+import { ActiveWorkoutView } from '@/components/log/ActiveWorkoutView'
+import { QuickSingleExerciseView } from '@/components/log/QuickSingleExerciseView'
+import { PostWorkoutSummaryView } from '@/components/log/PostWorkoutSummaryView'
+import { ExercisesListView } from '@/components/log/ExercisesListView'
+import { ExerciseDetailView } from '@/components/log/ExerciseDetailView'
+import { InsightsView } from '@/components/log/InsightsView'
 
 interface LogClientProps {
   liftLogs: any[]
   liftGoals: any[]
   logPosts: any[]
   userId: string
+}
+
+type QuickLogSubView = 'default' | 'active-workout' | 'quick-single' | 'post-summary'
+
+function buildChartDataByExercise(allLifts: Array<{ exercise_name: string; weight: number; reps: number; rpe: number | null; date: string }>) {
+  const chartDataByExercise: Record<string, { date: string; e1RM: number; weight: number; reps: number }[]> = {}
+  allLifts.forEach((log) => {
+    const ex = log.exercise_name
+    if (!ex || log.weight <= 0 || log.reps <= 0) return
+    const e1RM = calculateOneRepMaxWithRPE(log.weight, log.reps, log.rpe ?? 10)
+    if (!chartDataByExercise[ex]) chartDataByExercise[ex] = []
+    chartDataByExercise[ex].push({ date: log.date, e1RM, weight: log.weight, reps: log.reps })
+  })
+  Object.keys(chartDataByExercise).forEach((ex) => {
+    const arr = chartDataByExercise[ex]
+    arr.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    const byDate: Record<string, typeof arr[0]> = {}
+    arr.forEach((d) => {
+      if (!byDate[d.date] || d.e1RM > byDate[d.date].e1RM) byDate[d.date] = d
+    })
+    chartDataByExercise[ex] = Object.values(byDate).sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    )
+  })
+  return chartDataByExercise
+}
+
+function getOverloadStatus(
+  chartData: { date: string; e1RM: number }[]
+): 'progressing' | 'steady' | 'plateau' | 'regression' | 'insufficient_data' {
+  if (chartData.length < 2) return 'insufficient_data'
+  const recent = chartData.slice(-6)
+  const first = recent[0].e1RM
+  const last = recent[recent.length - 1].e1RM
+  const delta = last - first
+  const pct = first > 0 ? (delta / first) * 100 : 0
+  if (pct >= 2) return 'progressing'
+  if (pct <= -2) return 'regression'
+  if (pct >= -0.5 && pct <= 0.5) return 'steady'
+  return 'plateau'
 }
 
 export function LogClient({
@@ -41,615 +69,393 @@ export function LogClient({
 }: LogClientProps) {
   const router = useRouter()
   const supabase = createClient()
-  const [activeTab, setActiveTab] = useState<'log' | 'progress' | 'goals' | 'history'>('log')
-  const [exercise, setExercise] = useState('')
-  const [sets, setSets] = useState<{ weight: string; reps: string; rpe: string }[]>([
+
+  const [segment, setSegment] = useState<LogSegment>('quick-log')
+  const [quickLogSubView, setQuickLogSubView] = useState<QuickLogSubView>('default')
+  const [workoutExercises, setWorkoutExercises] = useState<WorkoutExerciseEntry[]>([])
+  const [singleExerciseName, setSingleExerciseName] = useState('')
+  const [singleExerciseSets, setSingleExerciseSets] = useState<SetEntry[]>([
     { weight: '', reps: '', rpe: '' },
   ])
+  const [postSummarySets, setPostSummarySets] = useState<{ exercise_name: string; weight: number; reps: number; rpe?: number | null }[] | null>(null)
+  const [selectedExerciseDetail, setSelectedExerciseDetail] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [selectedChartExercise, setSelectedChartExercise] = useState<string | null>(null)
-  const [showGoalForm, setShowGoalForm] = useState(false)
-  const [goalExercise, setGoalExercise] = useState('')
-  const [goalWeight, setGoalWeight] = useState('')
-  const [goalReps, setGoalReps] = useState('1')
 
-  // Build combined lift data: lift_logs + PR posts + workout_exercises from posts
-  const allLifts: Array<{
-    exercise_name: string
-    weight: number
-    reps: number
-    rpe: number | null
-    date: string
-    source: 'log' | 'post'
-    _log?: any
-  }> = [
-    ...liftLogs.map((l) => ({
-      exercise_name: l.exercise_name,
-      weight: Number(l.weight),
-      reps: Number(l.reps),
-      rpe: l.rpe ? Number(l.rpe) : null,
-      date: l.logged_at?.split('T')[0] || l.logged_at,
-      source: 'log' as const,
-      _log: l,
-    })),
-    ...logPosts
-      .filter((p: any) => p.is_pr_post && p.pr_exercise && p.pr_weight != null && p.pr_reps != null)
-      .map((p: any) => ({
-        exercise_name: p.pr_exercise,
-        weight: Number(p.pr_weight || 0),
-        reps: Number(p.pr_reps || 1),
-        rpe: p.pr_rpe ? Number(p.pr_rpe) : null,
-        date: p.created_at?.split('T')[0] || p.created_at,
-        source: 'post' as const,
+  const allLifts = useMemo(
+    () => [
+      ...liftLogs.map((l: any) => ({
+        exercise_name: l.exercise_name,
+        weight: Number(l.weight),
+        reps: Number(l.reps),
+        rpe: l.rpe ? Number(l.rpe) : null,
+        date: l.logged_at?.split('T')[0] || l.logged_at,
+        source: 'log' as const,
+        _log: l,
       })),
-    ...logPosts.flatMap((p: any) =>
-      (p.workout_exercises || [])
-        .filter((we: any) => we.exercise_name && we.weight != null && we.reps != null && we.weight > 0 && we.reps > 0)
-        .map((we: any) => ({
-          exercise_name: we.exercise_name,
-          weight: Number(we.weight || 0),
-          reps: Number(we.reps || 1),
-          rpe: null,
+      ...(logPosts || [])
+        .filter((p: any) => p.is_pr_post && p.pr_exercise && p.pr_weight != null && p.pr_reps != null)
+        .map((p: any) => ({
+          exercise_name: p.pr_exercise,
+          weight: Number(p.pr_weight || 0),
+          reps: Number(p.pr_reps || 1),
+          rpe: p.pr_rpe ? Number(p.pr_rpe) : null,
           date: p.created_at?.split('T')[0] || p.created_at,
           source: 'post' as const,
-        }))
-    ),
-  ]
+        })),
+      ...(logPosts || []).flatMap((p: any) =>
+        (p.workout_exercises || [])
+          .filter((we: any) => we.exercise_name && we.weight != null && we.reps != null && we.weight > 0 && we.reps > 0)
+          .map((we: any) => ({
+            exercise_name: we.exercise_name,
+            weight: Number(we.weight || 0),
+            reps: Number(we.reps || 1),
+            rpe: null,
+            date: p.created_at?.split('T')[0] || p.created_at,
+            source: 'post' as const,
+          }))
+      ),
+    ],
+    [liftLogs, logPosts]
+  )
 
-  // Get unique exercises for chart selector
-  const exercises = [...new Set(allLifts.map((l) => l.exercise_name))].filter(Boolean).sort()
+  const chartDataByExercise = useMemo(
+    () => buildChartDataByExercise(allLifts),
+    [allLifts]
+  )
+  const exercises = useMemo(
+    () => [...new Set(allLifts.map((l) => l.exercise_name))].filter(Boolean).sort() as string[],
+    [allLifts]
+  )
 
-  // Build chart data: e1RM over time per exercise
-  const chartDataByExercise: Record<string, { date: string; e1RM: number; weight: number; reps: number }[]> = {}
-  allLifts.forEach((log) => {
-    const ex = log.exercise_name
-    if (!ex || log.weight <= 0 || log.reps <= 0) return
-    const e1RM = calculateOneRepMaxWithRPE(log.weight, log.reps, log.rpe ?? 10)
-    const date = log.date
-    if (!chartDataByExercise[ex]) chartDataByExercise[ex] = []
-    chartDataByExercise[ex].push({
-      date,
-      e1RM,
-      weight: log.weight,
-      reps: log.reps,
+  const recentExercises = useMemo(() => {
+    const seen = new Set<string>()
+    return allLifts
+      .map((l) => l.exercise_name)
+      .filter((name) => name && !seen.has(name) && (seen.add(name), true))
+      .slice(0, 16)
+  }, [allLifts])
+
+  const recentTemplates = useMemo(() => {
+    const byDate: Record<string, Set<string>> = {}
+    logPosts?.forEach((p: any) => {
+      const date = p.created_at?.split('T')[0] || p.created_at
+      if (!date) return
+      const names = new Set<string>()
+      if (p.workout_exercises?.length) {
+        p.workout_exercises.forEach((we: any) => we.exercise_name && names.add(we.exercise_name))
+      }
+      if (p.is_pr_post && p.pr_exercise) names.add(p.pr_exercise)
+      if (names.size === 0) return
+      if (!byDate[date]) byDate[date] = new Set()
+      names.forEach((n) => byDate[date].add(n))
     })
-  })
-  // Sort and dedupe by date (keep best e1RM per day for progress)
-  Object.keys(chartDataByExercise).forEach((ex) => {
-    const arr = chartDataByExercise[ex]
-    arr.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    const byDate: Record<string, typeof arr[0]> = {}
-    arr.forEach((d) => {
-      if (!byDate[d.date] || d.e1RM > byDate[d.date].e1RM) {
-        byDate[d.date] = d
+    return Object.entries(byDate)
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .slice(0, 5)
+      .map(([date, names]) => ({
+        name: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        exerciseCount: names.size,
+      }))
+  }, [logPosts])
+
+  const previousBestByExercise = useMemo(() => {
+    const out: Record<string, string> = {}
+    Object.entries(chartDataByExercise).forEach(([name, data]) => {
+      if (data.length > 0) {
+        const last = data[data.length - 1]
+        out[name] = `${last.weight}×${last.reps} (e1RM ${last.e1RM} lbs)`
       }
     })
-    chartDataByExercise[ex] = Object.values(byDate).sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    )
-  })
+    return out
+  }, [chartDataByExercise])
 
-  const handleLogLift = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const validSets = sets.filter((s) => s.weight && s.reps)
-    if (!exercise.trim() || validSets.length === 0) return
+  const startWorkout = () => {
+    setWorkoutExercises([
+      {
+        id: crypto.randomUUID(),
+        exercise_name: '',
+        sets: [{ weight: '', reps: '', rpe: '' }],
+      },
+    ])
+    setQuickLogSubView('active-workout')
+    setPostSummarySets(null)
+  }
+
+  const addWorkoutExercise = () => {
+    setWorkoutExercises((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        exercise_name: '',
+        sets: [{ weight: '', reps: '', rpe: '' }],
+      },
+    ])
+  }
+
+  const saveWorkoutToLogs = async () => {
+    const rows: { user_id: string; exercise_name: string; weight: number; reps: number; rpe: number | null; logged_at: string }[] = []
+    const loggedAt = new Date().toISOString()
+    workoutExercises.forEach((ex) => {
+      const name = ex.exercise_name?.trim()
+      if (!name) return
+      ex.sets.forEach((s) => {
+        const w = parseFloat(s.weight)
+        const r = parseInt(s.reps, 10)
+        if (Number.isFinite(w) && w > 0 && Number.isFinite(r) && r > 0) {
+          rows.push({
+            user_id: userId,
+            exercise_name: name,
+            weight: w,
+            reps: r,
+            rpe: s.rpe ? parseFloat(s.rpe) : null,
+            logged_at: loggedAt,
+          })
+        }
+      })
+    })
+    if (rows.length === 0) return
+    setLoading(true)
+    try {
+      const { error } = await (supabase.from('lift_logs') as any).insert(rows)
+      if (error) throw error
+      setPostSummarySets(
+        rows.map((r) => ({
+          exercise_name: r.exercise_name,
+          weight: r.weight,
+          reps: r.reps,
+          rpe: r.rpe,
+        }))
+      )
+      setQuickLogSubView('post-summary')
+      setWorkoutExercises([])
+      router.refresh()
+    } catch (err: any) {
+      alert(err.message || 'Failed to save workout')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const openQuickSingle = (presetName?: string) => {
+    setSingleExerciseName(presetName || '')
+    setSingleExerciseSets([{ weight: '', reps: '', rpe: '' }])
+    setQuickLogSubView('quick-single')
+    setPostSummarySets(null)
+  }
+
+  const saveQuickSingle = async () => {
+    const name = singleExerciseName.trim()
+    const validSets = singleExerciseSets.filter((s) => s.weight && s.reps)
+    if (!name || validSets.length === 0) return
     setLoading(true)
     try {
       const loggedAt = new Date().toISOString()
       const rows = validSets.map((s) => ({
         user_id: userId,
-        exercise_name: exercise.trim(),
+        exercise_name: name,
         weight: parseFloat(s.weight),
-        reps: parseInt(s.reps),
+        reps: parseInt(s.reps, 10),
         rpe: s.rpe ? parseFloat(s.rpe) : null,
         logged_at: loggedAt,
       }))
       const { error } = await (supabase.from('lift_logs') as any).insert(rows)
       if (error) throw error
-      setExercise('')
-      setSets([{ weight: '', reps: '', rpe: '' }])
-      router.refresh()
-    } catch (err: any) {
-      alert(err.message || 'Failed to log lift')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const addSet = () => setSets((prev) => [...prev, { weight: '', reps: '', rpe: '' }])
-  const removeSet = (i: number) => setSets((prev) => prev.filter((_, idx) => idx !== i))
-  const updateSet = (i: number, field: 'weight' | 'reps' | 'rpe', value: string) =>
-    setSets((prev) => prev.map((s, idx) => (idx === i ? { ...s, [field]: value } : s)))
-
-  const handleSetGoal = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!goalExercise.trim() || !goalWeight) return
-    setLoading(true)
-    try {
-      const { error } = await (supabase.from('lift_goals') as any).upsert(
-        {
-          user_id: userId,
-          exercise_name: goalExercise.trim(),
-          target_weight: parseFloat(goalWeight),
-          target_reps: parseInt(goalReps) || 1,
-        },
-        { onConflict: 'user_id,exercise_name' }
+      setPostSummarySets(
+        rows.map((r) => ({
+          exercise_name: r.exercise_name,
+          weight: r.weight,
+          reps: r.reps,
+          rpe: r.rpe,
+        }))
       )
-      if (error) throw error
-      setGoalExercise('')
-      setGoalWeight('')
-      setGoalReps('1')
-      setShowGoalForm(false)
+      setQuickLogSubView('post-summary')
+      setSingleExerciseName('')
+      setSingleExerciseSets([{ weight: '', reps: '', rpe: '' }])
       router.refresh()
     } catch (err: any) {
-      alert(err.message || 'Failed to set goal')
+      alert(err.message || 'Failed to log')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleShareToFeed = async (log: any) => {
-    try {
-      const { data: post, error } = await (supabase.from('posts') as any)
-        .insert({
-          user_id: userId,
-          content: null,
-          is_private: false,
-          is_log_only: false,
-          is_pr_post: true,
-          pr_exercise: log.exercise_name,
-          pr_weight: parseFloat(log.weight),
-          pr_reps: parseInt(log.reps),
-          pr_rpe: log.rpe ? parseFloat(log.rpe) : null,
+  const backToQuickLogDefault = () => {
+    setQuickLogSubView('default')
+    setPostSummarySets(null)
+  }
+
+  const exerciseDetailData = selectedExerciseDetail
+    ? (() => {
+        const data = chartDataByExercise[selectedExerciseDetail] || []
+        const lifts = allLifts.filter((l) => l.exercise_name === selectedExerciseDetail && l.weight > 0 && l.reps > 0)
+        const byDate: Record<string, { weight: number; reps: number; rpe: number | null; e1RM: number }> = {}
+        lifts.forEach((l) => {
+          const e1RM = calculateOneRepMaxWithRPE(l.weight, l.reps, l.rpe ?? 10)
+          const key = l.date
+          if (!byDate[key] || e1RM > byDate[key].e1RM) {
+            byDate[key] = { weight: l.weight, reps: l.reps, rpe: l.rpe, e1RM }
+          }
         })
-        .select()
-        .single()
+        const recentTopSets = Object.entries(byDate)
+          .sort((a, b) => b[0].localeCompare(a[0]))
+          .slice(0, 10)
+          .map(([date, s]) => ({ date, ...s }))
+        const status = getOverloadStatus(data)
+        const lastTwo = data.slice(-2)
+        const progressionSummary =
+          data.length >= 2 && lastTwo[1].e1RM > lastTwo[0].e1RM
+            ? `e1RM up from ${lastTwo[0].e1RM} to ${lastTwo[1].e1RM} lbs.`
+            : data.length >= 2
+              ? `Latest e1RM: ${data[data.length - 1].e1RM} lbs.`
+              : ''
+        return {
+          chartData: data,
+          recentTopSets,
+          overloadStatus: status,
+          progressionSummary,
+        }
+      })()
+    : null
 
-      if (error) throw error
-
-      // Create personal record for PR display
-      try {
-        await (supabase.from('personal_records') as any).insert({
-          user_id: userId,
-          exercise_name: log.exercise_name,
-          weight: parseFloat(log.weight),
-          reps: parseInt(log.reps),
-          post_id: post.id,
-          date: new Date().toISOString().split('T')[0],
-        })
-      } catch (_) {
-        /* personal_records may fail if duplicate */
-      }
-
-      // Link lift_log to post
-      await (supabase.from('lift_logs') as any).update({ post_id: post.id }).eq('id', log.id)
-
-      router.push('/feed')
-      router.refresh()
-    } catch (err: any) {
-      alert(err.message || 'Failed to share')
+  const insightStrings = useMemo(() => {
+    const exerciseCount = exercises.length
+    const progressing = exerciseCount
+      ? Object.keys(chartDataByExercise).filter((ex) => getOverloadStatus(chartDataByExercise[ex]) === 'progressing').length
+      : 0
+    const progressStatus =
+      exerciseCount === 0
+        ? 'Log lifts to get progress and volume insights.'
+        : progressing > 0
+          ? `Strength trending up on ${progressing} of ${exerciseCount} tracked exercises.`
+          : 'Log more sessions to see progress trends.'
+    const volumeQuality =
+      allLifts.length < 5
+        ? 'Volume insight will appear once you have more logged sets.'
+        : 'Weekly set counts look in range for most muscle groups. Add variety if you plateau.'
+    const goalCount = liftGoals?.length || 0
+    const goalAlignment =
+      goalCount === 0
+        ? 'Set lift goals in settings to see goal-aligned feedback.'
+        : `Tracking ${goalCount} goal${goalCount !== 1 ? 's' : ''}. Training appears aligned with your targets.`
+    const suggestedAdjustment =
+      exerciseCount >= 2
+        ? 'Consider adding 1–2 sets on your main compounds if recovery allows.'
+        : null
+    const maintainOnCutCheck =
+      allLifts.length >= 10
+        ? 'Strength maintained vs. last 4 weeks. Volume is adequate for maintaining on a cut.'
+        : null
+    return {
+      progressStatus,
+      volumeQuality,
+      goalAlignment,
+      suggestedAdjustment,
+      maintainOnCutCheck,
     }
-  }
-
-  const getGoalProgress = (exerciseName: string) => {
-    const goal = liftGoals.find((g) => g.exercise_name === exerciseName)
-    if (!goal) return null
-    const target = calculateOneRepMaxWithRPE(
-      Number(goal.target_weight),
-      Number(goal.target_reps),
-      10
-    )
-    const logs = allLifts.filter((l) => l.exercise_name === exerciseName && l.weight > 0)
-    if (logs.length === 0) return { goal, current: 0, target, percent: 0 }
-    const bestE1RM = Math.max(
-      ...logs.map((log) => calculateOneRepMaxWithRPE(log.weight, log.reps, log.rpe ?? 10))
-    )
-    const percent = target > 0 ? Math.min(100, Math.round((bestE1RM / target) * 100)) : 0
-    return { goal, current: bestE1RM, target, percent }
-  }
-
-  const tabs = [
-    { id: 'log' as const, label: 'Log Lift', icon: Plus },
-    { id: 'progress' as const, label: 'Progress', icon: TrendingUp },
-    { id: 'goals' as const, label: 'Goals', icon: Target },
-    { id: 'history' as const, label: 'History', icon: ClipboardList },
-  ]
+  }, [exercises.length, chartDataByExercise, allLifts.length, liftGoals?.length])
 
   return (
     <div className="w-full max-w-[640px] mx-auto px-4 md:px-5 pt-4 pb-5 sm:pb-6 md:py-8 min-w-0">
       <div className="text-left mb-5">
-        <h1 className="text-2xl font-semibold text-white tracking-tight flex items-center gap-2">
-          <ClipboardList className="w-7 h-7 text-white" />
-          Log
-        </h1>
+        <h1 className="text-2xl font-semibold text-white tracking-tight">Log</h1>
         <p className="text-white/70 text-sm mt-1">
-          Track lifts, view progress, set goals. Share to feed when you want.
+          Log fast. See progress. Get insights.
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-white/5 rounded-xl mb-6 overflow-x-auto">
-        {tabs.map((tab) => {
-          const Icon = tab.icon
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'bg-white text-black'
-                  : 'text-white/70 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              {tab.label}
-            </button>
-          )
-        })}
-      </div>
+      <LogSegmentedTabs active={segment} onChange={setSegment} />
 
-      {/* Log Lift Form */}
-      {activeTab === 'log' && (
-        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-6 mb-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Quick Log</h2>
-          <form onSubmit={handleLogLift} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-white/70 mb-2">Exercise</label>
-              <ExerciseAutocomplete
-                value={exercise}
-                onChange={setExercise}
-                placeholder="e.g., Bench Press"
-                className="input-field w-full"
-              />
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-white/70">Sets</label>
-                <button
-                  type="button"
-                  onClick={addSet}
-                  className="text-sm text-[#ff5555] hover:text-[#ff4444] font-medium flex items-center gap-1"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add set
-                </button>
-              </div>
-              <div className="space-y-3">
-                {sets.map((s, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-2 p-3 rounded-lg bg-white/5 border border-white/5"
-                  >
-                    <span className="text-white/70 text-sm w-6">{i + 1}.</span>
-                    <input
-                      type="number"
-                      value={s.weight}
-                      onChange={(e) => updateSet(i, 'weight', e.target.value)}
-                      placeholder="Weight"
-                      min="0"
-                      step="2.5"
-                      className="input-field flex-1 min-w-0"
-                    />
-                    <span className="text-white/50 text-sm">×</span>
-                    <input
-                      type="number"
-                      value={s.reps}
-                      onChange={(e) => updateSet(i, 'reps', e.target.value)}
-                      placeholder="Reps"
-                      min="1"
-                      className="input-field w-16"
-                    />
-                    <select
-                      value={s.rpe}
-                      onChange={(e) => updateSet(i, 'rpe', e.target.value)}
-                      className="input-field w-24 flex-shrink-0"
-                      title="RPE"
-                    >
-                      <option value="">RPE</option>
-                      {[10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6].map((v) => (
-                        <option key={v} value={v}>
-                          {v}
-                        </option>
-                      ))}
-                    </select>
-                    {sets.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeSet(i)}
-                        className="p-1.5 text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-                        aria-label="Remove set"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-white/50 mt-2">
-                RPE 10 = max effort. Lower RPE adjusts e1RM estimate.
-              </p>
-            </div>
-            <button
-              type="submit"
-              disabled={loading || sets.every((s) => !s.weight || !s.reps)}
-              className="w-full btn-primary py-3 font-bold flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <span className="animate-pulse">Logging...</span>
-              ) : (
-                <>
-                  <Plus className="w-5 h-5" />
-                  Log {sets.filter((s) => s.weight && s.reps).length || 1} set
-                  {sets.filter((s) => s.weight && s.reps).length !== 1 ? 's' : ''}
-                </>
-              )}
-            </button>
-          </form>
-        </div>
+      {/* Quick Log segment */}
+      {segment === 'quick-log' && (
+        <>
+          {quickLogSubView === 'default' && (
+            <QuickLogView
+              onStartWorkout={startWorkout}
+              onQuickAddExercise={() => openQuickSingle()}
+              recentExercises={recentExercises}
+              recentTemplates={recentTemplates}
+              onSelectRecentExercise={(name) => openQuickSingle(name)}
+              onSelectTemplate={(name) => {
+                startWorkout()
+              }}
+            />
+          )}
+          {quickLogSubView === 'active-workout' && (
+            <ActiveWorkoutView
+              exercises={workoutExercises}
+              onExercisesChange={setWorkoutExercises}
+              onFinishWorkout={saveWorkoutToLogs}
+              onAddExercise={addWorkoutExercise}
+              previousBestByExercise={previousBestByExercise}
+            />
+          )}
+          {quickLogSubView === 'quick-single' && (
+            <QuickSingleExerciseView
+              exerciseName={singleExerciseName}
+              onExerciseNameChange={setSingleExerciseName}
+              sets={singleExerciseSets}
+              onSetsChange={setSingleExerciseSets}
+              onLog={saveQuickSingle}
+              onBack={backToQuickLogDefault}
+              previousBest={singleExerciseName ? previousBestByExercise[singleExerciseName] ?? null : null}
+              loading={loading}
+            />
+          )}
+          {quickLogSubView === 'post-summary' && postSummarySets && postSummarySets.length > 0 && (
+            <PostWorkoutSummaryView
+              summarySets={postSummarySets}
+              onViewInsights={() => {
+                setSegment('insights')
+                setQuickLogSubView('default')
+                setPostSummarySets(null)
+              }}
+              onLogAgain={backToQuickLogDefault}
+            />
+          )}
+        </>
       )}
 
-      {/* Progress Charts */}
-      {activeTab === 'progress' && (
-        <div className="space-y-6">
-          {exercises.length === 0 ? (
-            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-8 text-center">
-              <p className="text-white/70">Log some lifts to see progress charts.</p>
-            </div>
-          ) : (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Select exercise</label>
-                <div className="flex flex-wrap gap-2">
-                  {exercises.map((ex) => (
-                    <button
-                      key={ex}
-                      onClick={() => setSelectedChartExercise(selectedChartExercise === ex ? null : ex)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        selectedChartExercise === ex
-                          ? 'bg-white text-black'
-                          : 'bg-white/5 text-white/70 hover:bg-white/10'
-                      }`}
-                    >
-                      {ex}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {selectedChartExercise && chartDataByExercise[selectedChartExercise]?.length > 0 && (
-                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-                  <h3 className="text-white font-semibold mb-4">{selectedChartExercise} — e1RM over time</h3>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={chartDataByExercise[selectedChartExercise]}
-                        margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-                      >
-                        <defs>
-                          <linearGradient id="colorE1RM" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#ffffff" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#ffffff" stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                        <XAxis
-                          dataKey="date"
-                          stroke="#666"
-                          tick={{ fill: '#a1a1a1', fontSize: 11 }}
-                          tickFormatter={(v) => format(new Date(v), 'M/d')}
-                        />
-                        <YAxis
-                          stroke="#666"
-                          tick={{ fill: '#a1a1a1', fontSize: 11 }}
-                          domain={['dataMin - 10', 'dataMax + 10']}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: '#1a1a1a',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: 8,
-                          }}
-                          labelStyle={{ color: '#fff' }}
-                          formatter={(value: number | undefined) => [`${value ?? 0} lbs`, 'e1RM']}
-                          labelFormatter={(label) => format(new Date(label), 'MMM d, yyyy')}
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="e1RM"
-                          stroke="#ffffff"
-                          strokeWidth={2}
-                          fill="url(#colorE1RM)"
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="mt-4 flex justify-end">
-                    <Link
-                      href="/create"
-                      className="text-sm text-white hover:text-white/80 font-medium flex items-center gap-1"
-                    >
-                      <Share2 className="w-4 h-4" />
-                      Share to feed
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+      {/* Exercises segment */}
+      {segment === 'exercises' && (
+        <>
+          {selectedExerciseDetail == null ? (
+            <ExercisesListView
+              exercises={exercises}
+              chartDataByExercise={chartDataByExercise}
+              onSelectExercise={setSelectedExerciseDetail}
+            />
+          ) : exerciseDetailData ? (
+            <ExerciseDetailView
+              exerciseName={selectedExerciseDetail}
+              chartData={exerciseDetailData.chartData}
+              recentTopSets={exerciseDetailData.recentTopSets}
+              overloadStatus={exerciseDetailData.overloadStatus}
+              progressionSummary={exerciseDetailData.progressionSummary}
+              onQuickLog={() => {
+                setSegment('quick-log')
+                setQuickLogSubView('quick-single')
+                setSingleExerciseName(selectedExerciseDetail)
+                setSingleExerciseSets([{ weight: '', reps: '', rpe: '' }])
+                setSelectedExerciseDetail(null)
+              }}
+              onBack={() => setSelectedExerciseDetail(null)}
+            />
+          ) : null}
+        </>
       )}
 
-      {/* Goals */}
-      {activeTab === 'goals' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Lift Goals</h2>
-            <button
-              onClick={() => setShowGoalForm(!showGoalForm)}
-              className="text-sm text-[#ff5555] hover:text-[#ff4444] font-medium flex items-center gap-1"
-            >
-              <Plus className="w-4 h-4" />
-              {showGoalForm ? 'Cancel' : 'Add goal'}
-            </button>
-          </div>
-
-          {showGoalForm && (
-            <form onSubmit={handleSetGoal} className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4">
-              <ExerciseAutocomplete
-                value={goalExercise}
-                onChange={setGoalExercise}
-                placeholder="Exercise"
-                className="input-field w-full"
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-white/70 mb-1">Target weight (lbs)</label>
-                  <input
-                    type="number"
-                    value={goalWeight}
-                    onChange={(e) => setGoalWeight(e.target.value)}
-                    className="input-field w-full"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-white/70 mb-1">Target reps</label>
-                  <input
-                    type="number"
-                    value={goalReps}
-                    onChange={(e) => setGoalReps(e.target.value)}
-                    className="input-field w-full"
-                    min="1"
-                  />
-                </div>
-              </div>
-              <button type="submit" disabled={loading} className="btn-primary py-2 px-4 font-semibold">
-                Set goal
-              </button>
-            </form>
-          )}
-
-          <div className="space-y-3">
-            {liftGoals.length === 0 && !showGoalForm ? (
-              <p className="text-white/70 text-sm">No goals set. Add one above.</p>
-            ) : (
-              liftGoals.map((goal) => {
-                const progress = getGoalProgress(goal.exercise_name)
-                if (!progress) return null
-                const { goal: g, current, target, percent } = progress as {
-                  goal: any
-                  current: number
-                  target: number
-                  percent: number
-                }
-                return (
-                  <div
-                    key={goal.id}
-                    className="rounded-xl border border-white/10 bg-white/[0.02] p-4"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-semibold text-white">{g.exercise_name}</span>
-                      <span className="text-white font-bold">{percent}%</span>
-                    </div>
-                    <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-2">
-                      <div
-                        className="h-full bg-white rounded-full transition-all"
-                        style={{ width: `${Math.min(100, percent)}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-white/70">
-                      {current} / {target} lbs e1RM
-                    </p>
-                  </div>
-                )
-              })
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* History: recent lifts + all posted activity */}
-      {activeTab === 'history' && (
-        <div className="space-y-4">
-          {allLifts.length > 0 && (
-            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-              <h3 className="text-white font-semibold mb-3">Recent lifts</h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {(() => {
-                  const grouped = allLifts
-                    .filter((l) => l.weight > 0)
-                    .slice(0, 80)
-                    .reduce(
-                      (acc: { key: string; logs: typeof allLifts }[], log) => {
-                        const key = `${log.exercise_name}|${log.date}`
-                        const existing = acc.find((g) => g.key === key)
-                        if (existing) existing.logs.push(log)
-                        else acc.push({ key, logs: [log] })
-                        return acc
-                      },
-                      []
-                    )
-                  return grouped.slice(0, 20).map(({ key, logs }) => {
-                    const log = logs[0]
-                    const bestLog = logs.reduce((best, l) => {
-                      const e = calculateOneRepMaxWithRPE(l.weight, l.reps, l.rpe ?? 10)
-                      const bestE = calculateOneRepMaxWithRPE(best.weight, best.reps, best.rpe ?? 10)
-                      return e > bestE ? l : best
-                    })
-                    const setsDisplay = logs
-                      .map((l) => `${l.weight}×${l.reps}${l.rpe ? `@${l.rpe}` : ''}`)
-                      .join(' · ')
-                    const canShare = bestLog.source === 'log' && bestLog._log
-                    return (
-                        <div
-                        key={key}
-                        className="flex justify-between items-center py-2 border-b border-white/10 last:border-0 group"
-                      >
-                        <div>
-                          <span className="text-white font-medium">{log.exercise_name}</span>
-                          <span className="text-white/70 text-sm ml-2">{setsDisplay}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-white font-semibold tabular-nums">
-                            {calculateOneRepMaxWithRPE(bestLog.weight, bestLog.reps, bestLog.rpe ?? 10)} lbs
-                          </span>
-                          {canShare && (
-                            <button
-                              onClick={() => handleShareToFeed(bestLog._log)}
-                              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-all"
-                              title="Share to feed"
-                            >
-                              <Share2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })
-                })()}
-              </div>
-            </div>
-          )}
-
-          {logPosts.length > 0 && (
-            <div>
-              <h3 className="text-white font-semibold mb-3">Activity</h3>
-              <p className="text-white/70 text-sm mb-3">
-                Log-only, PRs, and workouts you&apos;ve posted
-              </p>
-              <div className="flex flex-col gap-3">
-                {logPosts.map((post) => (
-                  <LogPostCard key={post.id} post={post} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {allLifts.length === 0 && logPosts.length === 0 && (
-            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-8 text-center">
-              <p className="text-white/70">No history yet. Log a lift above.</p>
-            </div>
-          )}
-        </div>
+      {/* Insights segment */}
+      {segment === 'insights' && (
+        <InsightsView
+          progressStatus={insightStrings.progressStatus}
+          volumeQuality={insightStrings.volumeQuality}
+          goalAlignment={insightStrings.goalAlignment}
+          suggestedAdjustment={insightStrings.suggestedAdjustment}
+          maintainOnCutCheck={insightStrings.maintainOnCutCheck}
+          onAskQuestion={(q) => {
+            console.log('Ask question (placeholder):', q)
+          }}
+        />
       )}
     </div>
   )
