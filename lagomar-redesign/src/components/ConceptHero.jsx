@@ -4,17 +4,35 @@ const LOGO_SRC = '/lago-mar-logo.png'
 
 export function ConceptHero({ theme, themeId, hero }) {
   const c = theme.colors
+  const useVideo = hero.video
 
   return (
-    <section className="relative aspect-[16/10] w-full min-h-[420px] max-h-[85vh] overflow-hidden md:aspect-[3/1] md:min-h-[480px]">
-      <img
-        src={hero.image}
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover"
-      />
+    <section className="relative w-full min-h-[75vh] overflow-hidden md:min-h-[85vh]">
+      {useVideo ? (
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster={hero.image}
+          className="absolute inset-0 h-full w-full object-cover"
+        >
+          <source src={hero.video} type="video/mp4" />
+          <img src={hero.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        </video>
+      ) : (
+        <img
+          src={hero.image}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
       <div
         className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
-        style={{ backgroundColor: c.overlay }}
+        style={{
+          backgroundColor: c.overlay,
+          paddingTop: '12%',
+        }}
       >
         <img
           src={LOGO_SRC}
@@ -30,12 +48,19 @@ export function ConceptHero({ theme, themeId, hero }) {
         <p className="hidden font-serif text-3xl font-semibold tracking-tight text-white md:text-4xl">
           Lago Mar
         </p>
-        <h1 className="font-serif text-2xl font-medium tracking-wide text-white drop-shadow md:text-4xl lg:text-5xl">
+        {hero.eyebrow && (
+          <p className="font-sans text-sm font-medium tracking-widest uppercase text-white/90 md:text-base">
+            {hero.eyebrow}
+          </p>
+        )}
+        <h1 className="mt-2 font-serif text-3xl font-medium italic tracking-wide text-white drop-shadow md:text-5xl lg:text-6xl">
           {hero.title}
         </h1>
-        <p className="mt-3 max-w-xl font-sans text-base font-light leading-relaxed text-white/95 md:text-lg">
-          {hero.subtitle}
-        </p>
+        {hero.tagline && (
+          <p className="mt-3 font-serif text-lg font-normal text-white/95 md:text-xl lg:text-2xl">
+            {hero.tagline}
+          </p>
+        )}
         <a
           href={themeId ? `#${themeId}-accommodations` : '#accommodations'}
           className="mt-8 inline-block rounded-sm px-6 py-3 text-sm font-medium tracking-wide transition-opacity hover:opacity-90"

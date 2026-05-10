@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import { MusicProvider } from './providers/MusicProvider'
+import { CoachChatDock } from '@/components/CoachChatDock'
 
 interface AuthContextType {
   user: User | null
@@ -41,6 +42,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider value={{ user, loading }}>
       <MusicProvider>
         {children}
+        <CoachChatDock />
       </MusicProvider>
     </AuthContext.Provider>
   )

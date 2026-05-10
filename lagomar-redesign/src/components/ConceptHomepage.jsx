@@ -7,6 +7,7 @@ import { ConceptFooter } from './ConceptFooter'
 import { content } from '../data/content'
 
 export function ConceptHomepage({ theme, themeId, showSelectButton = true }) {
+  const c = theme.colors
   const { hero, intro, accommodations, dining, amenities, family, weddings, membership, gallery, nav, footer } = content
 
   return (

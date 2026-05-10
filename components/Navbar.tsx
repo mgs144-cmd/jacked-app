@@ -17,7 +17,7 @@ export function Navbar() {
     { href: '/feed', icon: Home, label: 'Feed' },
     { href: '/log', icon: ClipboardList, label: 'Log' },
     { href: '/create', icon: PlusCircle, label: 'New', isPrimary: true },
-    { href: '/discover', icon: Users, label: 'Discover' },
+    { href: '/community', icon: Users, label: 'Community' },
     { href: '/profile', icon: User, label: 'Profile' },
   ]
 

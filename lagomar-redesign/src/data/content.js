@@ -5,10 +5,41 @@ const IMG = (id, w = 1200) =>
 
 export const content = {
   hero: {
+    eyebrow: 'EXPERIENCE LAGO MAR IN',
     title: 'A Timeless Beachfront Retreat',
-    subtitle: 'Where family traditions meet coastal elegance on Fort Lauderdale’s finest stretch of sand.',
-    cta: 'Explore Your Stay',
-    image: IMG('1507525428034-723d964cab35', 1600), // beach resort
+    tagline: "Fort Lauderdale's Oceanfront Estate",
+    cta: 'DISCOVER',
+    video: '/hero-video.mp4',
+    image: IMG('1507525428034-723d964cab35', 1600), // poster/fallback
+  },
+  welcome: {
+    eyebrow: 'WELCOME TO',
+    heading: 'Lago Mar Beach Resort & Club',
+    body: 'The Fort Lauderdale beachfront resort that is decidedly, and purposefully, different. Understated, not loud. Gracious, not pretentious. Deferential, not presumptuous. In short, a sophisticated retreat where you can appreciate the enduring traditions of genuine hospitality.',
+    awards: 'Lago Mar has recently been recognized by Condé Nast Traveler, Travel + Leisure, U.S. News & World Report, Veranda, and TripAdvisor, which named Lago Mar the No. 1 family hotel in the U.S. and No. 18 overall hotel in the U.S.',
+    awardLinks: [
+      { label: 'Condé Nast Traveler', href: '#' },
+      { label: 'Travel + Leisure', href: '#' },
+      { label: 'U.S. News & World Report', href: '#' },
+      { label: 'Veranda', href: '#' },
+      { label: 'TripAdvisor', href: '#' },
+    ],
+    cta: 'DISCOVER',
+  },
+  highlights: {
+    line: 'TEN LUSH ACRES. LARGEST PRIVATE BEACH. STATELY ROOMS AND SUITES. ALL FOR YOU.',
+    items: [
+      { label: 'Complimentary Wi-Fi', icon: 'wifi' },
+      { label: 'No Resort Fee', icon: 'fee' },
+      { label: 'Free Valet and Self-Parking', sublabel: 'One car per room please.', icon: 'parking' },
+    ],
+  },
+  blog: {
+    eyebrow: "LAGO MAR BEACH RESORT & CLUB'S BLOG",
+    title: 'The Beach Life',
+    body: 'Debbie Banks Snyder represents the third generation of the Banks family who helps run Lago Mar in a marketing executive capacity. "Deb," as she\'s known to most, is a part owner of the resort who literally grew up on the hotel grounds with her brother Lee.',
+    cta: 'LEARN MORE',
+    image: '/family-beach.png',
   },
   intro: {
     heading: 'Gracious Hospitality, Unchanged in Spirit',

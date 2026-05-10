@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { calculateOneRepMaxWithRPE } from '@/utils/oneRepMax'
+import { collectAllLiftsFromSources, buildChartDataByExercise } from '@/lib/liftChartData'
 import type { LogSegment, WorkoutExerciseEntry, SetEntry } from '@/components/log/types'
 import { LogSegmentedTabs } from '@/components/log/LogSegmentedTabs'
 import { QuickLogView } from '@/components/log/QuickLogView'
@@ -13,6 +14,8 @@ import { PostWorkoutSummaryView } from '@/components/log/PostWorkoutSummaryView'
 import { ExercisesListView } from '@/components/log/ExercisesListView'
 import { ExerciseDetailView } from '@/components/log/ExerciseDetailView'
 import { InsightsView } from '@/components/log/InsightsView'
+import Link from 'next/link'
+import { Target } from 'lucide-react'
 
 interface LogClientProps {
   liftLogs: any[]
@@ -22,29 +25,6 @@ interface LogClientProps {
 }
 
 type QuickLogSubView = 'default' | 'active-workout' | 'quick-single' | 'post-summary'
-
-function buildChartDataByExercise(allLifts: Array<{ exercise_name: string; weight: number; reps: number; rpe: number | null; date: string }>) {
-  const chartDataByExercise: Record<string, { date: string; e1RM: number; weight: number; reps: number }[]> = {}
-  allLifts.forEach((log) => {
-    const ex = log.exercise_name
-    if (!ex || log.weight <= 0 || log.reps <= 0) return
-    const e1RM = calculateOneRepMaxWithRPE(log.weight, log.reps, log.rpe ?? 10)
-    if (!chartDataByExercise[ex]) chartDataByExercise[ex] = []
-    chartDataByExercise[ex].push({ date: log.date, e1RM, weight: log.weight, reps: log.reps })
-  })
-  Object.keys(chartDataByExercise).forEach((ex) => {
-    const arr = chartDataByExercise[ex]
-    arr.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    const byDate: Record<string, typeof arr[0]> = {}
-    arr.forEach((d) => {
-      if (!byDate[d.date] || d.e1RM > byDate[d.date].e1RM) byDate[d.date] = d
-    })
-    chartDataByExercise[ex] = Object.values(byDate).sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    )
-  })
-  return chartDataByExercise
-}
 
 function getOverloadStatus(
   chartData: { date: string; e1RM: number }[]
@@ -81,47 +61,9 @@ export function LogClient({
   const [selectedExerciseDetail, setSelectedExerciseDetail] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const allLifts = useMemo(
-    () => [
-      ...liftLogs.map((l: any) => ({
-        exercise_name: l.exercise_name,
-        weight: Number(l.weight),
-        reps: Number(l.reps),
-        rpe: l.rpe ? Number(l.rpe) : null,
-        date: l.logged_at?.split('T')[0] || l.logged_at,
-        source: 'log' as const,
-        _log: l,
-      })),
-      ...(logPosts || [])
-        .filter((p: any) => p.is_pr_post && p.pr_exercise && p.pr_weight != null && p.pr_reps != null)
-        .map((p: any) => ({
-          exercise_name: p.pr_exercise,
-          weight: Number(p.pr_weight || 0),
-          reps: Number(p.pr_reps || 1),
-          rpe: p.pr_rpe ? Number(p.pr_rpe) : null,
-          date: p.created_at?.split('T')[0] || p.created_at,
-          source: 'post' as const,
-        })),
-      ...(logPosts || []).flatMap((p: any) =>
-        (p.workout_exercises || [])
-          .filter((we: any) => we.exercise_name && we.weight != null && we.reps != null && we.weight > 0 && we.reps > 0)
-          .map((we: any) => ({
-            exercise_name: we.exercise_name,
-            weight: Number(we.weight || 0),
-            reps: Number(we.reps || 1),
-            rpe: null,
-            date: p.created_at?.split('T')[0] || p.created_at,
-            source: 'post' as const,
-          }))
-      ),
-    ],
-    [liftLogs, logPosts]
-  )
+  const allLifts = useMemo(() => collectAllLiftsFromSources(liftLogs, logPosts), [liftLogs, logPosts])
 
-  const chartDataByExercise = useMemo(
-    () => buildChartDataByExercise(allLifts),
-    [allLifts]
-  )
+  const chartDataByExercise = useMemo(() => buildChartDataByExercise(allLifts), [allLifts])
   const exercises = useMemo(
     () => [...new Set(allLifts.map((l) => l.exercise_name))].filter(Boolean).sort() as string[],
     [allLifts]
@@ -361,6 +303,13 @@ export function LogClient({
         <p className="text-white/70 text-sm mt-1">
           Log fast. See progress. Get insights.
         </p>
+        <Link
+          href="/log/goals"
+          className="mt-4 inline-flex items-center gap-2 rounded-xl border border-amber-400/25 bg-amber-500/[0.08] px-4 py-2.5 text-sm font-medium text-amber-100/95 transition-colors hover:bg-amber-500/[0.12]"
+        >
+          <Target className="h-4 w-4 text-amber-300 shrink-0" />
+          Lift goals — track targets like 245 lb × 1
+        </Link>
       </div>
 
       <LogSegmentedTabs active={segment} onChange={setSegment} />

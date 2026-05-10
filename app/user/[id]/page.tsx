@@ -118,11 +118,11 @@ export default async function UserProfilePage({
       
       <div className="max-w-2xl mx-auto px-4 md:px-8 pt-6 md:pt-8">
         <Link
-          href="/discover"
+          href="/community"
           className="inline-flex items-center space-x-2 text-white/70 hover:text-white transition-colors mb-6 font-medium"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span>Back to Discover</span>
+          <span>Back to Community</span>
         </Link>
       </div>
 

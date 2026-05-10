@@ -35,3 +35,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Large media (> GitHub 100MB file limit). Keep locally for dev or host via CDN / Vercel Blob / S3.
+lagomar-redesign/public/hero-video.mov
+lagomar-redesign/public/hero-video.mp4
+

@@ -17,7 +17,6 @@ export default async function LogPage() {
   // Fetch lift logs (standalone entries, not from posts)
   let liftLogs: any[] = []
   let liftGoals: any[] = []
-
   try {
     const { data: logs } = await supabase
       .from('lift_logs')
