@@ -9,9 +9,13 @@ import { MusicSelector } from '@/components/MusicSelector'
 import { SongPreviewPlayer } from '@/components/SongPreviewPlayer'
 import { PrivacyToggle } from '@/components/PrivacyToggle'
 import { WorkoutForm } from '@/components/WorkoutForm'
+import { buildWorkoutExerciseRows, type WorkoutLogTier, type WorkoutExerciseDraft } from '@/lib/workoutPost'
 import { ExerciseAutocomplete } from '@/components/ExerciseAutocomplete'
-import Image from 'next/image'
-import { Loader2, Upload, X, Image as ImageIcon, Video, Trophy } from 'lucide-react'
+import { ImageCropModal } from '@/components/ImageCropModal'
+import { PostDraftPreview } from '@/components/PostDraftPreview'
+import { Loader2, Upload, Image as ImageIcon, Pencil, Video, Trophy, X } from 'lucide-react'
+import { BrandHeading } from '@/components/BrandHeading'
+import { ensureExercisesInCatalog } from '@/lib/exerciseCatalog'
 
 function CreatePage() {
   const [content, setContent] = useState('')
@@ -41,38 +45,85 @@ function CreatePage() {
   const [prWeight, setPRWeight] = useState('')
   const [prReps, setPRReps] = useState('')
   const [prRpe, setPrRpe] = useState('')
-  const [workoutExercises, setWorkoutExercises] = useState<Array<{ exercise_name: string; sets_data: Array<{ weight: number | null; reps: number | null }>; order_index: number }>>([])
+  const [workoutTier, setWorkoutTier] = useState<WorkoutLogTier>('none')
+  const [workoutExercises, setWorkoutExercises] = useState<WorkoutExerciseDraft[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [cropOpen, setCropOpen] = useState(false)
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
+  const [previewUsername, setPreviewUsername] = useState('You')
+  const [previewAvatar, setPreviewAvatar] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
   const { user } = useAuth()
+
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    ;(async () => {
+      const { data } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).maybeSingle()
+      if (cancelled || !data) return
+      const row = data as { username?: string | null; avatar_url?: string | null }
+      if (typeof row.username === 'string' && row.username) setPreviewUsername(row.username)
+      if (typeof row.avatar_url === 'string' && row.avatar_url) setPreviewAvatar(row.avatar_url)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id, supabase])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    setMediaFile(file)
     const type = file.type.startsWith('video/') ? 'video' : 'image'
-    setMediaType(type)
+    if (type === 'video') {
+      setMediaFile(file)
+      setMediaType('video')
+      const reader = new FileReader()
+      reader.onloadend = () => setMediaPreview(reader.result as string)
+      reader.readAsDataURL(file)
+      e.target.value = ''
+      return
+    }
 
     const reader = new FileReader()
     reader.onloadend = () => {
-      setMediaPreview(reader.result as string)
+      setCropSrc(reader.result as string)
+      setCropOpen(true)
     }
     reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  const onCropDone = (file: File) => {
+    if (mediaPreview?.startsWith('blob:')) URL.revokeObjectURL(mediaPreview)
+    setMediaFile(file)
+    setMediaType('image')
+    setMediaPreview(URL.createObjectURL(file))
+    setCropOpen(false)
+    setCropSrc(null)
+  }
+
+  const openEditPhoto = () => {
+    if (mediaType !== 'image' || !mediaPreview) return
+    setCropSrc(mediaPreview)
+    setCropOpen(true)
   }
 
   const handleRemoveMedia = () => {
+    if (mediaPreview?.startsWith('blob:')) URL.revokeObjectURL(mediaPreview)
     setMediaFile(null)
     setMediaPreview(null)
     setMediaType(null)
+    setCropOpen(false)
+    setCropSrc(null)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!user || (!content.trim() && !mediaFile)) {
+    if (!user || (!content.trim() && !mediaFile && !mediaPreview)) {
       setError('Please add some content or media')
       return
     }
@@ -152,30 +203,17 @@ function CreatePage() {
         })
       }
 
-      // Create workout exercises if any
-      if (workoutExercises.length > 0 && workoutExercises.some(ex => ex.exercise_name.trim())) {
-        // Flatten sets_data into individual workout_exercise entries
-        const validExercises: any[] = []
-        workoutExercises
-          .filter(ex => ex.exercise_name.trim())
-          .forEach((ex, exerciseIndex) => {
-            ex.sets_data.forEach((set, setIndex) => {
-              if (set.weight !== null && set.reps !== null) {
-                validExercises.push({
-                  post_id: postData.id,
-                  exercise_name: ex.exercise_name.trim(),
-                  sets: 1, // Each entry is one set
-                  reps: set.reps,
-                  weight: set.weight,
-                  order_index: exerciseIndex,
-                })
-              }
-            })
-          })
-
-        if (validExercises.length > 0) {
-          await (supabase.from('workout_exercises') as any).insert(validExercises)
-        }
+      const workoutRows = buildWorkoutExerciseRows(workoutTier, workoutExercises, postData.id)
+      if (workoutRows.length > 0) {
+        await (supabase.from('workout_exercises') as any).insert(workoutRows)
+        void ensureExercisesInCatalog(
+          supabase,
+          user.id,
+          workoutRows.map((r) => r.exercise_name)
+        )
+      }
+      if (isPRPost && prExercise.trim()) {
+        void ensureExercisesInCatalog(supabase, user.id, [prExercise.trim()])
       }
 
       router.push('/feed')
@@ -189,12 +227,38 @@ function CreatePage() {
 
   return (
     <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-black">
+      {cropSrc && (
+        <ImageCropModal
+          imageSrc={cropSrc}
+          open={cropOpen}
+          onClose={() => {
+            setCropOpen(false)
+            setCropSrc(null)
+          }}
+          onCropped={onCropDone}
+        />
+      )}
+
       <Navbar />
-      
+
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-white tracking-tight mb-1">Create Post</h1>
-          <p className="text-[#a1a1a1] text-sm">Share your progress with the community</p>
+          <BrandHeading variant="page" className="mb-1">Create Post</BrandHeading>
+          <p className="ui-subtitle mt-2">Share your progress with the community</p>
+        </div>
+
+        <div className="mb-8">
+          <PostDraftPreview
+            username={previewUsername}
+            avatarUrl={previewAvatar}
+            content={content}
+            mediaPreview={mediaPreview}
+            mediaType={mediaType}
+            isPRPost={isPRPost}
+            prExercise={prExercise}
+            prWeight={prWeight}
+            prReps={prReps}
+          />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -205,61 +269,44 @@ function CreatePage() {
           )}
 
           {mediaPreview && (
-            <div className="relative rounded-[12px] overflow-hidden border border-white/5" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-              <div className="relative w-full aspect-square bg-[#1a1a1a]">
-                {mediaType === 'video' ? (
-                  <video
-                    src={mediaPreview}
-                    controls
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <Image
-                    src={mediaPreview}
-                    alt="Preview"
-                    fill
-                    className="object-cover"
-                  />
-                )}
-              </div>
+            <div className="flex flex-wrap items-center gap-3">
+              {mediaType === 'image' && (
+                <button
+                  type="button"
+                  onClick={openEditPhoto}
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.06] px-4 py-2.5 text-sm font-medium text-white hover:bg-white/[0.1]"
+                >
+                  <Pencil className="h-4 w-4 text-white/70" />
+                  Edit photo
+                </button>
+              )}
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/15 px-4 py-2.5 text-sm font-medium text-white/80 hover:bg-white/[0.06]">
+                <Upload className="h-4 w-4 text-white/50" />
+                {mediaType === 'video' ? 'Replace video' : 'Replace media'}
+                <input type="file" accept="image/*,video/*" onChange={handleFileChange} className="hidden" />
+              </label>
               <button
                 type="button"
                 onClick={handleRemoveMedia}
-                className="absolute top-4 right-4 w-10 h-10 bg-black/80 backdrop-blur-sm hover:bg-white text-black rounded-full flex items-center justify-center transition-all"
+                className="inline-flex items-center gap-2 rounded-xl border border-red-500/25 px-4 py-2.5 text-sm font-medium text-red-300/90 hover:bg-red-500/10"
               >
-                <X className="w-5 h-5" />
+                <X className="h-4 w-4" />
+                Remove
               </button>
             </div>
           )}
 
           {!mediaPreview && (
-            <div className="rounded-[12px] border-2 border-dashed border-white/10 p-12 text-center bg-white/[0.02] hover:border-white/30 transition-all">
-              <label className="cursor-pointer flex flex-col items-center space-y-4">
-                <div className="w-20 h-20 rounded-[12px] bg-white/5 flex items-center justify-center">
-                  <Upload className="w-10 h-10 text-white/60" />
-                </div>
-                <div>
-                  <p className="text-white font-semibold text-base mb-1">Upload Photo or Video</p>
-                  <p className="text-white/70 text-sm">Click to browse or drag and drop</p>
-                </div>
-                <div className="flex items-center space-x-4 text-sm text-white/50">
-                  <div className="flex items-center space-x-1">
-                    <ImageIcon className="w-4 h-4" />
-                    <span>JPG, PNG</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Video className="w-4 h-4" />
-                    <span>MP4, MOV</span>
-                  </div>
-                </div>
-                <input
-                  type="file"
-                  accept="image/*,video/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </label>
-            </div>
+            <label className="flex cursor-pointer flex-col items-center py-6">
+              <Upload className="h-10 w-10 text-white/70" strokeWidth={1.5} />
+              <p className="mt-3 ui-body-medium text-white">Upload photo or video</p>
+              <input
+                type="file"
+                accept="image/*,video/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
           )}
 
           <div className="rounded-[12px] border border-white/5 p-6 bg-white/[0.02]" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
@@ -292,6 +339,7 @@ function CreatePage() {
                   onChange={setPRExercise}
                   placeholder="e.g., Deadlift"
                   className="input-field w-full"
+                  userId={user?.id}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -336,7 +384,13 @@ function CreatePage() {
           )}
 
           {/* Workout Details */}
-          <WorkoutForm exercises={workoutExercises} onChange={setWorkoutExercises} />
+          <WorkoutForm
+            tier={workoutTier}
+            onTierChange={setWorkoutTier}
+            exercises={workoutExercises}
+            onChange={setWorkoutExercises}
+            userId={user?.id}
+          />
 
           {/* Music Selector - Removed for presentation (not working yet) */}
 
@@ -352,9 +406,9 @@ function CreatePage() {
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              rows={6}
-              className="input-field w-full resize-none text-lg"
-              placeholder="What's on your mind? Share your workout, progress, or motivation..."
+              rows={3}
+              className="input-field w-full min-h-[4.5rem] resize-y text-base"
+              placeholder=""
             />
             <p className="text-sm text-gray-600 mt-2 font-medium">
               {content.length}/500 characters
@@ -366,14 +420,14 @@ function CreatePage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex-1 btn-secondary py-4 text-base font-bold tracking-wide"
+              className="flex-1 btn btn-secondary"
             >
-              CANCEL
+              Cancel
             </button>
             <button
               type="submit"
-              disabled={loading || (!content.trim() && !mediaFile)}
-              className="flex-1 btn-primary py-4 text-base font-bold tracking-wide flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading || (!content.trim() && !mediaFile && !mediaPreview)}
+              className="flex-1 btn btn-primary gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>

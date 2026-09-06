@@ -100,10 +100,10 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
     // If song is selected, show it instead of "Add Song" button
     if (selectedSong) {
       return (
-        <div className="bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-4 flex items-center justify-between">
+        <div className="bg-white/[0.02] backdrop-blur-sm rounded-xl border border-white/10 p-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {selectedSong.albumArt ? (
-              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-2 ring-gray-700 relative">
+              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-2 ring-white/10 relative">
                 <Image
                   src={selectedSong.albumArt}
                   alt={`${selectedSong.title} album art`}
@@ -116,13 +116,13 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
                 />
               </div>
             ) : (
-              <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center flex-shrink-0">
                 <Music className="w-6 h-6 text-white" />
               </div>
             )}
             <div className="flex-1 min-w-0">
               <p className="text-white font-bold text-sm truncate">{selectedSong.title}</p>
-              <p className="text-gray-400 text-xs truncate">{selectedSong.artist}</p>
+              <p className="text-white/45 text-xs truncate">{selectedSong.artist}</p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -133,7 +133,7 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
                 e.stopPropagation()
                 setIsOpen(true)
               }}
-              className="text-gray-400 hover:text-white transition-colors px-3 py-1 text-sm font-semibold"
+              className="text-white/50 hover:text-white transition-colors px-3 py-1 text-sm font-semibold"
             >
               Change
             </button>
@@ -145,7 +145,7 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
                   e.stopPropagation()
                   onClear()
                 }}
-                className="text-gray-500 hover:text-red-400 transition-colors p-2"
+                className="text-white/40 hover:text-white transition-colors p-2"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -160,10 +160,10 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="w-full bg-gray-800/60 backdrop-blur-sm rounded-xl border-2 border-dashed border-gray-800/60 p-6 hover:border-primary/30 transition-all flex items-center justify-center space-x-3"
+        className="w-full bg-white/[0.02] backdrop-blur-sm rounded-xl border-2 border-dashed border-white/15 p-6 hover:border-white/30 transition-all flex items-center justify-center space-x-3"
       >
-        <Music className="w-6 h-6 text-gray-500" />
-        <span className="text-gray-400 font-semibold">Add Song (Optional)</span>
+        <Music className="w-6 h-6 text-white/40" />
+        <span className="text-white/50 font-semibold">Add Song (Optional)</span>
       </button>
     )
   }
@@ -171,10 +171,10 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
   // If song is selected and modal is closed, show selected song
   if (selectedSong && !isOpen) {
     return (
-      <div className="bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-4 flex items-center justify-between">
+      <div className="bg-white/[0.02] backdrop-blur-sm rounded-xl border border-white/10 p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           {selectedSong.albumArt ? (
-            <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-2 ring-gray-700 relative">
+            <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-2 ring-white/10 relative">
               <Image
                 src={selectedSong.albumArt}
                 alt={`${selectedSong.title} album art`}
@@ -188,13 +188,13 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
               />
             </div>
           ) : (
-            <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center flex-shrink-0">
               <Music className="w-6 h-6 text-white" />
             </div>
           )}
           <div className="flex-1 min-w-0">
             <p className="text-white font-bold text-sm truncate">{selectedSong.title}</p>
-            <p className="text-gray-400 text-xs truncate">{selectedSong.artist}</p>
+            <p className="text-white/45 text-xs truncate">{selectedSong.artist}</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -205,7 +205,7 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
               e.stopPropagation()
               setIsOpen(true)
             }}
-            className="text-gray-400 hover:text-white transition-colors px-3 py-1 text-sm font-semibold"
+            className="text-white/50 hover:text-white transition-colors px-3 py-1 text-sm font-semibold"
           >
             Change
           </button>
@@ -217,7 +217,7 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
                 e.stopPropagation()
                 onClear()
               }}
-              className="text-gray-500 hover:text-red-400 transition-colors p-2"
+              className="text-white/40 hover:text-white transition-colors p-2"
             >
               <X className="w-5 h-5" />
             </button>
@@ -229,13 +229,13 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
 
   return (
     <div 
-      className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-6 space-y-4"
+      className="bg-black/40 backdrop-blur-sm rounded-xl border border-white/10 p-6 space-y-4"
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <Music className="w-5 h-5 text-primary" />
+          <Music className="w-5 h-5 text-white/70" />
           <h3 className="text-white font-bold">Add a Song</h3>
         </div>
         <button
@@ -249,21 +249,21 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
             setArtist('')
             setSongUrl('')
           }}
-          className="text-gray-500 hover:text-white transition-colors"
+          className="text-white/40 hover:text-white transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
       </div>
 
       {/* Mode Toggle */}
-      <div className="grid grid-cols-3 gap-2 p-1 bg-gray-800/40 rounded-lg">
+      <div className="grid grid-cols-3 gap-2 p-1 bg-white/5 rounded-lg border border-white/10">
         <button
           type="button"
           onClick={() => setMode('search')}
           className={`py-2 px-3 rounded-lg font-bold text-xs transition-all ${
             mode === 'search'
-              ? 'bg-primary text-white'
-              : 'bg-gray-700 text-gray-400 hover:text-white'
+              ? 'bg-white text-black'
+              : 'text-white/45 hover:text-white/80'
           }`}
         >
           <Search className="w-4 h-4 inline mr-1" />
@@ -275,8 +275,8 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
           onClick={() => setMode('upload')}
           className={`py-2 px-3 rounded-lg font-bold text-xs transition-all ${
             mode === 'upload'
-              ? 'bg-primary text-white'
-              : 'bg-gray-700 text-gray-400 hover:text-white'
+              ? 'bg-white text-black'
+              : 'text-white/45 hover:text-white/80'
           }`}
         >
           <Upload className="w-4 h-4 inline mr-1" />
@@ -287,8 +287,8 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
           onClick={() => setMode('link')}
           className={`py-2 px-3 rounded-lg font-bold text-xs transition-all ${
             mode === 'link'
-              ? 'bg-primary text-white'
-              : 'bg-gray-700 text-gray-400 hover:text-white'
+              ? 'bg-white text-black'
+              : 'text-white/45 hover:text-white/80'
           }`}
         >
           <Search className="w-4 h-4 inline mr-1" />
@@ -316,10 +316,10 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
       {mode === 'upload' && (
         <>
           <div>
-            <label className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+            <label className="block text-sm font-bold text-white/70 mb-2 tracking-wide">
               UPLOAD AUDIO FILE
             </label>
-            <label className="btn-secondary w-full py-3 cursor-pointer flex items-center justify-center space-x-2">
+            <label className="btn btn-secondary btn-block cursor-pointer gap-2">
               <Upload className="w-5 h-5" />
               <span>{audioFile ? audioFile.name : 'Choose Audio File'}</span>
               <input
@@ -329,15 +329,15 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
                 className="hidden"
               />
             </label>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-white/40 mt-2">
               MP3, WAV, M4A, etc. (Max 10MB)
               <br />
-              <span className="text-primary font-semibold">✨ Uploaded files play perfectly in-app!</span>
+              <span className="text-white/70 font-semibold">✨ Uploaded files play perfectly in-app!</span>
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+            <label className="block text-sm font-bold text-white/70 mb-2 tracking-wide">
               SONG TITLE (OPTIONAL)
             </label>
             <input
@@ -350,7 +350,7 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+            <label className="block text-sm font-bold text-white/70 mb-2 tracking-wide">
               ARTIST (OPTIONAL)
             </label>
             <input
@@ -368,7 +368,7 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
       {mode === 'link' && (
         <>
           <div>
-            <label className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+            <label className="block text-sm font-bold text-white/70 mb-2 tracking-wide">
               SONG TITLE
             </label>
             <input
@@ -381,7 +381,7 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+            <label className="block text-sm font-bold text-white/70 mb-2 tracking-wide">
               ARTIST
             </label>
             <input
@@ -394,7 +394,7 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+            <label className="block text-sm font-bold text-white/70 mb-2 tracking-wide">
               SONG URL
             </label>
             <input
@@ -404,7 +404,7 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
               placeholder="e.g., https://spotify.com/..."
               className="input-field w-full"
             />
-            <p className="text-xs text-gray-600 mt-1">SoundCloud, Spotify, or direct audio file URLs</p>
+            <p className="text-xs text-white/35 mt-1">SoundCloud, Spotify, or direct audio file URLs</p>
           </div>
         </>
       )}
@@ -419,7 +419,7 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
             setArtist('')
             setSongUrl('')
           }}
-          className="flex-1 btn-secondary py-3 font-bold"
+          className="flex-1 btn btn-secondary"
         >
           CANCEL
         </button>
@@ -431,7 +431,7 @@ export function MusicSelector({ onSelect, selectedSong, onClear, uploadMode = 'p
               uploading ||
               (mode === 'upload' ? !audioFile : (!songTitle.trim() || !artist.trim()))
             }
-            className="flex-1 btn-primary py-3 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {uploading ? 'UPLOADING...' : mode === 'upload' ? 'UPLOAD & ADD' : 'ADD SONG'}
           </button>

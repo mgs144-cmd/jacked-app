@@ -22,7 +22,7 @@ export function BadgeDisplay({ badges }: BadgeDisplayProps) {
     <div className="space-y-4">
       <div className="flex items-center space-x-3">
         <Award className="w-6 h-6 text-white" />
-        <h2 className="text-2xl font-black text-white tracking-tight">Badges</h2>
+        <h2 className="ui-section-title">Badges</h2>
       </div>
 
       <div className="flex flex-wrap gap-3">

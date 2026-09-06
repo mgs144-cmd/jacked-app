@@ -2,8 +2,8 @@
 // This enables offline functionality and faster loading
 // Bump CACHE_NAME on each deploy to force users to get fresh content
 
-const CACHE_NAME = 'jacked-v9' // Bump this on every deploy for instant updates
-const STATIC_CACHE = 'jacked-static-v6'
+const CACHE_NAME = 'jacked-v11' // Bump on deploy so clients drop stale HTML/JS caches
+const STATIC_CACHE = 'jacked-static-v8'
 
 // Assets to cache for offline (only used when network fails)
 const STATIC_ASSETS = [

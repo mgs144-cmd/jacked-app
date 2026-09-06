@@ -3,41 +3,45 @@
 import { useEffect, useState } from 'react'
 import { X, Download, Smartphone } from 'lucide-react'
 
+const DISMISS_KEY = 'pwa-install-dismissed'
+const SESSION_DISMISS_KEY = 'pwa-banner-session-dismiss'
+
 export function PWAInstallBanner() {
   const [showBanner, setShowBanner] = useState(false)
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [dontShowAgain, setDontShowAgain] = useState(false)
+  const [isIOS, setIsIOS] = useState(false)
 
   useEffect(() => {
-    // Check if already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-    const hasSeenPrompt = localStorage.getItem('pwa-install-dismissed')
-    
-    if (isStandalone || hasSeenPrompt) return
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    setIsIOS(ios)
 
-    // Listen for the beforeinstallprompt event
+    const hasSeenPrompt = localStorage.getItem(DISMISS_KEY)
+    const sessionDismissed = sessionStorage.getItem(SESSION_DISMISS_KEY)
+
+    if (isStandalone || hasSeenPrompt || sessionDismissed) return
+
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e)
-      
-      // Show banner after user has engaged (viewed 3+ pages)
-      const pageViews = parseInt(localStorage.getItem('page-views') || '0')
+
+      const pageViews = parseInt(localStorage.getItem('page-views') || '0', 10)
       const newViews = pageViews + 1
       localStorage.setItem('page-views', newViews.toString())
-      
+
       if (newViews >= 3) {
-        setTimeout(() => setShowBanner(true), 2000) // Show after 2 seconds
+        setTimeout(() => setShowBanner(true), 2000)
       }
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall)
 
-    // For iOS, show after 3 page views
-    if (isIOS && !hasSeenPrompt) {
-      const pageViews = parseInt(localStorage.getItem('page-views') || '0')
+    if (ios) {
+      const pageViews = parseInt(localStorage.getItem('page-views') || '0', 10)
       const newViews = pageViews + 1
       localStorage.setItem('page-views', newViews.toString())
-      
+
       if (newViews >= 3) {
         setTimeout(() => setShowBanner(true), 2000)
       }
@@ -48,12 +52,30 @@ export function PWAInstallBanner() {
     }
   }, [])
 
+  const applyDismissPreference = () => {
+    if (dontShowAgain) {
+      localStorage.setItem(DISMISS_KEY, 'true')
+    } else {
+      sessionStorage.setItem(SESSION_DISMISS_KEY, '1')
+    }
+    setShowBanner(false)
+  }
+
   const handleInstall = async () => {
     if (!deferredPrompt) {
-      // iOS or already installed - show instructions
       setShowBanner(false)
-      alert('To install:\n\n1. Tap the Share button\n2. Scroll down\n3. Tap "Add to Home Screen"')
-      localStorage.setItem('pwa-install-dismissed', 'true')
+      alert(
+        'Add Jacked to your home screen:\n\n' +
+          '1. Tap the Share button\n' +
+          '2. Scroll down in the menu\n' +
+          '3. Tap "Add to Home Screen"\n\n' +
+          'Then confirm in the dialog.'
+      )
+      if (dontShowAgain) {
+        localStorage.setItem(DISMISS_KEY, 'true')
+      } else {
+        sessionStorage.setItem(SESSION_DISMISS_KEY, '1')
+      }
       return
     }
 
@@ -66,19 +88,22 @@ export function PWAInstallBanner() {
 
     setDeferredPrompt(null)
     setShowBanner(false)
-    localStorage.setItem('pwa-install-dismissed', 'true')
+    if (dontShowAgain) {
+      localStorage.setItem(DISMISS_KEY, 'true')
+    } else {
+      sessionStorage.setItem(SESSION_DISMISS_KEY, '1')
+    }
   }
 
   const handleDismiss = () => {
-    setShowBanner(false)
-    localStorage.setItem('pwa-install-dismissed', 'true')
+    applyDismissPreference()
   }
 
   if (!showBanner) return null
 
   return (
     <div className="fixed bottom-20 md:bottom-8 left-4 right-4 z-50 animate-slide-up">
-      <div className="card p-4 shadow-xl border-red-600/20">
+      <div className="card relative p-4 shadow-xl border-red-600/20">
         <button
           onClick={handleDismiss}
           className="absolute top-3 right-3 text-secondary hover:text-primary transition-colors"
@@ -89,23 +114,48 @@ export function PWAInstallBanner() {
 
         <div className="flex items-start space-x-3">
           <div className="w-10 h-10 bg-surface-hover rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-lg font-semibold text-primary">J</span>
+            <Smartphone className="w-5 h-5 text-primary" aria-hidden />
           </div>
 
-          <div className="flex-1 pr-6">
-            <h3 className="text-primary font-semibold text-base mb-1 flex items-center space-x-2">
-              <span>Install JACKED</span>
-            </h3>
-            <p className="text-secondary text-sm mb-3 leading-relaxed">
-              Get faster loading, offline access, and a native app experience.
-            </p>
-            <button
-              onClick={handleInstall}
-              className="btn btn-primary btn-sm w-full"
-            >
-              <Download className="w-4 h-4 mr-1.5" />
-              <span>Install App</span>
-            </button>
+          <div className="flex-1 pr-6 space-y-3">
+            <div>
+              <h3 className="text-primary font-semibold text-base mb-1">Install Jacked on your home screen</h3>
+              {isIOS ? (
+                <p className="text-secondary text-sm leading-relaxed">
+                  On iPhone or iPad: tap <span className="text-primary font-medium">Share</span>, scroll down, then tap{' '}
+                  <span className="text-primary font-medium">Add to Home Screen</span>. You’ll get the full-screen app
+                  experience and quicker access from your home page.
+                </p>
+              ) : (
+                <p className="text-secondary text-sm leading-relaxed">
+                  Install the app for faster loading, offline access, and a home screen shortcut like a native app.
+                </p>
+              )}
+            </div>
+
+            <label className="flex cursor-pointer items-start gap-2.5 text-left">
+              <input
+                type="checkbox"
+                checked={dontShowAgain}
+                onChange={(e) => setDontShowAgain(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 bg-white/5 text-primary focus:ring-primary focus:ring-offset-0"
+              />
+              <span className="text-sm text-secondary leading-snug">Don&apos;t show me again</span>
+            </label>
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <button onClick={handleInstall} className="btn btn-primary btn-sm w-full sm:flex-1">
+                <Download className="w-4 h-4 mr-1.5" />
+                <span>{isIOS && !deferredPrompt ? 'Show me the steps' : 'Install app'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleDismiss}
+                className="btn btn-secondary btn-sm w-full sm:flex-1 border-white/10 text-secondary hover:text-primary"
+              >
+                Not now
+              </button>
+            </div>
           </div>
         </div>
       </div>

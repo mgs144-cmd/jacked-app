@@ -8,6 +8,7 @@ import { Crown, Settings, TrendingUp } from 'lucide-react'
 import { BadgeDisplay } from '@/components/BadgeDisplay'
 import { FitnessGoalIndicator } from '@/components/FitnessGoalIndicator'
 import { TopLiftsDisplay } from '@/components/TopLiftsDisplay'
+import { BrandHeading } from '@/components/BrandHeading'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -70,6 +71,10 @@ export default async function ProfilePage() {
   return (
     <div className="min-h-screen pb-20 md:pb-0 md:pt-14 bg-black">
       <Navbar />
+
+      <div className="max-w-[640px] mx-auto px-4 pt-3 md:pt-6">
+        <BrandHeading variant="page">Profile</BrandHeading>
+      </div>
       
       <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
         {(profile as any)?.banner_url ? (
@@ -110,12 +115,12 @@ export default async function ProfilePage() {
           {/* User Info - Centered, larger */}
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-1">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white">
+              <h1 className="ui-profile-name">
                 {(profile as any)?.username || (profile as any)?.full_name || 'User'}
               </h1>
             </div>
             {(profile as any)?.full_name && (profile as any).full_name !== (profile as any).username && (
-              <p className="text-white/60 text-base md:text-lg mb-3">{(profile as any).full_name}</p>
+              <p className="ui-subtitle text-base md:text-lg mb-3">{(profile as any).full_name}</p>
             )}
           </div>
         </div>
@@ -139,18 +144,18 @@ export default async function ProfilePage() {
           {/* Stats - larger */}
           <div className="flex items-center justify-center gap-8 md:gap-10 text-base md:text-lg">
             <div className="flex items-center space-x-1.5">
-              <span className="font-black text-white text-lg md:text-xl">{postsWithCounts?.length || 0}</span>
-              <span className="text-white/50">posts</span>
+              <span className="ui-stat-value">{postsWithCounts?.length || 0}</span>
+              <span className="ui-stat-label">posts</span>
             </div>
             {!(profile as any)?.hide_follower_count && (
               <>
                 <Link href={`/user/${session.user.id}/followers`} className="flex items-center space-x-1.5 hover:text-primary transition-colors">
-                  <span className="font-black text-white text-lg md:text-xl">{followerCount || 0}</span>
-                  <span className="text-white/50">followers</span>
+                  <span className="ui-stat-value">{followerCount || 0}</span>
+                  <span className="ui-stat-label">followers</span>
                 </Link>
                 <Link href={`/user/${session.user.id}/following`} className="flex items-center space-x-1.5 hover:text-primary transition-colors">
-                  <span className="font-black text-white text-lg md:text-xl">{followingCount || 0}</span>
-                  <span className="text-white/50">following</span>
+                  <span className="ui-stat-value">{followingCount || 0}</span>
+                  <span className="ui-stat-label">following</span>
                 </Link>
               </>
             )}
@@ -180,7 +185,7 @@ export default async function ProfilePage() {
       {/* Content Section - Same centered column as Feed (max-w-[640px]) */}
       <div className="w-full max-w-[640px] mx-auto px-4 md:px-6 pb-8">
         {/* Top Lifts Display */}
-        <div className="mb-6">
+        <div className="mb-4">
           <TopLiftsDisplay 
             topLift1={(profile as any)?.top_lift_1}
             topLift2={(profile as any)?.top_lift_2}
@@ -197,7 +202,7 @@ export default async function ProfilePage() {
 
         {/* Posts Section */}
         <div>
-          <h2 className="text-lg font-semibold text-white tracking-tight mb-4 flex items-center space-x-2">
+          <h2 className="ui-section-title mb-4 flex items-center space-x-2">
             <TrendingUp className="w-5 h-5 text-white" />
             <span>Posts</span>
           </h2>
@@ -210,7 +215,7 @@ export default async function ProfilePage() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="flex flex-col gap-0 sm:gap-3">
               {postsWithCounts?.map((post: any) => (
                 <PostCard key={post.id} post={post} />
               ))}

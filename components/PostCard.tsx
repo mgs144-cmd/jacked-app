@@ -13,6 +13,10 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
 import { useRouter } from 'next/navigation'
 import { calculateOneRepMaxWithRPE } from '@/utils/oneRepMax'
+import { PostImageWithLightbox } from '@/components/PostImageWithLightbox'
+import { POST_MEDIA_FRAME, POST_MEDIA_IMAGE_CONTAIN, POST_MEDIA_IMG } from '@/components/postMediaClasses'
+import { CommentGif } from '@/components/CommentGif'
+import { isGifComment } from '@/lib/commentContent'
 
 interface PostCardProps {
   post: any
@@ -35,13 +39,11 @@ export function PostCard({ post }: PostCardProps) {
   const [showCommentForm, setShowCommentForm] = useState(false)
   const [commentCount, setCommentCount] = useState(post.comment_count || 0)
 
-  // Handle profile data - could be object, array, or null
-  // Check both post.profile (normalized) and post.profiles (raw)
   let profileData = post.profile || post.profiles
   if (Array.isArray(profileData)) {
     profileData = profileData[0] || null
   }
-  
+
   const profile = profileData || {
     username: 'unknown',
     avatar_url: null,
@@ -85,7 +87,6 @@ export function PostCard({ post }: PostCardProps) {
 
     setIsDeleting(true)
     try {
-      // Delete associated media from storage if exists
       if (post.media_url) {
         const bucket = post.media_type === 'video' ? 'videos' : 'images'
         const fileName = post.media_url.split('/').pop()
@@ -94,7 +95,6 @@ export function PostCard({ post }: PostCardProps) {
         }
       }
 
-      // Delete the post (this will cascade delete likes, comments, workout_exercises, and personal_records due to foreign keys)
       const { error } = await (supabase.from('posts') as any)
         .delete()
         .eq('id', post.id)
@@ -165,261 +165,332 @@ export function PostCard({ post }: PostCardProps) {
   const isPRPost = post.is_pr_post
   const isDeadcemberPost = post.is_deadcember_post
   const hasPRStats = isPRPost && (post.pr_exercise || post.pr_weight || post.pr_reps)
+  const hasMedia = Boolean(post.media_url)
+  const hasWorkout = Array.isArray(post.workout_exercises) && post.workout_exercises.length > 0
 
-  return (
-    <article 
-      className="relative w-full max-w-[640px] rounded-2xl border border-white/[0.08] bg-white/[0.03] overflow-hidden"
-      style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif" }}
-    >
-      {/* Card padding container */}
-      <div className="p-5 md:p-6">
-        {/* Header: avatar, name/date, PR (when present), menu */}
-        <div className="flex items-center justify-between gap-3">
-          <Link href={profileLink} className="flex items-center min-w-0 flex-1">
-            <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/5 overflow-hidden flex-shrink-0 ring-1 ring-white/5">
-              {profile.avatar_url ? (
-                <Image
-                  src={profile.avatar_url}
-                  alt={profile.username}
-                  width={56}
-                  height={56}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-white/10 text-white/50 font-semibold text-base">
-                  {profile.username?.[0]?.toUpperCase() || 'U'}
-                </div>
-              )}
-            </div>
-            <div className="ml-3 min-w-0 flex-1">
-              <p className="text-[17px] md:text-lg font-bold text-white truncate">
-                {profile.username || profile.full_name || 'Unknown'}
-              </p>
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 truncate">
-                {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-              </p>
-            </div>
-          </Link>
-          {/* PR flair + menu: grouped on the right, PR just left of three dots */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {hasPRStats && (
-              <div className="inline-flex items-center gap-2">
-                <Trophy className="w-5 h-5 md:w-5 md:h-5 text-white/85" />
-                <span className="text-xs md:text-[13px] font-semibold uppercase tracking-wider text-white/85">PR</span>
-              </div>
-            )}
-            {isOwner && (
-            <div className="relative">
-              <button 
-                onClick={() => setShowMenu(!showMenu)}
-                className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors"
-              >
-                <MoreVertical className="w-5 h-5" />
-              </button>
-              {showMenu && (
-                <div className="absolute right-0 top-full mt-1 w-52 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-xl z-10 overflow-hidden">
-                  <Link href={`/post/${post.id}/edit`} className="flex items-center gap-2 w-full px-4 py-3 text-left text-white hover:bg-white/5 text-sm" onClick={() => setShowMenu(false)}>
-                    <Edit className="w-4 h-4" /> Edit Post
-                  </Link>
-                  <div className="h-px bg-white/10" />
-                  <button onClick={handleTogglePrivacy} disabled={isUpdatingPrivacy} className="w-full px-4 py-3 text-left text-white hover:bg-white/5 text-sm flex items-center justify-between disabled:opacity-50">
-                    <span className="flex items-center gap-2">{isPrivate ? <><Lock className="w-4 h-4" /> Followers</> : <><Globe className="w-4 h-4" /> Public</>}</span>
-                    {isUpdatingPrivacy && <span className="text-xs text-white/50">Updating...</span>}
-                  </button>
-                  <div className="h-px bg-white/10" />
-                  <button onClick={handleToggleArchive} disabled={isArchiving} className="w-full px-4 py-3 text-left text-white hover:bg-white/5 text-sm flex items-center justify-between disabled:opacity-50">
-                    <span className="flex items-center gap-2">{isArchived ? <><ArchiveRestore className="w-4 h-4" /> Unarchive</> : <><Archive className="w-4 h-4" /> Archive</>}</span>
-                  </button>
-                  <div className="h-px bg-white/10" />
-                  <button onClick={handleDelete} disabled={isDeleting} className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-500/10 text-sm flex items-center gap-2 disabled:opacity-50">
-                    <Trash2 className="w-4 h-4" /> {isDeleting ? 'Deleting...' : 'Delete'}
-                  </button>
-                </div>
-              )}
-            </div>
-            )}
-          </div>
-        </div>
+  const padX = 'px-3 sm:px-4 md:px-5'
+  const padBlock = `${padX} py-2 md:py-2.5`
 
-        {/* Caption */}
-        {post.content && (
-          <p className="mt-4 text-[15px] md:text-base leading-relaxed text-white/90">
-            {post.content}
-          </p>
-        )}
-
-        {/* Performance block: centered, tighter spacing */}
-        {hasPRStats && (
-          <div className="mt-5 md:mt-6 text-center">
-            {post.pr_exercise && (
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 mb-2">
-                {post.pr_exercise}
-              </p>
-            )}
-            {(post.pr_weight != null || post.pr_reps != null) && (
-              <div className="flex justify-center items-baseline gap-8 md:gap-12">
-                {post.pr_weight != null && (
-                  <div className="flex flex-col items-center">
-                    <p className="text-5xl md:text-6xl font-bold tabular-nums text-white tracking-tight leading-none">
-                      {post.pr_weight}
-                    </p>
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 mt-1">LBS</p>
-                  </div>
-                )}
-                {post.pr_reps != null && (
-                  <div className="flex flex-col items-center">
-                    <p className="text-5xl md:text-6xl font-bold tabular-nums text-white tracking-tight leading-none">
-                      {post.pr_reps}
-                    </p>
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 mt-1">REPS</p>
-                  </div>
-                )}
-              </div>
-            )}
-            {post.pr_weight != null && post.pr_reps != null && post.pr_reps > 1 && (
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50 mt-2 tabular-nums">
-                Est. 1RM <span className="font-semibold text-white/70">{calculateOneRepMaxWithRPE(post.pr_weight, post.pr_reps, post.pr_rpe)} lbs</span>
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Deadcember inline */}
-        {isDeadcemberPost && (post.deadcember_volume != null || post.deadcember_personal_total != null) && (
-          <div className="mt-4 flex items-center gap-6 text-[13px]">
-            {post.deadcember_volume != null && (
-              <span className="text-white/70"><span className="font-semibold text-white">{post.deadcember_volume.toLocaleString()}</span> lbs</span>
-            )}
-            {post.deadcember_personal_total != null && (
-              <span className="text-white/70"><span className="font-semibold text-white">{post.deadcember_personal_total.toLocaleString()}</span> total</span>
-            )}
-          </div>
-        )}
-
-        {/* Song */}
-        {post.song_title && post.song_artist && (
-          <div className="mt-4">
-            <PostMusicPlayer
-              songTitle={post.song_title}
-              songArtist={post.song_artist}
-              songUrl={post.song_url}
-              spotifyId={post.song_spotify_id}
-              albumArt={post.song_album_art_url}
-              postId={post.id}
-              startTime={post.song_start_time || undefined}
+  const headerBlock = (
+    <div className={`flex items-center justify-between gap-2 ${padBlock} ${hasMedia ? 'pb-1.5' : ''}`}>
+      <Link href={profileLink} className="flex items-center min-w-0 flex-1 active:opacity-80">
+        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 overflow-hidden flex-shrink-0 ring-1 ring-white/5">
+          {profile.avatar_url ? (
+            <Image
+              src={profile.avatar_url}
+              alt={profile.username}
+              width={56}
+              height={56}
+              className="w-full h-full object-cover"
             />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-white/10 text-white/50 font-semibold text-xs md:text-base">
+              {profile.username?.[0]?.toUpperCase() || 'U'}
+            </div>
+          )}
+        </div>
+        <div className="ml-2 min-w-0 flex-1 md:ml-2.5">
+          <p className="ui-body-medium text-base md:text-lg text-white truncate leading-tight">
+            {profile.username || profile.full_name || 'Unknown'}
+          </p>
+          <p className="ui-meta truncate">
+            {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+          </p>
+        </div>
+      </Link>
+      <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
+        {hasPRStats && (
+          <div className="inline-flex items-center gap-1 md:gap-2">
+            <Trophy className="w-4 h-4 md:w-5 md:h-5 text-white/85" />
+            <span className="text-[10px] md:text-[13px] font-semibold uppercase tracking-wider text-white/85">PR</span>
           </div>
         )}
-
-        {/* Workout details */}
-        {post.workout_exercises && post.workout_exercises.length > 0 && (
-          <WorkoutDetails exercises={post.workout_exercises} postId={post.id} />
+        {isOwner && (
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-1.5 md:p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              <MoreVertical className="w-[18px] h-[18px] md:w-5 md:h-5" />
+            </button>
+            {showMenu && (
+              <div className="absolute right-0 top-full mt-1 w-52 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-xl z-10 overflow-hidden">
+                <Link href={`/post/${post.id}/edit`} className="flex items-center gap-2 w-full px-4 py-3 text-left text-white hover:bg-white/5 text-sm" onClick={() => setShowMenu(false)}>
+                  <Edit className="w-4 h-4" /> Edit Post
+                </Link>
+                <div className="h-px bg-white/10" />
+                <button type="button" onClick={handleTogglePrivacy} disabled={isUpdatingPrivacy} className="w-full px-4 py-3 text-left text-white hover:bg-white/5 text-sm flex items-center justify-between disabled:opacity-50">
+                  <span className="flex items-center gap-2">{isPrivate ? <><Lock className="w-4 h-4" /> Followers</> : <><Globe className="w-4 h-4" /> Public</>}</span>
+                  {isUpdatingPrivacy && <span className="text-xs text-white/50">Updating...</span>}
+                </button>
+                <div className="h-px bg-white/10" />
+                <button type="button" onClick={handleToggleArchive} disabled={isArchiving} className="w-full px-4 py-3 text-left text-white hover:bg-white/5 text-sm flex items-center justify-between disabled:opacity-50">
+                  <span className="flex items-center gap-2">{isArchived ? <><ArchiveRestore className="w-4 h-4" /> Unarchive</> : <><Archive className="w-4 h-4" /> Archive</>}</span>
+                </button>
+                <div className="h-px bg-white/10" />
+                <button type="button" onClick={handleDelete} disabled={isDeleting} className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-500/10 text-sm flex items-center gap-2 disabled:opacity-50">
+                  <Trash2 className="w-4 h-4" /> {isDeleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
+    </div>
+  )
 
-      {/* Media: full-bleed */}
-      {post.media_url && (
-        <div className="relative w-full aspect-square bg-black/50">
-          {post.media_type === 'video' ? (
-            <video src={post.media_url} controls className="w-full h-full object-cover" />
-          ) : (
-            <Image src={post.media_url} alt="Post" fill className="object-cover" />
+  const captionBlock = post.content ? (
+    <p
+      className={`text-[15px] md:text-[17px] leading-snug text-white/90 ${
+        hasPRStats ? 'mt-2' : hasMedia ? 'mt-1' : 'mt-2'
+      }`}
+    >
+      {hasMedia ? (
+        <>
+          <Link href={profileLink} className="font-semibold text-white hover:underline">
+            {profile.username}
+          </Link>
+          <Link href={`/post/${post.id}`} className="text-white/90 hover:underline">
+            {' '}
+            {post.content}
+          </Link>
+        </>
+      ) : (
+        post.content
+      )}
+    </p>
+  ) : null
+
+  const prBlock = hasPRStats ? (
+    <div className={`text-center ${hasMedia ? 'mt-0.5' : 'mt-3'}`}>
+      {post.pr_exercise && (
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-white/50 mb-1">
+          {post.pr_exercise}
+        </p>
+      )}
+      {(post.pr_weight != null || post.pr_reps != null) && (
+        <div className="flex flex-col items-center gap-0.5">
+          <p className="text-3xl md:text-5xl font-bold tabular-nums text-white tracking-metric leading-none">
+            {post.pr_weight != null ? post.pr_weight : null}
+            {post.pr_reps != null && post.pr_reps > 1 ? (
+              <span className="text-white/75">×{post.pr_reps}</span>
+            ) : null}
+          </p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-white/45">lbs</p>
+        </div>
+      )}
+      {post.pr_weight != null && post.pr_reps != null && post.pr_reps > 1 && (
+        <p className="text-[10px] font-medium uppercase tracking-wide text-white/45 mt-1 tabular-nums">
+          ~<span className="text-white/70">{calculateOneRepMaxWithRPE(post.pr_weight, post.pr_reps, post.pr_rpe)}</span> 1RM
+        </p>
+      )}
+    </div>
+  ) : null
+
+  const captionAndMeta = (
+    <>
+      {hasPRStats ? (
+        <>
+          {prBlock}
+          {captionBlock}
+        </>
+      ) : (
+        captionBlock
+      )}
+
+      {isDeadcemberPost && (post.deadcember_volume != null || post.deadcember_personal_total != null) && (
+        <div className="mt-2 flex items-center gap-4 text-xs">
+          {post.deadcember_volume != null && (
+            <span className="text-white/70"><span className="font-semibold text-white">{post.deadcember_volume.toLocaleString()}</span> lbs</span>
+          )}
+          {post.deadcember_personal_total != null && (
+            <span className="text-white/70"><span className="font-semibold text-white">{post.deadcember_personal_total.toLocaleString()}</span> total</span>
           )}
         </div>
       )}
 
-      {/* Likes, comments, and comment list: always below media (or below content when no media) */}
-      <div className={`p-5 md:p-6 ${post.media_url ? 'pt-4' : 'pt-4 mt-4 border-t border-white/[0.06]'}`}>
-        {/* Actions: like, comment */}
-        <div className="flex items-center gap-6">
-          <button
-            onClick={handleLike}
-            disabled={isLiking}
-            className={`flex items-center gap-2 py-1 transition-colors ${
-              liked ? 'text-white' : 'text-white/50 hover:text-white'
-            }`}
-          >
-            <Heart 
-              className={`w-4 h-4 ${liked ? 'fill-current' : ''}`}
-              strokeWidth={2}
-            />
-            {likeCount > 0 ? (
-              <span
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setShowLikesModal(true)
-                }}
-                className="text-[13px] tabular-nums hover:underline cursor-pointer"
-              >
-                {likeCount}
-              </span>
-            ) : (
-              <span className="text-[13px] tabular-nums">{likeCount}</span>
-            )}
-          </button>
-          <button
+      {post.song_title && post.song_artist && (
+        <div className="mt-2">
+          <PostMusicPlayer
+            songTitle={post.song_title}
+            songArtist={post.song_artist}
+            songUrl={post.song_url}
+            spotifyId={post.song_spotify_id}
+            albumArt={post.song_album_art_url}
+            postId={post.id}
+            startTime={post.song_start_time || undefined}
+          />
+        </div>
+      )}
+
+      {hasWorkout && !hasMedia && (
+        <WorkoutDetails exercises={post.workout_exercises} postId={post.id} />
+      )}
+    </>
+  )
+
+  const actionRow = (
+    <div className="flex items-center gap-5 md:gap-6">
+      <button
+        type="button"
+        onClick={handleLike}
+        disabled={isLiking}
+        className={`flex items-center gap-1.5 py-0.5 transition-colors ${
+          liked ? 'text-white' : 'text-white/50 hover:text-white'
+        }`}
+      >
+        <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} strokeWidth={2} />
+        {likeCount > 0 ? (
+          <span
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              setShowCommentForm(!showCommentForm)
+              setShowLikesModal(true)
             }}
-            className={`flex items-center gap-2 py-1 group transition-colors ${
-              showCommentForm ? 'text-white' : 'text-white/50 hover:text-white'
-            }`}
+            className="text-sm tabular-nums hover:underline cursor-pointer"
           >
-            <MessageCircle className="w-4 h-4" strokeWidth={2} />
-            <span className="text-[13px] tabular-nums">{commentCount}</span>
-          </button>
-        </div>
-
-        {showCommentForm && user && (
-          <div className="pt-4 mt-4 border-t border-white/[0.06]">
-            <CommentForm 
-              postId={post.id} 
-              userId={user.id}
-              onCommentAdded={() => {
-                setCommentCount((prev: number) => prev + 1)
-                router.refresh()
-              }}
-            />
-          </div>
+            {likeCount}
+          </span>
+        ) : (
+          <span className="text-sm tabular-nums">{likeCount}</span>
         )}
+      </button>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          setShowCommentForm(!showCommentForm)
+        }}
+        className={`flex items-center gap-1.5 py-0.5 group transition-colors ${
+          showCommentForm ? 'text-white' : 'text-white/50 hover:text-white'
+        }`}
+      >
+        <MessageCircle className="w-5 h-5" strokeWidth={2} />
+        <span className="text-sm tabular-nums">{commentCount}</span>
+      </button>
+    </div>
+  )
 
-        {post.top_comments && post.top_comments.length > 0 && (
-          <div className={`space-y-2 ${showCommentForm && user ? 'mt-4' : 'mt-4'}`}>
-            {post.top_comments.map((comment: any) => {
-              const commentProfile = comment.profile || { username: 'unknown', avatar_url: null }
-              const isGIF = comment.content && comment.content.startsWith('http') && (comment.content.includes('giphy.com') || comment.content.includes('.gif'))
+  const commentsBlock = (
+    <>
+      {showCommentForm && user && (
+        <div className="pt-2 mt-2 border-t border-white/[0.06]">
+          <CommentForm
+            postId={post.id}
+            userId={user.id}
+            onCommentAdded={() => {
+              setCommentCount((prev: number) => prev + 1)
+              router.refresh()
+            }}
+          />
+        </div>
+      )}
+
+      {post.top_comments && post.top_comments.length > 0 && (
+        <div className={`space-y-1.5 ${showCommentForm && user ? 'mt-2' : 'mt-2'}`}>
+          {post.top_comments.map((comment: any) => {
+            const commentProfile = comment.profile || { username: 'unknown', avatar_url: null }
+            const gif = isGifComment(comment.content)
+
+            if (gif && !showCommentForm) {
               return (
-                <div key={comment.id} className="flex items-start gap-2 text-[14px]">
+                <button
+                  key={comment.id}
+                  type="button"
+                  onClick={() => setShowCommentForm(true)}
+                  className="flex items-baseline gap-1.5 text-sm text-left hover:opacity-90"
+                >
                   <span className="font-semibold text-white shrink-0">{commentProfile.username}</span>
-                  {isGIF ? (
-                    <div className="relative w-14 h-14 rounded-lg overflow-hidden shrink-0">
-                      <Image src={comment.content} alt="GIF" fill className="object-cover" />
-                    </div>
-                  ) : (
-                    <span className="text-white/80">{comment.content}</span>
-                  )}
+                  <span className="text-white/45">GIF</span>
+                </button>
+              )
+            }
+
+            if (gif && showCommentForm) {
+              return (
+                <div key={comment.id} className="space-y-2">
+                  <span className="font-semibold text-white text-sm">
+                    {commentProfile.username}
+                  </span>
+                  <CommentGif src={comment.content} size="feed" />
                 </div>
               )
-            })}
-            {commentCount > 3 && (
-              <Link href={`/post/${post.id}`} className="text-[13px] text-white/50 hover:text-white/80 font-medium block mt-1">
-                View all {commentCount} comments
-              </Link>
-            )}
-          </div>
+            }
+
+            return (
+              <div key={comment.id} className="flex items-start gap-2 text-sm">
+                <span className="font-semibold text-white shrink-0">{commentProfile.username}</span>
+                <span className="text-white/80">{comment.content}</span>
+              </div>
+            )
+          })}
+          {commentCount > 3 && (
+            <Link href={`/post/${post.id}`} className="text-sm text-white/50 hover:text-white/80 font-medium block mt-1">
+              View all {commentCount} comments
+            </Link>
+          )}
+        </div>
+      )}
+    </>
+  )
+
+  return (
+    <article
+      className={`relative w-full max-w-[640px] overflow-hidden sm:rounded-2xl ${
+        hasMedia
+          ? 'border-y border-white/[0.06] bg-black sm:border sm:border-white/[0.08]'
+          : 'border-y border-white/[0.06] bg-white/[0.02] sm:border sm:border-white/[0.08] sm:bg-white/[0.03]'
+      }`}
+    >
+      {headerBlock}
+
+      {hasMedia && (
+        <Link href={`/post/${post.id}`} className="relative block w-full active:opacity-95">
+          {post.media_type === 'video' ? (
+            <div className={POST_MEDIA_FRAME}>
+              <video src={post.media_url} controls className={POST_MEDIA_IMG} playsInline />
+            </div>
+          ) : (
+            <PostImageWithLightbox
+              src={post.media_url}
+              alt=""
+              frameClassName={POST_MEDIA_FRAME}
+              imgClassName={POST_MEDIA_IMAGE_CONTAIN}
+            />
+          )}
+        </Link>
+      )}
+
+      {hasMedia && hasWorkout && (
+        <div className={`border-t border-white/[0.06] bg-white/[0.02] ${padX} py-0.5`}>
+          <WorkoutDetails exercises={post.workout_exercises} postId={post.id} defaultExpanded={false} />
+        </div>
+      )}
+
+      {!hasMedia && <div className={`${padX} pb-2 md:pb-3 pt-0`}>{captionAndMeta}</div>}
+
+      <div
+        className={`${padX} py-2 md:py-2.5 ${
+          hasMedia ? 'pt-1.5 bg-black border-t border-white/[0.06]' : 'pt-1.5 border-t border-white/[0.06]'
+        }`}
+      >
+        {hasMedia ? (
+          <>
+            {actionRow}
+            {captionAndMeta}
+            {commentsBlock}
+          </>
+        ) : (
+          <>
+            {actionRow}
+            {commentsBlock}
+          </>
         )}
       </div>
 
-      {/* Likes Modal */}
-      <LikesModal
-        postId={post.id}
-        isOpen={showLikesModal}
-        onClose={() => setShowLikesModal(false)}
-      />
+      <LikesModal postId={post.id} isOpen={showLikesModal} onClose={() => setShowLikesModal(false)} />
     </article>
   )
 }
-

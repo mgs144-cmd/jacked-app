@@ -93,7 +93,7 @@ export default async function FollowersPage({
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-3">
             <Users className="w-6 h-6 text-[#ff5555]" />
-            <h1 className="text-2xl font-semibold text-white">
+            <h1 className="ui-page-title">
               {profileData.username || profileData.full_name || 'User'}&apos;s Followers
             </h1>
           </div>

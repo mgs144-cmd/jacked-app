@@ -76,7 +76,7 @@ export default function PrivacySettingsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center pb-20 md:pb-0 md:pt-14 bg-[#1a1a1a]">
         <Navbar />
-        <Loader2 className="w-8 h-8 animate-spin text-[#ff5555]" />
+        <Loader2 className="w-8 h-8 animate-spin text-white" />
       </div>
     )
   }
@@ -97,21 +97,21 @@ export default function PrivacySettingsPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-3">
-            <Shield className="w-6 h-6 text-[#ff5555]" />
-            <h1 className="text-2xl font-semibold text-white">Privacy</h1>
+            <Shield className="w-6 h-6 text-white" />
+            <h1 className="ui-page-title">Privacy</h1>
           </div>
           <p className="text-[#a1a1a1] text-sm">Control who can see your content</p>
         </div>
 
         <div className="rounded-[12px] border border-white/5 overflow-hidden bg-[#1a1a1a]" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
           {error && (
-            <div className="bg-[#ff5555]/10 border-b border-[#ff5555]/30 text-[#ff5555] px-6 py-4">
+            <div className="bg-white/5 border-b border-white/10 text-white/80 px-6 py-4">
               <p className="font-semibold">{error}</p>
             </div>
           )}
 
           {success && (
-            <div className="bg-green-950/50 border-b border-green-600/50 text-green-400 px-6 py-4 backdrop-blur-sm">
+            <div className="bg-white/5 border-b border-white/10 text-white px-6 py-4">
               <p className="font-semibold">Privacy settings updated successfully!</p>
             </div>
           )}
@@ -123,11 +123,11 @@ export default function PrivacySettingsPage() {
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
                     {isPrivateAccount ? (
-                      <Lock className="w-6 h-6 text-[#ff5555]" />
+                      <Lock className="w-6 h-6 text-white" />
                     ) : (
                       <Unlock className="w-6 h-6 text-gray-400" />
                     )}
-                    <h3 className="text-xl font-black text-white">Private Account</h3>
+                    <h3 className="ui-heading text-lg text-white">Private Account</h3>
                   </div>
                   <p className="text-gray-400 text-sm leading-relaxed">
                     When your account is private, only people you approve can see your posts and follow you.
@@ -137,7 +137,7 @@ export default function PrivacySettingsPage() {
                 <button
                   onClick={() => setIsPrivateAccount(!isPrivateAccount)}
                   className={`ml-4 relative inline-flex h-8 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900 ${
-                    isPrivateAccount ? 'bg-[#ff5555]' : 'bg-white/20'
+                    isPrivateAccount ? 'bg-white' : 'bg-white/20'
                   }`}
                 >
                   <span
@@ -149,9 +149,9 @@ export default function PrivacySettingsPage() {
               </div>
 
               {isPrivateAccount && (
-                <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-4 mt-4">
-                  <p className="text-yellow-400 text-sm font-semibold mb-2">🔒 Private Account Active</p>
-                  <ul className="text-gray-300 text-sm space-y-1">
+                <div className="bg-white/[0.02] border border-white/10 rounded-xl p-4 mt-4">
+                  <p className="text-white/80 text-sm font-semibold mb-2">🔒 Private Account Active</p>
+                  <ul className="text-white/50 text-sm space-y-1">
                     <li>• New followers must request to follow you</li>
                     <li>• You can approve or decline requests</li>
                     <li>• Only approved followers see your posts</li>
@@ -160,7 +160,7 @@ export default function PrivacySettingsPage() {
               )}
             </div>
 
-            <div className="border-t border-gray-800"></div>
+            <div className="border-t border-white/10"></div>
 
             {/* Hide Follower Count Toggle */}
             <div>
@@ -172,7 +172,7 @@ export default function PrivacySettingsPage() {
                     ) : (
                       <Eye className="w-6 h-6 text-gray-400" />
                     )}
-                    <h3 className="text-xl font-black text-white">Hide Follower Count</h3>
+                    <h3 className="ui-heading text-lg text-white">Hide Follower Count</h3>
                   </div>
                   <p className="text-gray-400 text-sm leading-relaxed">
                     Hide your follower and following counts from your profile. You can still see them yourself.
@@ -181,7 +181,7 @@ export default function PrivacySettingsPage() {
                 <button
                   onClick={() => setHideFollowerCount(!hideFollowerCount)}
                   className={`ml-4 relative inline-flex h-8 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900 ${
-                    hideFollowerCount ? 'bg-[#ff5555]' : 'bg-white/20'
+                    hideFollowerCount ? 'bg-white' : 'bg-white/20'
                   }`}
                 >
                   <span
@@ -197,7 +197,7 @@ export default function PrivacySettingsPage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="w-full btn-primary py-4 text-base font-bold tracking-wide flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full btn btn-primary btn-block flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? (
                 <>

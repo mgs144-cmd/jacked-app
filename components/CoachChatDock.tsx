@@ -129,6 +129,7 @@ export function CoachChatDock() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          channel: 'plan',
           messages: historyPayload.slice(-16),
           planContext: {
             exercise_name: selectedPlan.exercise_name,
@@ -192,7 +193,12 @@ export function CoachChatDock() {
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-500/25">
             <Bot className="h-5 w-5 text-violet-200" />
           </div>
-          <span className="flex-1 truncate text-sm font-medium text-white/85">JACKED Coach</span>
+          <span className="flex-1 truncate text-sm font-medium text-white/85">
+            <span className="font-display font-bold text-white">
+              J
+            </span>{' '}
+            Coach
+          </span>
           <button
             type="button"
             onClick={openSheet}
@@ -224,7 +230,12 @@ export function CoachChatDock() {
               <Bot className="h-5 w-5 text-violet-200" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-white">Coach</p>
+              <p className="truncate ui-body-medium text-sm text-white">
+                <span className="font-display font-bold">
+                  J
+                </span>{' '}
+                Coach
+              </p>
               {plans.length > 0 ? (
                 <select
                   value={selectedPlanId ?? ''}
@@ -264,7 +275,7 @@ export function CoachChatDock() {
             {!bootLoading && plans.length === 0 && (
               <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-center">
                 <p className="text-sm text-white/70">
-                  Add a lift goal (weight × reps + date) to unlock coaching tied to your plan.
+                  Add a lift goal (weight × reps; date optional) to unlock coaching tied to your plan.
                 </p>
                 <Link
                   href="/log/goals"

@@ -448,20 +448,20 @@ export default function SettingsPage() {
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-3">
             <Shield className="w-6 h-6 text-white" />
-            <h1 className="text-2xl font-semibold text-white">Settings</h1>
+            <h1 className="ui-page-title">Settings</h1>
           </div>
-          <p className="text-white/70 text-sm">Manage your profile and account preferences</p>
+          <p className="ui-subtitle mt-2">Manage your profile and account preferences</p>
         </div>
 
         <div className="rounded-[12px] border border-white/10 overflow-hidden bg-white/[0.02]">
           {error && (
-            <div className="bg-red-500/10 border-b border-red-500/30 text-red-400 px-6 py-4">
+            <div className="bg-white/5 border-b border-white/10 text-white/80 px-6 py-4">
               <p className="font-semibold">{error}</p>
             </div>
           )}
 
           {success && (
-            <div className="bg-green-950/50 border-b border-green-600/50 text-green-400 px-6 py-4 backdrop-blur-sm">
+            <div className="bg-white/5 border-b border-white/10 text-white px-6 py-4">
               <p className="font-semibold">Profile updated successfully!</p>
             </div>
           )}
@@ -469,11 +469,11 @@ export default function SettingsPage() {
           <form onSubmit={handleSubmit} className="p-8 space-y-8">
             {/* Banner Section */}
             <div>
-              <label className="block text-sm font-bold text-gray-300 mb-4 tracking-wide flex items-center space-x-2">
+              <label className="block text-sm font-bold text-white/70 mb-4 tracking-wide flex items-center space-x-2">
                 <Upload className="w-5 h-5" />
                 <span>BANNER IMAGE</span>
               </label>
-              <p className="text-xs text-gray-500 mb-3">This image appears at the top of your profile</p>
+              <p className="text-xs text-white/40 mb-3">This image appears at the top of your profile</p>
               <div className="relative w-full h-48 rounded-xl bg-surface overflow-hidden border border-default mb-3">
                 {bannerPreview ? (
                   <>
@@ -485,7 +485,7 @@ export default function SettingsPage() {
                       unoptimized
                     />
                     {bannerFile && (
-                      <div className="absolute top-2 right-2 text-xs text-white/90 bg-green-600/80 px-2 py-1 rounded">
+                      <div className="absolute top-2 right-2 text-xs text-black bg-white/90 px-2 py-1 rounded">
                         Ready to upload
                       </div>
                     )}
@@ -500,9 +500,9 @@ export default function SettingsPage() {
                 )}
               </div>
               {bannerFile && (
-                <p className="text-xs text-green-400 mb-2">✓ Banner ready to upload ({Math.round(bannerFile.size / 1024)} KB)</p>
+                <p className="text-xs text-white/50 mb-2">✓ Banner ready to upload ({Math.round(bannerFile.size / 1024)} KB)</p>
               )}
-              <label className="btn-secondary px-6 py-3 cursor-pointer inline-flex items-center space-x-2">
+              <label className="btn btn-secondary cursor-pointer inline-flex items-center space-x-2">
                 <Upload className="w-5 h-5" />
                 <span>{bannerPreview ? 'Change Banner' : 'Upload Banner'}</span>
                 <input
@@ -516,7 +516,7 @@ export default function SettingsPage() {
 
             {/* Avatar Section */}
             <div>
-              <label className="block text-sm font-bold text-gray-300 mb-4 tracking-wide flex items-center space-x-2">
+              <label className="block text-sm font-bold text-white/70 mb-4 tracking-wide flex items-center space-x-2">
                 <User className="w-5 h-5" />
                 <span>PROFILE PICTURE</span>
               </label>
@@ -532,13 +532,13 @@ export default function SettingsPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-surface-hover text-primary text-3xl font-semibold">
+                      <div className="w-full h-full flex items-center justify-center bg-white/10 text-white text-3xl font-semibold">
                         {username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
                       </div>
                     )}
                   </div>
                 </div>
-                <label className="btn-secondary px-6 py-3 cursor-pointer flex items-center space-x-2">
+                <label className="btn btn-secondary cursor-pointer flex items-center space-x-2">
                   <Upload className="w-5 h-5" />
                   <span>Upload Photo</span>
                   <input
@@ -554,7 +554,7 @@ export default function SettingsPage() {
             {/* Form Fields */}
             <div className="space-y-6">
               <div>
-                <label htmlFor="username" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+                <label htmlFor="username" className="block text-sm font-bold text-white/70 mb-2 tracking-wide">
                   USERNAME
                 </label>
                 <input
@@ -568,7 +568,7 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label htmlFor="fullName" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+                <label htmlFor="fullName" className="block text-sm font-bold text-white/70 mb-2 tracking-wide">
                   FULL NAME
                 </label>
                 <input
@@ -582,7 +582,7 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label htmlFor="bio" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+                <label htmlFor="bio" className="block text-sm font-bold text-white/70 mb-2 tracking-wide">
                   BIO
                 </label>
                 <textarea
@@ -596,10 +596,10 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+                <label className="block text-sm font-bold text-white/70 mb-2 tracking-wide">
                   PROFILE SONG
                 </label>
-                <p className="text-xs text-gray-500 mb-3">This song will play when others visit your profile</p>
+                <p className="text-xs text-white/40 mb-3">This song will play when others visit your profile</p>
                 <MusicSelector
                   onSelect={setProfileSong}
                   selectedSong={profileSong}
@@ -609,10 +609,10 @@ export default function SettingsPage() {
                 
                 {profileSong && (
                   <div className="mt-4">
-                    <label htmlFor="songStartTime" className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+                    <label htmlFor="songStartTime" className="block text-sm font-bold text-white/70 mb-2 tracking-wide">
                       START TIME (SECONDS)
                     </label>
-                    <p className="text-xs text-gray-500 mb-2">Skip to a specific part of the song (e.g., 30 to start at 30 seconds, leave empty to start from beginning). A 5-second preview will play as you adjust.</p>
+                    <p className="text-xs text-white/40 mb-2">Skip to a specific part of the song (e.g., 30 to start at 30 seconds, leave empty to start from beginning). A 5-second preview will play as you adjust.</p>
                     <div className="flex items-center space-x-3">
                       <input
                         id="songStartTime"
@@ -632,7 +632,7 @@ export default function SettingsPage() {
                         placeholder="0 (start from beginning)"
                       />
                       {previewStartTime !== null && previewStartTime >= 0 && (
-                        <div className="text-xs text-green-400 animate-pulse">
+                        <div className="text-xs text-white/50 animate-pulse">
                           Preview playing...
                         </div>
                       )}
@@ -649,50 +649,38 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-300 mb-2 tracking-wide">
+                <label className="block text-sm font-bold text-white/70 mb-2 tracking-wide">
                   FITNESS GOAL
                 </label>
-                <p className="text-xs text-gray-500 mb-3">Display your current fitness phase</p>
-                <div className="grid grid-cols-3 gap-2 md:gap-3">
+                <p className="text-xs text-white/40 mb-3">Display your current fitness phase</p>
+                <div className="btn-tab-wrap">
                   <button
                     type="button"
                     onClick={() => setFitnessGoal('bulk')}
-                    className={`py-2.5 md:py-3 px-2 md:px-4 rounded-xl border-2 transition-all font-bold text-xs md:text-sm ${
-                      fitnessGoal === 'bulk'
-                        ? 'border-green-600 bg-green-950/30 text-green-400'
-                        : 'border-gray-700 bg-gray-800/40 text-gray-400 hover:border-gray-600'
-                    }`}
+                    className={`btn btn-tab font-metric text-[10px] md:text-xs tracking-widest uppercase ${fitnessGoal === 'bulk' ? 'btn-tab-active' : ''}`}
                   >
-                    BULK
+                    Bulk
                   </button>
                   <button
                     type="button"
                     onClick={() => setFitnessGoal('cut')}
-                    className={`py-2.5 md:py-3 px-2 md:px-4 rounded-xl border-2 transition-all font-bold text-xs md:text-sm ${
-                      fitnessGoal === 'cut'
-                        ? 'border-red-600 bg-red-950/30 text-red-400'
-                        : 'border-gray-700 bg-gray-800/40 text-gray-400 hover:border-gray-600'
-                    }`}
+                    className={`btn btn-tab font-metric text-[10px] md:text-xs tracking-widest uppercase ${fitnessGoal === 'cut' ? 'btn-tab-active' : ''}`}
                   >
-                    CUT
+                    Cut
                   </button>
                   <button
                     type="button"
                     onClick={() => setFitnessGoal('maintenance')}
-                    className={`py-2.5 md:py-3 px-1 md:px-4 rounded-xl border-2 transition-all font-bold text-[10px] md:text-sm ${
-                      fitnessGoal === 'maintenance'
-                        ? 'border-gray-600 bg-gray-800/30 text-gray-400'
-                        : 'border-gray-700 bg-gray-800/40 text-gray-400 hover:border-gray-600'
-                    }`}
+                    className={`btn btn-tab font-metric text-[9px] sm:text-[10px] md:text-xs tracking-widest uppercase ${fitnessGoal === 'maintenance' ? 'btn-tab-active' : ''}`}
                   >
-                    <span className="hidden sm:inline">MAINTENANCE</span>
-                    <span className="sm:hidden">MAINT</span>
+                    <span className="hidden sm:inline">Maintenance</span>
+                    <span className="sm:hidden">Maint</span>
                   </button>
                 </div>
                 <button
                   type="button"
                   onClick={() => setFitnessGoal(null)}
-                  className="mt-2 text-xs text-gray-500 hover:text-gray-400"
+                  className="mt-2 btn btn-link text-xs"
                 >
                   Clear selection
                 </button>
@@ -701,23 +689,23 @@ export default function SettingsPage() {
               {/* Top 3 Lifts Section */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-bold text-gray-300 tracking-wide">
+                  <label className="block text-sm font-bold text-white/70 tracking-wide">
                     TOP 3 LIFTS
                   </label>
                 </div>
-                <p className="text-xs text-gray-500 mb-4">Showcase your best lifts on your profile. 1RM will be calculated automatically for reps &gt; 1 using the Epley formula. Choose from your posted PRs or enter manually.</p>
+                <p className="text-xs text-white/40 mb-4">Showcase your best lifts on your profile. 1RM will be calculated automatically for reps &gt; 1 using the Epley formula. Choose from your posted PRs or enter manually.</p>
                 
                 {/* Lift 1 */}
-                <div className="space-y-3 mb-4 p-3 md:p-4 bg-gray-800/40 rounded-xl border border-gray-700">
+                <div className="space-y-3 mb-4 p-3 md:p-4 bg-white/[0.02] rounded-xl border border-white/10">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-xs md:text-sm font-bold text-gray-400">LIFT #1</div>
+                    <div className="text-xs md:text-sm font-bold text-white/50">LIFT #1</div>
                     <button
                       type="button"
                       onClick={() => {
                         setSelectingLiftNumber(1)
                         setShowPRSelector(true)
                       }}
-                      className="text-xs text-primary hover:text-red-400 font-bold flex items-center space-x-1 transition-colors"
+                      className="text-xs text-white/55 hover:text-white font-medium flex items-center space-x-1 transition-colors"
                     >
                       <ListFilter className="w-3 h-3" />
                       <span>Select from PRs</span>
@@ -725,7 +713,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="grid grid-cols-[2fr_1.5fr_1fr] md:grid-cols-3 gap-2 md:gap-3">
                     <div className="min-w-0">
-                      <label className="block text-xs text-gray-500 mb-1">Exercise</label>
+                      <label className="block text-xs text-white/40 mb-1">Exercise</label>
                       <input
                         type="text"
                         value={topLift1.exercise}
@@ -735,7 +723,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div className="min-w-0">
-                      <label className="block text-xs text-gray-500 mb-1">Weight</label>
+                      <label className="block text-xs text-white/40 mb-1">Weight</label>
                       <input
                         type="number"
                         min="0"
@@ -747,7 +735,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div className="min-w-0">
-                      <label className="block text-xs text-gray-500 mb-1">Reps</label>
+                      <label className="block text-xs text-white/40 mb-1">Reps</label>
                       <input
                         type="number"
                         min="1"
@@ -761,16 +749,16 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Lift 2 */}
-                <div className="space-y-3 mb-4 p-3 md:p-4 bg-gray-800/40 rounded-xl border border-gray-700">
+                <div className="space-y-3 mb-4 p-3 md:p-4 bg-white/[0.02] rounded-xl border border-white/10">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-xs md:text-sm font-bold text-gray-400">LIFT #2</div>
+                    <div className="text-xs md:text-sm font-bold text-white/50">LIFT #2</div>
                     <button
                       type="button"
                       onClick={() => {
                         setSelectingLiftNumber(2)
                         setShowPRSelector(true)
                       }}
-                      className="text-xs text-primary hover:text-red-400 font-bold flex items-center space-x-1 transition-colors"
+                      className="text-xs text-white/55 hover:text-white font-medium flex items-center space-x-1 transition-colors"
                     >
                       <ListFilter className="w-3 h-3" />
                       <span>Select from PRs</span>
@@ -778,7 +766,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="grid grid-cols-[2fr_1.5fr_1fr] md:grid-cols-3 gap-2 md:gap-3">
                     <div className="min-w-0">
-                      <label className="block text-xs text-gray-500 mb-1">Exercise</label>
+                      <label className="block text-xs text-white/40 mb-1">Exercise</label>
                       <input
                         type="text"
                         value={topLift2.exercise}
@@ -788,7 +776,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div className="min-w-0">
-                      <label className="block text-xs text-gray-500 mb-1">Weight</label>
+                      <label className="block text-xs text-white/40 mb-1">Weight</label>
                       <input
                         type="number"
                         min="0"
@@ -800,7 +788,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div className="min-w-0">
-                      <label className="block text-xs text-gray-500 mb-1">Reps</label>
+                      <label className="block text-xs text-white/40 mb-1">Reps</label>
                       <input
                         type="number"
                         min="1"
@@ -814,16 +802,16 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Lift 3 */}
-                <div className="space-y-3 p-3 md:p-4 bg-gray-800/40 rounded-xl border border-gray-700">
+                <div className="space-y-3 p-3 md:p-4 bg-white/[0.02] rounded-xl border border-white/10">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-xs md:text-sm font-bold text-gray-400">LIFT #3</div>
+                    <div className="text-xs md:text-sm font-bold text-white/50">LIFT #3</div>
                     <button
                       type="button"
                       onClick={() => {
                         setSelectingLiftNumber(3)
                         setShowPRSelector(true)
                       }}
-                      className="text-xs text-primary hover:text-red-400 font-bold flex items-center space-x-1 transition-colors"
+                      className="text-xs text-white/55 hover:text-white font-medium flex items-center space-x-1 transition-colors"
                     >
                       <ListFilter className="w-3 h-3" />
                       <span>Select from PRs</span>
@@ -831,7 +819,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="grid grid-cols-[2fr_1.5fr_1fr] md:grid-cols-3 gap-2 md:gap-3">
                     <div className="min-w-0">
-                      <label className="block text-xs text-gray-500 mb-1">Exercise</label>
+                      <label className="block text-xs text-white/40 mb-1">Exercise</label>
                       <input
                         type="text"
                         value={topLift3.exercise}
@@ -841,7 +829,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div className="min-w-0">
-                      <label className="block text-xs text-gray-500 mb-1">Weight</label>
+                      <label className="block text-xs text-white/40 mb-1">Weight</label>
                       <input
                         type="number"
                         min="0"
@@ -853,7 +841,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div className="min-w-0">
-                      <label className="block text-xs text-gray-500 mb-1">Reps</label>
+                      <label className="block text-xs text-white/40 mb-1">Reps</label>
                       <input
                         type="number"
                         min="1"
@@ -872,38 +860,38 @@ export default function SettingsPage() {
             <button
               type="submit"
               disabled={saving}
-              className="btn-primary w-full py-4 text-base font-bold tracking-wide flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn btn-primary btn-block gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>SAVING...</span>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Saving…</span>
                 </>
               ) : (
-                <span>SAVE CHANGES</span>
+                <span>Save changes</span>
               )}
             </button>
           </form>
 
           {/* Privacy Settings Link */}
-          <div className="border-t border-gray-800/60 p-8">
+          <div className="border-t border-white/10 p-8">
             <Link
               href="/settings/privacy"
-              className="w-full px-6 py-4 bg-gray-800/60 border border-gray-700 rounded-xl text-white font-bold hover:bg-gray-700 transition-all flex items-center justify-center space-x-2"
+              className="btn btn-secondary btn-block gap-2"
             >
-              <Shield className="w-5 h-5" />
-              <span>PRIVACY SETTINGS</span>
+              <Shield className="w-4 h-4 shrink-0" />
+              <span>Privacy settings</span>
             </Link>
           </div>
 
           {/* Sign Out Section */}
-          <div className="border-t border-gray-800/60 p-8">
+          <div className="border-t border-white/10 p-8">
             <button
               onClick={handleSignOut}
-              className="w-full px-6 py-4 border-2 border-red-600/50 rounded-xl text-red-400 font-bold hover:bg-red-950/30 hover:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all flex items-center justify-center space-x-2"
+              className="btn btn-secondary btn-block gap-2 text-white/60"
             >
-              <LogOut className="w-5 h-5" />
-              <span>SIGN OUT</span>
+              <LogOut className="w-4 h-4 shrink-0" />
+              <span>Sign out</span>
             </button>
           </div>
         </div>

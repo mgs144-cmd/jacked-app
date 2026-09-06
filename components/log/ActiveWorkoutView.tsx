@@ -1,8 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, Plus, Trash2, History } from 'lucide-react'
 import { ExerciseAutocomplete } from '@/components/ExerciseAutocomplete'
+import { ExerciseHistorySheet } from '@/components/log/ExerciseHistorySheet'
+import { PrimeSetRow } from '@/components/log/PrimeSetRow'
+import type { LiftRow } from '@/lib/liftChartData'
+import { createEmptySet, countValidSets } from '@/lib/buildLiftLogRows'
+import { getLoggingModeForExercise, isPrimeRangeExercise } from '@/lib/exercises'
+import { SessionDatePicker } from '@/components/log/SessionDatePicker'
 import type { SetEntry, WorkoutExerciseEntry } from './types'
 
 interface ActiveWorkoutViewProps {
@@ -11,8 +17,22 @@ interface ActiveWorkoutViewProps {
   onFinishWorkout: () => void
   onAddExercise: () => void
   previousBestByExercise: Record<string, string>
-  onSaveSet?: (exerciseId: string, set: SetEntry) => void
+  workoutSubtitle?: string
+  sessionDate: string
+  onSessionDateChange: (date: string) => void
+  allLifts?: LiftRow[]
+  userId?: string
+  recentExerciseNames?: string[]
 }
+
+type SetField =
+  | 'weight'
+  | 'reps'
+  | 'rpe'
+  | 'note'
+  | 'weight_beginning'
+  | 'weight_middle'
+  | 'weight_end'
 
 function SetRow({
   set,
@@ -23,7 +43,7 @@ function SetRow({
 }: {
   set: SetEntry
   setIndex: number
-  onUpdate: (field: 'weight' | 'reps' | 'rpe' | 'note', value: string) => void
+  onUpdate: (field: SetField, value: string) => void
   onRemove: () => void
   canRemove: boolean
 }) {
@@ -31,7 +51,9 @@ function SetRow({
   return (
     <div className="rounded-xl bg-white/[0.03] border border-white/5 overflow-hidden">
       <div className="flex items-center gap-2 p-2 sm:p-3">
-        <span className="text-white/50 text-sm w-6 tabular-nums">{setIndex + 1}</span>
+        <span className="text-white/50 text-sm w-14 shrink-0 tabular-nums truncate" title={set.note}>
+          {set.note || setIndex + 1}
+        </span>
         <input
           type="number"
           value={set.weight}
@@ -79,7 +101,9 @@ function SetRow({
           >
             <option value="">RPE</option>
             {[10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6].map((v) => (
-              <option key={v} value={v}>{v}</option>
+              <option key={v} value={v}>
+                {v}
+              </option>
             ))}
           </select>
           <input
@@ -101,14 +125,31 @@ export function ActiveWorkoutView({
   onFinishWorkout,
   onAddExercise,
   previousBestByExercise,
+  workoutSubtitle,
+  sessionDate,
+  onSessionDateChange,
+  allLifts = [],
+  userId,
+  recentExerciseNames = [],
 }: ActiveWorkoutViewProps) {
+  const [historyExercise, setHistoryExercise] = useState<string | null>(null)
+
   const updateExercise = (index: number, updates: Partial<WorkoutExerciseEntry>) => {
     const next = [...exercises]
-    next[index] = { ...next[index], ...updates }
+    const prev = next[index]
+    const merged = { ...prev, ...updates }
+    if (updates.exercise_name != null && updates.exercise_name !== prev.exercise_name) {
+      const wasPrime = isPrimeRangeExercise(prev.exercise_name)
+      const isPrime = isPrimeRangeExercise(updates.exercise_name)
+      if (wasPrime !== isPrime) {
+        merged.sets = prev.sets.map(() => createEmptySet(updates.exercise_name!))
+      }
+    }
+    next[index] = merged
     onExercisesChange(next)
   }
 
-  const updateSet = (exIndex: number, setIndex: number, field: 'weight' | 'reps' | 'rpe' | 'note', value: string) => {
+  const updateSet = (exIndex: number, setIndex: number, field: SetField, value: string) => {
     const next = [...exercises]
     const sets = [...next[exIndex].sets]
     sets[setIndex] = { ...sets[setIndex], [field]: value }
@@ -118,7 +159,8 @@ export function ActiveWorkoutView({
 
   const addSet = (exIndex: number) => {
     const next = [...exercises]
-    next[exIndex].sets.push({ weight: '', reps: '', rpe: '' })
+    const name = next[exIndex].exercise_name
+    next[exIndex].sets.push(createEmptySet(name))
     onExercisesChange(next)
   }
 
@@ -133,81 +175,108 @@ export function ActiveWorkoutView({
     onExercisesChange(exercises.filter((_, i) => i !== exIndex))
   }
 
-  const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.filter(s => s.weight && s.reps).length, 0)
+  const totalSets = exercises.reduce(
+    (acc, ex) => acc + countValidSets(ex.exercise_name, ex.sets),
+    0
+  )
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-white">Active Workout</h2>
-        <button
-          type="button"
-          onClick={onFinishWorkout}
-          className="text-sm font-medium text-white bg-white/15 hover:bg-white/20 px-4 py-2 rounded-xl transition-colors"
-        >
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="log-screen-section-title">Active workout</h2>
+          {workoutSubtitle && <p className="log-screen-meta mt-1 truncate">{workoutSubtitle}</p>}
+        </div>
+        <button type="button" onClick={onFinishWorkout} className="btn btn-secondary btn-sm shrink-0">
           Finish &amp; see summary
         </button>
       </div>
 
-      {exercises.map((ex, exIndex) => (
-        <div
-          key={ex.id}
-          className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden"
-        >
-          <div className="p-4 border-b border-white/5">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <ExerciseAutocomplete
-                  value={ex.exercise_name}
-                  onChange={(name) => updateExercise(exIndex, { exercise_name: name })}
-                  placeholder="Exercise name"
-                  className="input-field w-full font-medium"
-                />
-                {previousBestByExercise[ex.exercise_name] && (
-                  <p className="text-xs text-white/50 mt-1.5">
-                    Previous: {previousBestByExercise[ex.exercise_name]}
-                  </p>
+      <SessionDatePicker value={sessionDate} onChange={onSessionDateChange} />
+
+      {exercises.map((ex, exIndex) => {
+        const prime = getLoggingModeForExercise(ex.exercise_name) === 'prime_range'
+        return (
+          <div
+            key={ex.id}
+            className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden"
+          >
+            <div className="p-4 border-b border-white/5">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <label className="label-caps block mb-2">Exercise</label>
+                  <ExerciseAutocomplete
+                    value={ex.exercise_name}
+                    onChange={(name) => updateExercise(exIndex, { exercise_name: name })}
+                    placeholder="Exercise name"
+                    className="input-field w-full font-medium"
+                    userId={userId}
+                    recentExerciseNames={recentExerciseNames}
+                  />
+                  {prime && (
+                    <p className="ui-meta mt-2">Prime: log beginning, middle, and end stack weights per set.</p>
+                  )}
+                  {ex.exercise_name.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => setHistoryExercise(ex.exercise_name.trim())}
+                      className="mt-2 w-full text-left rounded-lg px-2 py-2 -mx-2 hover:bg-white/5 transition-colors group"
+                    >
+                      <span className="flex items-center gap-1.5 ui-body-medium text-white">
+                        <History className="w-4 h-4 text-white/50 shrink-0" />
+                        {ex.exercise_name.trim()}
+                      </span>
+                      <span className="block ui-meta mt-0.5 pl-5">Past sets, reps &amp; RPE by day</span>
+                    </button>
+                  )}
+                  {previousBestByExercise[ex.exercise_name] && (
+                    <p className="ui-meta mt-1">Last best: {previousBestByExercise[ex.exercise_name]}</p>
+                  )}
+                </div>
+                {exercises.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeExercise(exIndex)}
+                    className="p-2 rounded-lg text-white/50 hover:text-red-400 hover:bg-white/5 shrink-0"
+                    aria-label="Remove exercise"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 )}
               </div>
-              {exercises.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeExercise(exIndex)}
-                  className="p-2 rounded-lg text-white/50 hover:text-red-400 hover:bg-white/5 shrink-0"
-                  aria-label="Remove exercise"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+            </div>
+            <div className="p-4 space-y-2">
+              {ex.sets.map((set, setIndex) =>
+                prime ? (
+                  <PrimeSetRow
+                    key={`${ex.id}-${setIndex}`}
+                    set={set}
+                    setIndex={setIndex}
+                    onUpdate={(field, value) => updateSet(exIndex, setIndex, field, value)}
+                    onRemove={() => removeSet(exIndex, setIndex)}
+                    canRemove={ex.sets.length > 1}
+                  />
+                ) : (
+                  <SetRow
+                    key={`${ex.id}-${setIndex}`}
+                    set={set}
+                    setIndex={setIndex}
+                    onUpdate={(field, value) => updateSet(exIndex, setIndex, field, value)}
+                    onRemove={() => removeSet(exIndex, setIndex)}
+                    canRemove={ex.sets.length > 1}
+                  />
+                )
               )}
+              <button type="button" onClick={() => addSet(exIndex)} className="btn btn-dashed gap-2">
+                <Plus className="w-4 h-4" />
+                Add set
+              </button>
             </div>
           </div>
-          <div className="p-4 space-y-2">
-            {ex.sets.map((set, setIndex) => (
-              <SetRow
-                key={`${ex.id}-${setIndex}`}
-                set={set}
-                setIndex={setIndex}
-                onUpdate={(field, value) => updateSet(exIndex, setIndex, field, value)}
-                onRemove={() => removeSet(exIndex, setIndex)}
-                canRemove={ex.sets.length > 1}
-              />
-            ))}
-            <button
-              type="button"
-              onClick={() => addSet(exIndex)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-white/20 text-white/60 hover:text-white hover:border-white/30 hover:bg-white/5 transition-colors text-sm font-medium"
-            >
-              <Plus className="w-4 h-4" />
-              Add set
-            </button>
-          </div>
-        </div>
-      ))}
+        )
+      })}
 
-      <button
-        type="button"
-        onClick={onAddExercise}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-white/15 text-white/80 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium"
-      >
+      <button type="button" onClick={onAddExercise} className="btn btn-secondary btn-block gap-2">
         <Plus className="w-5 h-5" />
         Add exercise
       </button>
@@ -216,10 +285,17 @@ export function ActiveWorkoutView({
         type="button"
         onClick={onFinishWorkout}
         disabled={totalSets === 0}
-        className="w-full btn-primary py-3.5 font-bold text-base disabled:opacity-50"
+        className="w-full btn btn-primary btn-block disabled:opacity-50"
       >
         Finish workout {totalSets > 0 ? `(${totalSets} set${totalSets !== 1 ? 's' : ''})` : ''}
       </button>
+
+      <ExerciseHistorySheet
+        exerciseName={historyExercise || ''}
+        allLifts={allLifts}
+        open={Boolean(historyExercise)}
+        onClose={() => setHistoryExercise(null)}
+      />
     </div>
   )
 }

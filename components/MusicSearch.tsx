@@ -188,17 +188,16 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
   // Don't show selected song here - MusicSelector handles that
 
   return (
-    <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-6 space-y-4">
+    <div className="bg-white/[0.02] backdrop-blur-sm rounded-xl border border-white/10 p-6 space-y-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <Search className="w-5 h-5 text-primary" />
+          <Search className="w-5 h-5 text-white/70" />
           <h3 className="text-white font-bold">Search for a Song</h3>
         </div>
         <div className="flex items-center space-x-2 text-xs">
-          <span className="text-gray-500">Source:</span>
-          <span className={`px-2 py-1 rounded ${
-            searchSource === 'spotify' ? 'bg-green-600 text-white' : 
-            'bg-gray-700 text-gray-400'
+          <span className="text-white/40">Source:</span>
+          <span className={`px-2 py-1 rounded font-bold ${
+            searchSource === 'spotify' ? 'bg-white text-black' : 'bg-white/10 text-white/60'
           }`}>
             {searchSource === 'spotify' ? 'Spotify' : 'YouTube'}
           </span>
@@ -224,7 +223,7 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
           type="button"
           onClick={handleSearchClick}
           disabled={searching || !query.trim()}
-          className="btn-primary px-6 py-3 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {searching ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -235,22 +234,22 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
       </form>
 
       {error && (
-        <div className="bg-red-950/50 border-2 border-red-600/50 text-red-400 px-4 py-3 rounded-lg text-sm font-medium">
+        <div className="bg-white/5 border border-white/15 text-white/70 px-4 py-3 rounded-lg text-sm font-medium">
           <div className="flex items-start space-x-2">
-            <span className="text-red-500 font-bold text-lg">⚠️</span>
+            <span className="text-white/60 font-bold text-lg">⚠️</span>
             <div className="flex-1">
               <p className="font-bold mb-2 text-base">Search Error:</p>
               <div className="whitespace-pre-line text-sm leading-relaxed">{error}</div>
               {(error.includes('not configured') || error.includes('Spotify API')) && (
-                <div className="mt-3 pt-3 border-t border-red-800/50">
-                  <p className="text-xs text-red-300 font-semibold mb-1">Quick Fix:</p>
-                  <ol className="text-xs text-red-300/90 list-decimal list-inside space-y-1">
-                    <li>Get Client ID & Secret from <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener noreferrer" className="underline hover:text-red-200">Spotify Dashboard</a></li>
+                <div className="mt-3 pt-3 border-t border-white/10">
+                  <p className="text-xs text-white/60 font-semibold mb-1">Quick Fix:</p>
+                  <ol className="text-xs text-white/50 list-decimal list-inside space-y-1">
+                    <li>Get Client ID & Secret from <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">Spotify Dashboard</a></li>
                     <li>Add to Vercel → Settings → Environment Variables</li>
                     <li>Redeploy your app</li>
                   </ol>
-                  <p className="text-xs text-red-400/80 mt-2 italic">
-                    See <code className="bg-red-950/50 px-1 rounded">ADD_SPOTIFY_TO_VERCEL.md</code> for detailed steps
+                  <p className="text-xs text-white/40 mt-2 italic">
+                    See <code className="bg-white/10 px-1 rounded">ADD_SPOTIFY_TO_VERCEL.md</code> for detailed steps
                   </p>
                 </div>
               )}
@@ -278,7 +277,7 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
                 e.preventDefault()
                 e.stopPropagation()
               }}
-              className="w-full bg-gray-800/60 hover:bg-gray-800 rounded-lg p-3 flex items-center space-x-3 transition-all text-left cursor-pointer"
+              className="w-full bg-white/[0.02] hover:bg-white/5 border border-white/10 rounded-lg p-3 flex items-center space-x-3 transition-all text-left cursor-pointer"
             >
               {track.album_image ? (
                 <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 relative">
@@ -291,22 +290,22 @@ export function MusicSearch({ onSelect, selectedSong, onSelectComplete }: MusicS
                   />
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center flex-shrink-0">
                   <Music className="w-5 h-5 text-white" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-white font-bold text-sm truncate">{track.name}</p>
-                <p className="text-gray-400 text-xs truncate">{track.artist}</p>
+                <p className="text-white/45 text-xs truncate">{track.artist}</p>
               </div>
-              <Play className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <Play className="w-4 h-4 text-white/40 flex-shrink-0" />
             </button>
           ))}
         </div>
       )}
 
       {query && tracks.length === 0 && !searching && !error && (
-        <p className="text-gray-500 text-sm text-center py-4">No results found</p>
+        <p className="text-white/40 text-sm text-center py-4">No results found</p>
       )}
     </div>
   )

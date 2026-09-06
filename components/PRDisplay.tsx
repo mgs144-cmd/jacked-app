@@ -50,7 +50,7 @@ export function PRDisplay({ prs, userId, isOwnProfile = false }: PRDisplayProps)
     <div className="space-y-6">
       <div className="flex items-center space-x-2.5">
         <Trophy className="w-5 h-5 text-red-600" />
-        <h2 className="text-lg font-semibold text-primary tracking-tight">Personal Records</h2>
+        <h2 className="ui-section-title text-primary">Personal Records</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -72,7 +72,7 @@ export function PRDisplay({ prs, userId, isOwnProfile = false }: PRDisplayProps)
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-2">
                       <Trophy className="w-5 h-5 text-red-600 flex-shrink-0" />
-                      <h3 className="text-xl font-semibold text-primary">{exercise}</h3>
+                      <h3 className="ui-heading text-lg text-primary">{exercise}</h3>
                     </div>
                     {latestPR.post_id && (
                       <Link
@@ -89,14 +89,14 @@ export function PRDisplay({ prs, userId, isOwnProfile = false }: PRDisplayProps)
                     <div className="flex items-center space-x-6 pl-7">
                       {latestPR.weight && (
                         <div className="flex items-baseline space-x-1.5">
-                          <span className="text-2xl font-semibold text-primary">{latestPR.weight}</span>
+                          <span className="ui-stat-value text-primary">{latestPR.weight}</span>
                           <span className="text-sm font-medium text-secondary">lbs</span>
                         </div>
                       )}
                       
                       {latestPR.reps && (
                         <div className="flex items-baseline space-x-1.5">
-                          <span className="text-2xl font-semibold text-primary">{latestPR.reps}</span>
+                          <span className="ui-stat-value text-primary">{latestPR.reps}</span>
                           <span className="text-sm font-medium text-secondary">reps</span>
                         </div>
                       )}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
+import { JackedLogo } from '@/components/JackedLogo'
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
@@ -135,15 +136,12 @@ export default function SignUpPage() {
     <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden bg-black">
       <div className="max-w-md w-full space-y-8 relative z-10">
         <div className="text-center">
-          <Link href="/" className="inline-block">
-            <h1 
-              className="text-4xl md:text-5xl font-bold tracking-wider uppercase text-white mb-3 hover:opacity-90 transition-opacity"
-              style={{ fontFamily: 'var(--font-black-ops-one)' }}
-            >
-              JACKED
-            </h1>
-          </Link>
-          <p className="text-white/70 text-base font-normal">
+          <h1 className="mb-3">
+            <Link href="/" className="inline-block hover:opacity-90 transition-opacity">
+              <JackedLogo size="large" />
+            </Link>
+          </h1>
+          <p className="ui-subtitle text-base mt-2">
             Join the community
           </p>
         </div>
@@ -215,7 +213,7 @@ export default function SignUpPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-white hover:bg-white/90 text-black font-semibold rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="btn btn-primary btn-block btn-round gap-2 disabled:opacity-50"
             >
               {loading ? (
                 <>

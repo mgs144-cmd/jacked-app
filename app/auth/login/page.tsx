@@ -1,18 +1,39 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
+import { JackedLogo } from '@/components/JackedLogo'
+import { safeInternalRedirectPath } from '@/lib/groupInviteLink'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [resetBanner, setResetBanner] = useState('')
+  const [inviteBanner, setInviteBanner] = useState('')
+  const [postLoginRedirect, setPostLoginRedirect] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const q = new URLSearchParams(window.location.search)
+    if (q.get('reset') === '1') {
+      setResetBanner('Password updated. Sign in with your email and new password.')
+    }
+    const rawRedirect = q.get('redirect')
+    const safe = safeInternalRedirectPath(rawRedirect)
+    if (safe) {
+      setPostLoginRedirect(safe)
+      if (safe.includes('/community/join')) {
+        setInviteBanner('You have a group invite — sign in below to join.')
+      }
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,7 +49,12 @@ export default function LoginPage() {
       if (signInError) throw signInError
 
       if (data.user) {
-        router.push('/feed')
+        let next: string | null = postLoginRedirect ? safeInternalRedirectPath(postLoginRedirect) : null
+        if (!next && typeof window !== 'undefined') {
+          const raw = new URLSearchParams(window.location.search).get('redirect')
+          next = safeInternalRedirectPath(raw)
+        }
+        router.push(next || '/feed')
         router.refresh()
       }
     } catch (err: any) {
@@ -42,21 +68,28 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden bg-black">
       <div className="max-w-md w-full space-y-8 relative z-10">
         <div className="text-center">
-          <Link href="/" className="inline-block">
-            <h1 
-              className="text-4xl md:text-5xl font-bold tracking-wider uppercase text-white mb-3 hover:opacity-90 transition-opacity"
-              style={{ fontFamily: 'var(--font-black-ops-one)' }}
-            >
-              JACKED
-            </h1>
-          </Link>
-          <p className="text-white/70 text-base font-normal">
+          <h1 className="mb-3">
+            <Link href="/" className="inline-block hover:opacity-90 transition-opacity">
+              <JackedLogo size="large" />
+            </Link>
+          </h1>
+          <p className="ui-subtitle text-base mt-2">
             Welcome back, lifter
           </p>
         </div>
 
         <div className="bg-white/[0.03] backdrop-blur-sm rounded-2xl p-8 border border-white/10">
           <form onSubmit={handleSubmit} className="space-y-5">
+            {resetBanner && (
+              <div className="bg-emerald-500/10 border border-emerald-500/25 text-emerald-200/90 px-4 py-3 rounded-lg text-sm">
+                {resetBanner}
+              </div>
+            )}
+            {inviteBanner && (
+              <div className="bg-sky-500/10 border border-sky-500/25 text-sky-200/90 px-4 py-3 rounded-lg text-sm">
+                {inviteBanner}
+              </div>
+            )}
             {error && (
               <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
                 {error}
@@ -66,7 +99,7 @@ export default function LoginPage() {
             <div className="space-y-4">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-1.5">
-                  Email
+                  Email <span className="text-white/45 font-normal">(sign-in uses email, not username)</span>
                 </label>
                 <input
                   id="email"
@@ -111,7 +144,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-white hover:bg-white/90 text-black font-semibold rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="btn btn-primary btn-block btn-round gap-2 disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -126,7 +159,14 @@ export default function LoginPage() {
 
           <p className="mt-6 text-center text-sm text-white/60">
             Don&apos;t have an account?{' '}
-            <Link href="/auth/signup" className="text-white font-medium hover:text-white/80 transition-colors">
+            <Link
+              href={
+                postLoginRedirect
+                  ? `/auth/signup?redirect=${encodeURIComponent(postLoginRedirect)}`
+                  : '/auth/signup'
+              }
+              className="text-white font-medium hover:text-white/80 transition-colors"
+            >
               Sign up
             </Link>
           </p>

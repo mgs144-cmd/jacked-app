@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2, Send, Image as ImageIcon, X } from 'lucide-react'
 import { GIFPicker } from './GIFPicker'
-import Image from 'next/image'
+import { CommentGif } from './CommentGif'
 
 interface CommentFormProps {
   postId: string
@@ -67,13 +67,8 @@ export function CommentForm({ postId, userId, onCommentAdded }: CommentFormProps
       )}
 
       {selectedGIF && (
-        <div className="relative w-32 h-32 rounded-lg overflow-hidden mb-3 border border-gray-700">
-          <Image
-            src={selectedGIF}
-            alt="Selected GIF"
-            fill
-            className="object-cover"
-          />
+        <div className="relative mb-3 inline-block">
+          <CommentGif src={selectedGIF} size="preview" />
           <button
             type="button"
             onClick={() => setSelectedGIF(null)}

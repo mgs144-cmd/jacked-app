@@ -1,12 +1,16 @@
 /** Shared types for Log tab views */
 
-export type LogSegment = 'quick-log' | 'exercises' | 'insights'
+export type LogSegment = 'workout' | 'exercises' | 'insights'
 
 export interface SetEntry {
   weight: string
   reps: string
   rpe: string
   note?: string
+  /** Prime machines: stack weight at each range position */
+  weight_beginning?: string
+  weight_middle?: string
+  weight_end?: string
 }
 
 export interface WorkoutExerciseEntry {

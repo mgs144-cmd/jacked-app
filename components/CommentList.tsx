@@ -7,14 +7,11 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
 import { formatDistanceToNow } from 'date-fns'
 import { Trash2, MessageCircle } from 'lucide-react'
+import { CommentGif } from '@/components/CommentGif'
+import { isGifComment } from '@/lib/commentContent'
 
 interface CommentListProps {
   comments: any[]
-}
-
-// Check if content is a GIF URL
-const isGIF = (content: string) => {
-  return content.startsWith('http') && (content.includes('giphy.com') || content.includes('.gif'))
 }
 
 export function CommentList({ comments }: CommentListProps) {
@@ -101,15 +98,8 @@ export function CommentList({ comments }: CommentListProps) {
                     </button>
                   )}
                 </div>
-                {isGIF(comment.content) ? (
-                  <div className="relative w-full max-w-xs aspect-square rounded-lg overflow-hidden">
-                    <Image
-                      src={comment.content}
-                      alt="GIF comment"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
+                {isGifComment(comment.content) ? (
+                  <CommentGif src={comment.content} size="detail" />
                 ) : (
                   <p className="text-gray-200 text-sm leading-relaxed">{comment.content}</p>
                 )}

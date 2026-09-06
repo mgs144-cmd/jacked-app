@@ -4,13 +4,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/app/providers'
 import { Home, PlusCircle, User, Users, ClipboardList } from 'lucide-react'
-import { JackedLogo, JackedLogoCompact } from './JackedLogo'
+import { JackedLogo } from './JackedLogo'
 
 export function Navbar() {
   const pathname = usePathname()
   const { user, loading } = useAuth()
 
-  // Only hide when we're certain user isn't logged in (avoids navbar flash while auth loads)
   if (!user && !loading) return null
 
   const navItems = [
@@ -23,63 +22,71 @@ export function Navbar() {
 
   return (
     <>
-      {/* Desktop Navigation */}
-      <nav className="hidden md:block fixed top-0 left-0 right-0 bg-black/95 border-b border-white/10 z-50 backdrop-blur-xl">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="flex items-center justify-between h-14">
-            <Link href="/feed" className="flex items-center group">
-              <JackedLogo />
-            </Link>
+      <nav className="hidden md:block fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/95 backdrop-blur-xl">
+        <div className="flex h-14 w-full max-w-[100vw] items-center justify-between pl-5 pr-5 lg:pl-10 lg:pr-10">
+          <Link
+            href="/feed"
+            className="flex shrink-0 items-center py-1 transition-opacity hover:opacity-90 [font-family:unset]"
+          >
+            <JackedLogo />
+          </Link>
 
-            <div className="flex items-center gap-1">
-              {navItems.map((item) => {
-                const Icon = item.icon
-                const isActive = pathname === item.href
-                if (item.isPrimary) {
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="ml-2 px-4 py-2 bg-white hover:bg-white/90 text-black text-sm font-semibold rounded-full transition-colors"
-                    >
-                      <Icon className="w-4 h-4 inline mr-1.5 -mt-0.5" />
-                      {item.label}
-                    </Link>
-                  )
-                }
+          <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+            {navItems.map((item) => {
+              const Icon = item.icon
+              const isActive =
+                item.href === '/community'
+                  ? pathname === '/community' || pathname.startsWith('/community/')
+                  : pathname === item.href
+              if (item.isPrimary) {
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      isActive ? 'text-white bg-white/10' : 'text-white/70 hover:text-white hover:bg-white/5'
-                    }`}
+                    className="btn btn-primary ml-1 lg:ml-2 gap-1.5 action-text"
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
                     {item.label}
                   </Link>
                 )
-              })}
-            </div>
+              }
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`btn btn-ghost action-text gap-1.5 ${isActive ? 'text-white bg-white/10' : ''}`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              )
+            })}
           </div>
         </div>
       </nav>
 
-      {/* Mobile Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black/98 border-t border-white/10 z-50 backdrop-blur-xl safe-area-pb">
-        <div className="flex items-center justify-around px-4 py-2 min-h-[48px]">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 overflow-visible border-t border-white/10 bg-black/98 backdrop-blur-xl md:hidden">
+        <div className="grid min-h-[56px] grid-cols-5 items-end px-0 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
           {navItems.map((item) => {
             const Icon = item.icon
-            const isActive = pathname === item.href
+            const isActive =
+              item.href === '/community'
+                ? pathname === '/community' || pathname.startsWith('/community/')
+                : pathname === item.href
             if (item.isPrimary) {
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex flex-col items-center justify-center min-h-[48px] min-w-[48px] p-2 rounded-full bg-white text-black active:scale-95 transition-transform"
+                  className="flex w-full flex-col items-center justify-end gap-0.5 pb-0.5"
+                  aria-label="Create post"
                 >
-                  <Icon className="w-6 h-6" strokeWidth={2} />
-                  <span className="text-[11px] font-semibold mt-0.5">{item.label}</span>
+                  <span className="flex h-11 w-11 -translate-y-1 items-center justify-center rounded-full bg-white text-black shadow-[0_2px_12px_rgba(0,0,0,0.45)] transition-transform active:scale-95">
+                    <Icon className="h-6 w-6" strokeWidth={2} />
+                  </span>
+                  <span className="text-[10px] font-metric font-semibold uppercase tracking-[0.1em] text-white/70">
+                    {item.label}
+                  </span>
                 </Link>
               )
             }
@@ -87,12 +94,14 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center min-h-[48px] min-w-[48px] p-2 rounded-xl transition-colors ${
-                  isActive ? 'text-white' : 'text-white/60'
+                className={`flex w-full flex-col items-center justify-end gap-0.5 pb-1.5 transition-colors ${
+                  isActive ? 'text-white' : 'text-white/55'
                 }`}
               >
-                <Icon className="w-6 h-6" strokeWidth={2} />
-                <span className="text-[11px] font-medium mt-0.5">{item.label}</span>
+                <Icon className="h-6 w-6 shrink-0" strokeWidth={2} />
+                <span className="text-[10px] font-metric font-semibold uppercase tracking-[0.1em]">
+                  {item.label}
+                </span>
               </Link>
             )
           })}

@@ -117,7 +117,7 @@ export function PRSelector({ userId, onSelect, onClose, currentLiftNumber }: PRS
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-700">
           <div>
-            <h2 className="text-xl md:text-2xl font-black text-white flex items-center space-x-2">
+            <h2 className="ui-section-title flex items-center space-x-2">
               <Dumbbell className="w-6 h-6 text-primary" />
               <span>Select Lift #{currentLiftNumber}</span>
             </h2>
@@ -157,12 +157,12 @@ export function PRSelector({ userId, onSelect, onClose, currentLiftNumber }: PRS
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2 mb-2">
-                          <h3 className="text-base md:text-lg font-bold text-white truncate">
+                          <h3 className="ui-heading text-base md:text-lg text-white truncate">
                             {ex.exercise_name}
                           </h3>
                         </div>
                         <div className="flex items-baseline space-x-2 flex-wrap">
-                          <span className="text-xl md:text-2xl font-black text-primary tabular-nums">
+                          <span className="ui-stat-value text-primary tabular-nums">
                             {ex.weight}
                           </span>
                           <span className="text-sm text-gray-500 font-bold">lbs</span>
@@ -189,7 +189,7 @@ export function PRSelector({ userId, onSelect, onClose, currentLiftNumber }: PRS
         <div className="border-t border-gray-700 p-4">
           <button
             onClick={onClose}
-            className="btn-secondary w-full py-3 font-bold"
+            className="btn btn-secondary btn-block"
           >
             Cancel
           </button>

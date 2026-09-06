@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/Navbar'
 import { CommunityClient } from '@/components/CommunityClient'
+import { BrandHeading } from '@/components/BrandHeading'
 
 export default async function CommunityPage() {
   const supabase = await createClient()
@@ -48,21 +49,6 @@ export default async function CommunityPage() {
 
   const followingIds = following?.map((f: { following_id: string }) => f.following_id) || []
 
-  let friendsProfiles: Record<string, unknown>[] = []
-  if (followingIds.length) {
-    const { data: fp } = await supabase.from('profiles').select('*').in('id', followingIds)
-    const withCounts = await Promise.all(
-      (fp || []).map(async (row: Record<string, unknown>) => {
-        const { count } = await supabase
-          .from('follows')
-          .select('*', { count: 'exact', head: true })
-          .eq('following_id', row.id as string)
-        return { ...row, followers_count: count || 0, following_count: 0 }
-      })
-    )
-    friendsProfiles = withCounts
-  }
-
   const { data: followRequests } = await supabase
     .from('follow_requests')
     .select('target_id, status')
@@ -92,7 +78,6 @@ export default async function CommunityPage() {
           .limit(10)
 
   let initialGroups: Record<string, unknown>[] = []
-  let initialGroupChallenges: Record<string, unknown>[] = []
 
   try {
     const sb = supabase as any
@@ -100,17 +85,30 @@ export default async function CommunityPage() {
 
     const gids = [...new Set((memberRows || []).map((r: { group_id: string }) => r.group_id))]
     if (gids.length) {
-      const { data: groups } = await sb.from('lifting_groups').select('*').in('id', gids)
-      initialGroups = groups || []
-      const { data: challenges } = await sb
-        .from('group_challenges')
-        .select('*, challenge_updates(*)')
-        .in('group_id', gids)
-      initialGroupChallenges = challenges || []
+      const { data: groups } = await sb
+        .from('lifting_groups')
+        .select(
+          `*,
+          lifting_group_members (
+            user_id,
+            profiles:user_id (username, avatar_url, full_name)
+          )`
+        )
+        .in('id', gids)
+
+      initialGroups = (groups || []).map((g: Record<string, unknown>) => {
+        const raw = (g.lifting_group_members as Record<string, unknown>[]) || []
+        const members = raw.map((m) => {
+          let profiles = m.profiles
+          if (Array.isArray(profiles)) profiles = profiles[0] ?? null
+          return { user_id: m.user_id, profiles }
+        })
+        const { lifting_group_members: _, ...rest } = g
+        return { ...rest, members }
+      })
     }
   } catch {
     initialGroups = []
-    initialGroupChallenges = []
   }
 
   return (
@@ -119,8 +117,8 @@ export default async function CommunityPage() {
 
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-white tracking-tight">Community</h1>
-          <p className="text-[#a1a1a1] text-sm mt-0.5">Friends, groups, challenges, and group chat.</p>
+          <BrandHeading variant="page">Community</BrandHeading>
+          <p className="ui-subtitle mt-2">Groups, find people, and training challenges.</p>
         </div>
 
         <CommunityClient
@@ -129,9 +127,7 @@ export default async function CommunityPage() {
           suggestedUsers={suggested || []}
           followingIds={followingIds}
           requestStatusMap={requestStatusMap}
-          friendsProfiles={friendsProfiles}
           initialGroups={initialGroups}
-          initialGroupChallenges={initialGroupChallenges}
         />
       </div>
     </div>

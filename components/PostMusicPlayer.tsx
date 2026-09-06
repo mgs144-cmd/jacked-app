@@ -356,19 +356,19 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
   const isLoading = loading || youtubeLoading
 
   return (
-    <div ref={containerRef} className="px-5 py-3 bg-gray-800/40 border-b border-gray-800/40">
+    <div ref={containerRef} className="mx-3 sm:mx-4 md:mx-6 mt-2 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2.5">
       <div className="flex items-center space-x-3">
         <div className="flex-1 min-w-0">
           <p className="text-white font-bold text-sm truncate">{songTitle || 'Unknown'}</p>
-          <p className="text-gray-400 text-xs truncate">{songArtist || 'Unknown'}</p>
+          <p className="text-white/45 text-xs truncate">{songArtist || 'Unknown'}</p>
           {error && (
-            <div className="mt-1.5 flex items-center space-x-2 text-red-400 text-xs">
+            <div className="mt-1.5 flex items-center space-x-2 text-white/50 text-xs">
               <AlertCircle className="w-3 h-3 flex-shrink-0" />
               <span className="truncate">{error}</span>
             </div>
           )}
           {isLoading && !error && (
-            <p className="mt-1.5 text-gray-500 text-xs">Loading...</p>
+            <p className="mt-1.5 text-white/40 text-xs">Loading...</p>
           )}
         </div>
         {(audioUrl || youtubeVideoId || songUrl) ? (
@@ -376,7 +376,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
             {error ? (
               <button
                 onClick={handleRetry}
-                className="p-2 rounded-full bg-primary hover:bg-primary-dark text-white transition-all flex-shrink-0 hover:scale-110 flex items-center space-x-1.5"
+                className="p-2 rounded-full bg-white text-black hover:bg-white/90 transition-all flex-shrink-0 hover:scale-110 flex items-center space-x-1.5"
                 title="Retry playback"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -386,7 +386,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
               <button
                 onClick={handlePlayPause}
                 disabled={isLoading}
-                className="p-2.5 rounded-full bg-primary hover:bg-primary-dark text-white transition-all flex-shrink-0 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-lg shadow-primary/20"
+                className="p-2.5 rounded-full bg-white text-black hover:bg-white/90 transition-all flex-shrink-0 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                 title={isPlaying ? 'Pause' : isLoading ? 'Loading...' : 'Play'}
                 aria-label={isPlaying ? 'Pause' : 'Play'}
               >
@@ -403,7 +403,7 @@ export function PostMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, alb
             <button
               onClick={toggleMute}
               disabled={!!error}
-              className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-all flex-shrink-0 hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 rounded-full bg-white/10 border border-white/10 text-white/80 hover:bg-white/15 transition-all flex-shrink-0 hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               title={isMuted ? 'Unmute' : 'Mute'}
               aria-label={isMuted ? 'Unmute' : 'Mute'}
             >

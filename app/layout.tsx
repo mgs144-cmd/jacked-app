@@ -1,15 +1,15 @@
 import type { Metadata } from 'next'
-import { Inter, Black_Ops_One } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
 import { PWAInstallBanner } from '@/components/PWAInstallBanner'
+import { ADOBE_FONTS_KIT } from '@/lib/fonts'
 
-const inter = Inter({ subsets: ['latin'] })
-const blackOpsOne = Black_Ops_One({ 
-  weight: '400',
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-black-ops-one',
+  display: 'swap',
+  variable: '--font-inter',
 })
 
 export const metadata: Metadata = {
@@ -52,8 +52,17 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} ${blackOpsOne.variable}`}>
+    <html lang="en" className={inter.variable}>
+      <head>
+        <link rel="preload" href="/fonts/GoodTimes-Bold.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/FFDINPaneuropean-Bold.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://use.typekit.net" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://p.typekit.net" crossOrigin="anonymous" />
+        {ADOBE_FONTS_KIT ? (
+          <link rel="stylesheet" href={`https://use.typekit.net/${ADOBE_FONTS_KIT}.css`} crossOrigin="anonymous" />
+        ) : null}
+      </head>
+      <body className={`${inter.variable} app-ui font-sans antialiased`}>
         <PWAInstallPrompt />
         <PWAInstallBanner />
         <Providers>{children}</Providers>
@@ -61,4 +70,3 @@ export default function RootLayout({
     </html>
   )
 }
-

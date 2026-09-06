@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/Navbar'
+import { PostDetailMedia } from '@/components/PostDetailMedia'
 import { CommentForm } from '@/components/CommentForm'
 import { CommentList } from '@/components/CommentList'
 import { formatDistanceToNow } from 'date-fns'
@@ -105,21 +106,8 @@ export default async function PostPage({
           </div>
 
           {(post as any).media_url && (
-            <div className="relative w-full aspect-square bg-[#1a1a1a]">
-              {(post as any).media_type === 'video' ? (
-                <video
-                  src={(post as any).media_url}
-                  controls
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Image
-                  src={(post as any).media_url}
-                  alt="Post media"
-                  fill
-                  className="object-cover"
-                />
-              )}
+            <div className="relative w-full bg-black">
+              <PostDetailMedia mediaUrl={(post as any).media_url} mediaType={(post as any).media_type} />
             </div>
           )}
 
@@ -133,7 +121,7 @@ export default async function PostPage({
         <div className="rounded-[12px] border border-white/5 p-6 bg-[#1a1a1a]" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
           <div className="flex items-center space-x-3 mb-6">
             <MessageCircle className="w-6 h-6 text-[#ff5555]" />
-            <h2 className="text-xl font-semibold text-white">
+            <h2 className="ui-section-title">
               Comments ({comments?.length || 0})
             </h2>
           </div>

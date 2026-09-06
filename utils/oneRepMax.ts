@@ -51,6 +51,13 @@ function getRPEPercent(reps: number, rpe: number): number {
  * @param rpe - RPE 5-10 (optional, defaults to 10)
  * @returns Estimated one rep max
  */
+/** Target weight for `reps` at given RPE from estimated 1RM. */
+export function weightForRepsAtRPE(e1rm: number, reps: number, rpe: number): number {
+  if (e1rm <= 0) return 0
+  const pct = getRPEPercent(Math.min(Math.max(reps, 1), 10), rpe)
+  return Math.round(e1rm * pct * 2) / 2
+}
+
 export function calculateOneRepMaxWithRPE(
   weight: number,
   reps: number,

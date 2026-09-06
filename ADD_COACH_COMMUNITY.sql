@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS coach_plans (
   exercise_name TEXT NOT NULL,
   target_weight NUMERIC NOT NULL CHECK (target_weight > 0),
   target_reps INTEGER NOT NULL DEFAULT 1 CHECK (target_reps > 0),
-  target_date DATE NOT NULL,
+  target_date DATE,
   program_json JSONB NOT NULL DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS lifting_groups (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   description TEXT,
+  avatar_url TEXT,
   invite_code TEXT NOT NULL UNIQUE DEFAULT upper(substring(replace(gen_random_uuid()::text, '-', '') FROM 1 FOR 8)),
   creator_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -109,12 +110,37 @@ ALTER TABLE group_challenges ENABLE ROW LEVEL SECURITY;
 ALTER TABLE challenge_updates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE group_chat_messages ENABLE ROW LEVEL SECURITY;
 
+-- Membership helper (SECURITY DEFINER) so group / member RLS policies do not recurse (42P17).
+CREATE OR REPLACE FUNCTION public.jacked_auth_is_group_member(p_group_id uuid)
+RETURNS boolean
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF p_group_id IS NULL THEN
+    RETURN false;
+  END IF;
+  RETURN EXISTS (
+    SELECT 1
+    FROM public.lifting_group_members m
+    WHERE m.group_id = p_group_id
+      AND m.user_id = auth.uid()
+  );
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.jacked_auth_is_group_member(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.jacked_auth_is_group_member(uuid) TO authenticated;
+
 -- lifting_groups visible to members; creation by authenticated user as creator
 DROP POLICY IF EXISTS "Members see lifting_groups" ON lifting_groups;
 CREATE POLICY "Members see lifting_groups"
   ON lifting_groups FOR SELECT
   USING (
-    EXISTS (SELECT 1 FROM lifting_group_members m WHERE m.group_id = lifting_groups.id AND m.user_id = auth.uid())
+    creator_id = auth.uid()
+    OR public.jacked_auth_is_group_member(id)
   );
 
 DROP POLICY IF EXISTS "Authenticated create lifting_groups" ON lifting_groups;
@@ -132,9 +158,7 @@ CREATE POLICY "Creator update lifting_groups"
 DROP POLICY IF EXISTS "Select lifting_group_members" ON lifting_group_members;
 CREATE POLICY "Select lifting_group_members"
   ON lifting_group_members FOR SELECT
-  USING (
-    EXISTS (SELECT 1 FROM lifting_group_members m WHERE m.group_id = lifting_group_members.group_id AND m.user_id = auth.uid())
-  );
+  USING (public.jacked_auth_is_group_member(group_id));
 
 DROP POLICY IF EXISTS "Creator adds lifting_group_members" ON lifting_group_members;
 CREATE POLICY "Creator adds lifting_group_members"

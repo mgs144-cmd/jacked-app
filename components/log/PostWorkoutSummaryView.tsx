@@ -12,12 +12,14 @@ interface SummarySet {
 
 interface PostWorkoutSummaryViewProps {
   summarySets: SummarySet[]
+  loggedDateLabel?: string
   onViewInsights: () => void
   onLogAgain: () => void
 }
 
 export function PostWorkoutSummaryView({
   summarySets,
+  loggedDateLabel,
   onViewInsights,
   onLogAgain,
 }: PostWorkoutSummaryViewProps) {
@@ -34,15 +36,18 @@ export function PostWorkoutSummaryView({
         <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-3">
           <CheckCircle2 className="w-8 h-8 text-white" />
         </div>
-        <h2 className="text-xl font-semibold text-white">Workout logged</h2>
-        <p className="text-white/60 text-sm mt-1">
+        <h2 className="log-screen-section-title text-base">Workout logged</h2>
+        <p className="log-screen-support text-sm mt-2">
           {summarySets.length} set{summarySets.length !== 1 ? 's' : ''} across {Object.keys(byExercise).length} exercise{Object.keys(byExercise).length !== 1 ? 's' : ''}
+          {loggedDateLabel && loggedDateLabel !== 'Today' ? (
+            <span className="block mt-1 text-white/50">Logged for {loggedDateLabel}</span>
+          ) : null}
         </p>
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
         <div className="px-4 py-3 border-b border-white/5">
-          <h3 className="text-sm font-medium text-white/70">Summary</h3>
+          <p className="log-screen-eyebrow">Summary</p>
         </div>
         <ul className="divide-y divide-white/5">
           {Object.entries(byExercise).map(([name, sets]) => {
@@ -72,7 +77,7 @@ export function PostWorkoutSummaryView({
         <button
           type="button"
           onClick={onViewInsights}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-white/15 text-white/90 hover:bg-white/5 transition-colors text-sm font-medium"
+          className="flex-1 btn btn-secondary gap-2"
         >
           <TrendingUp className="w-4 h-4" />
           View insights
@@ -80,7 +85,7 @@ export function PostWorkoutSummaryView({
         <button
           type="button"
           onClick={onLogAgain}
-          className="flex-1 btn-primary py-3 font-semibold"
+          className="flex-1 btn btn-primary"
         >
           Log again
         </button>

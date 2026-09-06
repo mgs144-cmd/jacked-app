@@ -58,15 +58,19 @@ const config: Config = {
   			}
   		},
   		fontFamily: {
-  			sans: [
-  				'Inter',
-  				'system-ui',
-  				'sans-serif'
-  			],
-  			logo: [
-  				'var(--font-black-ops-one)',
-  				'cursive'
-  			]
+  			sans: ['var(--font-body)'],
+  			body: ['var(--font-body)'],
+  			ui: ['var(--font-ui)'],
+  			metric: ['var(--font-metric)'],
+  			action: ['var(--font-metric)'],
+  			display: ['var(--font-body)'],
+  			heading: ['var(--font-ui)'],
+  			logo: ['Good Times', 'good-times', 'sans-serif'],
+  			brand: ['Good Times', 'good-times', 'sans-serif'],
+  		},
+  		letterSpacing: {
+  			display: '0.05em',
+  			metric: '0.04em',
   		},
   		borderRadius: {
   			DEFAULT: '12px',

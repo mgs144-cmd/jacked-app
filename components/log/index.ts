@@ -1,6 +1,6 @@
 export type { LogSegment, SetEntry, WorkoutExerciseEntry, LiftRecord, ChartPoint } from './types'
 export { LogSegmentedTabs } from './LogSegmentedTabs'
-export { QuickLogView } from './QuickLogView'
+export { TodaysWorkoutView } from './TodaysWorkoutView'
 export { ActiveWorkoutView } from './ActiveWorkoutView'
 export { QuickSingleExerciseView } from './QuickSingleExerciseView'
 export { PostWorkoutSummaryView } from './PostWorkoutSummaryView'

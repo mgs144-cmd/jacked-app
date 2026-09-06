@@ -1,6 +1,6 @@
 'use client'
 
-import { Zap, Plus, ClipboardList, LayoutTemplate } from 'lucide-react'
+import { Zap, ClipboardList, LayoutTemplate } from 'lucide-react'
 
 interface QuickLogViewProps {
   onStartWorkout: () => void
@@ -21,51 +21,39 @@ export function QuickLogView({
 }: QuickLogViewProps) {
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Primary actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <button
-          type="button"
-          onClick={onStartWorkout}
-          className="flex items-center gap-4 p-4 rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/15 transition-all text-left group active:scale-[0.99]"
-        >
-          <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-white/15 transition-colors">
-            <ClipboardList className="w-6 h-6 text-white" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold text-white text-base">Start Workout</p>
-            <p className="text-sm text-white/60 mt-0.5">Log a full session</p>
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <button type="button" onClick={onStartWorkout} className="btn btn-choice gap-3">
+          <ClipboardList className="w-4 h-4 text-white/50 shrink-0 mt-0.5" />
+          <span>
+            <span className="btn-choice-title">Start workout</span>
+            <span className="btn-choice-desc">Log a full session</span>
+          </span>
         </button>
-        <button
-          type="button"
-          onClick={onQuickAddExercise}
-          className="flex items-center gap-4 p-4 rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/15 transition-all text-left group active:scale-[0.99]"
-        >
-          <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-white/15 transition-colors">
-            <Zap className="w-6 h-6 text-white" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold text-white text-base">Quick Add Exercise</p>
-            <p className="text-sm text-white/60 mt-0.5">Log a single exercise</p>
-          </div>
+        <button type="button" onClick={onQuickAddExercise} className="btn btn-choice gap-3">
+          <Zap className="w-4 h-4 text-white/50 shrink-0 mt-0.5" />
+          <span>
+            <span className="btn-choice-title">Quick add</span>
+            <span className="btn-choice-desc">Log one exercise</span>
+          </span>
         </button>
       </div>
 
-      {/* Recent exercises */}
       {recentExercises.length > 0 && (
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
           <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
-            <LayoutTemplate className="w-4 h-4 text-white/5" />
-            <h3 className="text-sm font-medium text-white/70">Recent Exercises</h3>
+            <LayoutTemplate className="w-4 h-4 text-white/40" />
+            <h3 className="text-[10px] font-metric font-semibold uppercase tracking-widest text-white/50">
+              Recent exercises
+            </h3>
           </div>
           <div className="p-2">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {recentExercises.slice(0, 12).map((name) => (
                 <button
                   key={name}
                   type="button"
                   onClick={() => onSelectRecentExercise(name)}
-                  className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/90 text-sm font-medium transition-colors"
+                  className="btn btn-pill normal-case font-body text-xs tracking-normal"
                 >
                   {name}
                 </button>
@@ -75,23 +63,20 @@ export function QuickLogView({
         </div>
       )}
 
-      {/* Recent templates */}
       {recentTemplates.length > 0 && (
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
           <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
-            <ClipboardList className="w-4 h-4 text-white/5" />
-            <h3 className="text-sm font-medium text-white/70">Recent Workouts</h3>
+            <ClipboardList className="w-4 h-4 text-white/40" />
+            <h3 className="text-[10px] font-metric font-semibold uppercase tracking-widest text-white/50">
+              Recent workouts
+            </h3>
           </div>
-          <ul className="divide-y divide-white/5">
+          <ul className="divide-y divide-white/5 p-1">
             {recentTemplates.slice(0, 5).map((t) => (
               <li key={t.name}>
-                <button
-                  type="button"
-                  onClick={() => onSelectTemplate(t.name)}
-                  className="w-full px-4 py-3 text-left text-sm text-white/90 hover:bg-white/5 transition-colors flex items-center justify-between"
-                >
-                  <span className="font-medium">{t.name}</span>
-                  <span className="text-white/50">{t.exerciseCount} exercises</span>
+                <button type="button" onClick={() => onSelectTemplate(t.name)} className="btn btn-list">
+                  <span>{t.name}</span>
+                  <span className="btn-list-label">{t.exerciseCount} exercises</span>
                 </button>
               </li>
             ))}

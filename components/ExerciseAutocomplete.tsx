@@ -1,94 +1,107 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { fetchExerciseCatalog } from '@/lib/exerciseCatalog'
+import {
+  filterExerciseSuggestions,
+  mergeExerciseNameList,
+  normalizeExerciseKey,
+  type ExerciseCatalogEntry,
+} from '@/lib/exercises'
 
 interface ExerciseAutocompleteProps {
   value: string
   onChange: (value: string) => void
   placeholder?: string
   className?: string
+  userId?: string
+  recentExerciseNames?: string[]
 }
 
-// Common exercises list
-const COMMON_EXERCISES = [
-  // Upper Body
-  'Bench Press', 'Incline Bench Press', 'Decline Bench Press', 'Dumbbell Press',
-  'Overhead Press', 'Shoulder Press', 'Lateral Raises', 'Front Raises',
-  'Cable Flyes', 'Push-ups', 'Dips', 'Tricep Extensions', 'Tricep Dips',
-  'Bicep Curls', 'Hammer Curls', 'Preacher Curls', 'Pull-ups', 'Chin-ups',
-  'Lat Pulldowns', 'Rows', 'Bent Over Rows', 'T-Bar Rows', 'Cable Rows',
-  'Face Pulls', 'Rear Delt Flyes', 'Shrugs', 'Upright Rows',
-  
-  // Lower Body
-  'Squat', 'Back Squat', 'Front Squat', 'Bulgarian Split Squat', 'Leg Press',
-  'Romanian Deadlift', 'Deadlift', 'Sumo Deadlift', 'Conventional Deadlift',
-  'Lunges', 'Walking Lunges', 'Leg Curls', 'Leg Extensions', 'Calf Raises',
-  'Hip Thrusts', 'Glute Bridges', 'Good Mornings', 'Stiff Leg Deadlift',
-  
-  // Core
-  'Plank', 'Side Plank', 'Russian Twists', 'Crunches', 'Sit-ups',
-  'Leg Raises', 'Hanging Leg Raises', 'Ab Wheel', 'Mountain Climbers',
-  
-  // Full Body / Compound
-  'Clean', 'Snatch', 'Power Clean', 'Thruster', 'Burpees',
-  'Kettlebell Swings', 'Turkish Get-ups',
-  
-  // Cardio / Conditioning
-  'Running', 'Sprinting', 'Rowing', 'Cycling', 'Jump Rope',
-  
-  // Accessory
-  'Farmer\'s Walk', 'Suitcase Carry', 'Pallof Press', 'Cable Crunches',
-].sort()
-
-export function ExerciseAutocomplete({ value, onChange, placeholder = 'e.g., Bench Press', className = '' }: ExerciseAutocompleteProps) {
-  const [suggestions, setSuggestions] = useState<string[]>([])
+export function ExerciseAutocomplete({
+  value,
+  onChange,
+  placeholder = 'e.g., Bench Press',
+  className = '',
+  userId,
+  recentExerciseNames = [],
+}: ExerciseAutocompleteProps) {
+  const [catalog, setCatalog] = useState<ExerciseCatalogEntry[]>([])
+  const [suggestions, setSuggestions] = useState<ExerciseCatalogEntry[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
+  const skipOpenOnFocusRef = useRef(false)
+
+  const allExercises = useMemo(
+    () => mergeExerciseNameList(catalog, recentExerciseNames),
+    [catalog, recentExerciseNames]
+  )
+
+  const refreshSuggestions = useCallback(
+    (query: string, allowShow: boolean) => {
+      const filtered = filterExerciseSuggestions(allExercises, query)
+      setSuggestions(filtered)
+      setSelectedIndex(-1)
+      if (!allowShow || filtered.length === 0) {
+        setShowSuggestions(false)
+        return
+      }
+      const exact = allExercises.some((e) => normalizeExerciseKey(e.name) === normalizeExerciseKey(query))
+      setShowSuggestions(!exact)
+    },
+    [allExercises]
+  )
 
   useEffect(() => {
-    if (value.trim()) {
-      const filtered = COMMON_EXERCISES.filter(exercise =>
-        exercise.toLowerCase().includes(value.toLowerCase())
-      ).slice(0, 8) // Show max 8 suggestions
-      setSuggestions(filtered)
-      setShowSuggestions(filtered.length > 0)
-    } else {
-      setSuggestions([])
-      setShowSuggestions(false)
+    if (!userId) {
+      setCatalog(mergeExerciseNameList([], recentExerciseNames))
+      return
     }
-    setSelectedIndex(-1)
-  }, [value])
+    const supabase = createClient()
+    fetchExerciseCatalog(supabase, userId).then(setCatalog)
+  }, [userId])
+
+  useEffect(() => {
+    if (skipOpenOnFocusRef.current) {
+      skipOpenOnFocusRef.current = false
+      setShowSuggestions(false)
+      return
+    }
+    const focused = document.activeElement === inputRef.current
+    refreshSuggestions(value, focused)
+  }, [value, allExercises, refreshSuggestions])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value)
   }
 
   const handleSelect = (exercise: string) => {
+    skipOpenOnFocusRef.current = true
     onChange(exercise)
     setShowSuggestions(false)
+    setSuggestions([])
     inputRef.current?.blur()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && showSuggestions && selectedIndex >= 0 && suggestions[selectedIndex]) {
+      e.preventDefault()
+      handleSelect(suggestions[selectedIndex].name)
+      return
+    }
     if (!showSuggestions || suggestions.length === 0) return
 
     if (e.key === 'ArrowDown') {
       e.preventDefault()
-      setSelectedIndex(prev => 
-        prev < suggestions.length - 1 ? prev + 1 : prev
-      )
+      setSelectedIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : prev))
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
-      setSelectedIndex(prev => prev > 0 ? prev - 1 : -1)
-    } else if (e.key === 'Enter' && selectedIndex >= 0) {
-      e.preventDefault()
-      handleSelect(suggestions[selectedIndex])
+      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1))
     } else if (e.key === 'Escape') {
       setShowSuggestions(false)
-      inputRef.current?.blur()
     }
   }
 
@@ -117,38 +130,45 @@ export function ExerciseAutocomplete({ value, onChange, placeholder = 'e.g., Ben
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         onFocus={() => {
-          if (suggestions.length > 0) {
-            setShowSuggestions(true)
-          }
+          if (skipOpenOnFocusRef.current) return
+          refreshSuggestions(value, true)
+        }}
+        onBlur={() => {
+          window.setTimeout(() => setShowSuggestions(false), 120)
         }}
         placeholder={placeholder}
         className={className || 'input-field w-full'}
+        autoComplete="off"
+        aria-autocomplete="list"
+        aria-expanded={showSuggestions}
       />
-      
+
       {showSuggestions && suggestions.length > 0 && (
-        <div
-          ref={suggestionsRef}
-          className="absolute z-50 w-full mt-1 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl max-h-64 overflow-y-auto"
-        >
-          {suggestions.map((exercise, index) => (
+        <div ref={suggestionsRef} className="exercise-suggestions" role="listbox">
+          {suggestions.map((entry, index) => (
             <button
-              key={exercise}
+              key={entry.name}
               type="button"
-              onClick={() => handleSelect(exercise)}
-              className={`w-full text-left px-4 py-3 hover:bg-gray-800 transition-colors ${
-                index === selectedIndex ? 'bg-gray-800' : ''
-              } ${
-                index === 0 ? 'rounded-t-xl' : ''
-              } ${
-                index === suggestions.length - 1 ? 'rounded-b-xl' : ''
-              }`}
+              role="option"
+              aria-selected={index === selectedIndex}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => handleSelect(entry.name)}
+              className={`exercise-suggestion-item ${index === selectedIndex ? 'is-active' : ''}`}
             >
-              <span className="text-white font-medium">{exercise}</span>
+              <span>{entry.name}</span>
+              {entry.logging_mode === 'prime_range' && (
+                <span className="exercise-suggestion-tag">Prime</span>
+              )}
             </button>
           ))}
+          {!allExercises.some((e) => normalizeExerciseKey(e.name) === normalizeExerciseKey(value)) &&
+            value.trim().length > 0 && (
+              <p className="exercise-suggestion-hint px-4 py-2 border-t border-white/[0.06]">
+                Press enter or finish logging to save &ldquo;{value.trim()}&rdquo; as a new exercise
+              </p>
+            )}
         </div>
       )}
     </div>
   )
 }
-

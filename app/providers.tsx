@@ -6,6 +6,9 @@ import type { User } from '@supabase/supabase-js'
 import { MusicProvider } from './providers/MusicProvider'
 import { CoachChatDock } from '@/components/CoachChatDock'
 
+/** Set NEXT_PUBLIC_ENABLE_AI_COACH=true in .env.local to show the floating coach again. */
+const showAiCoach = process.env.NEXT_PUBLIC_ENABLE_AI_COACH === 'true'
+
 interface AuthContextType {
   user: User | null
   loading: boolean
@@ -42,7 +45,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider value={{ user, loading }}>
       <MusicProvider>
         {children}
-        <CoachChatDock />
+        {showAiCoach ? <CoachChatDock /> : null}
       </MusicProvider>
     </AuthContext.Provider>
   )

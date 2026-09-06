@@ -8,9 +8,11 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  Loader2,
   Plus,
   Sparkles,
   Target,
+  Trash2,
   TrendingUp,
 } from 'lucide-react'
 import { buildCoachProgram, type CoachProgramJson } from '@/lib/coachProgram'
@@ -21,7 +23,8 @@ export type CoachPlanRow = {
   exercise_name: string
   target_weight: number
   target_reps: number
-  target_date: string
+  /** ISO date or null if not set — Coach can help pick one */
+  target_date: string | null
   program_json: CoachProgramJson | Record<string, unknown>
   created_at?: string
 }
@@ -54,15 +57,12 @@ export function LiftGoalsView({ userId, initialPlans, exerciseBaselines }: LiftG
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(initialPlans[0]?.id ?? null)
   const [weekScroll, setWeekScroll] = useState(0)
   const [creating, setCreating] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const [formEx, setFormEx] = useState('Bench press')
   const [formWeight, setFormWeight] = useState('245')
   const [formReps, setFormReps] = useState('1')
-  const [formDate, setFormDate] = useState(() => {
-    const d = new Date()
-    d.setMonth(d.getMonth() + 3)
-    return d.toISOString().slice(0, 10)
-  })
+  const [formDate, setFormDate] = useState('')
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? null
   const program = useMemo(() => (selectedPlan ? parseProgram(selectedPlan.program_json) : null), [selectedPlan])
@@ -75,10 +75,14 @@ export function LiftGoalsView({ userId, initialPlans, exerciseBaselines }: LiftG
       const pct = current != null && target > 0 ? Math.min(100, Math.round((current / target) * 100)) : null
       const gap =
         current != null && target > 0 ? Math.max(0, Math.round(target - current)) : null
-      const targetDate = new Date(p.target_date)
+      const hasTargetDate = p.target_date != null && String(p.target_date).trim() !== ''
+      const targetDate = hasTargetDate ? new Date(p.target_date as string) : null
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-      const daysLeft = Math.ceil((targetDate.getTime() - today.getTime()) / 86400000)
+      const daysLeft =
+        targetDate != null && !Number.isNaN(targetDate.getTime())
+          ? Math.ceil((targetDate.getTime() - today.getTime()) / 86400000)
+          : null
       return {
         plan: p,
         current,
@@ -94,13 +98,14 @@ export function LiftGoalsView({ userId, initialPlans, exerciseBaselines }: LiftG
     const tw = parseFloat(formWeight)
     const tr = parseInt(formReps, 10)
     const name = formEx.trim()
-    if (!name || !Number.isFinite(tw) || tw <= 0 || !Number.isFinite(tr) || tr <= 0 || !formDate) return
+    if (!name || !Number.isFinite(tw) || tw <= 0 || !Number.isFinite(tr) || tr <= 0) return
 
+    const dateTrim = formDate.trim()
     const prog = buildCoachProgram({
       exerciseName: name,
       targetWeight: tw,
       targetReps: tr,
-      targetDateISO: formDate,
+      targetDateISO: dateTrim || null,
       currentEstimateLbs: exerciseBaselines[name] ?? null,
     })
 
@@ -111,7 +116,7 @@ export function LiftGoalsView({ userId, initialPlans, exerciseBaselines }: LiftG
         exercise_name: name,
         target_weight: tw,
         target_reps: tr,
-        target_date: formDate,
+        target_date: dateTrim || null,
         program_json: prog as unknown as Record<string, unknown>,
         updated_at: new Date().toISOString(),
       }
@@ -134,13 +139,44 @@ export function LiftGoalsView({ userId, initialPlans, exerciseBaselines }: LiftG
     }
   }
 
+  const deleteGoal = async (planId: string) => {
+    if (
+      !confirm(
+        'Delete this lift goal? The program timeline and Coach chat history for this goal will be removed.'
+      )
+    ) {
+      return
+    }
+    setDeletingId(planId)
+    try {
+      const { error } = await (supabase as any)
+        .from('coach_plans')
+        .delete()
+        .eq('id', planId)
+        .eq('user_id', userId)
+      if (error) throw error
+      const nextPlans = plans.filter((p) => p.id !== planId)
+      setPlans(nextPlans)
+      if (selectedPlanId === planId) {
+        setSelectedPlanId(nextPlans[0]?.id ?? null)
+        setWeekScroll(0)
+      }
+      if (typeof window !== 'undefined') window.dispatchEvent(new Event('jacked:coach-refresh'))
+      router.refresh()
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : 'Could not delete goal.')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   const regenerateProgram = async () => {
     if (!selectedPlan) return
     const prog = buildCoachProgram({
       exerciseName: selectedPlan.exercise_name,
       targetWeight: Number(selectedPlan.target_weight),
       targetReps: Number(selectedPlan.target_reps),
-      targetDateISO: selectedPlan.target_date,
+      targetDateISO: selectedPlan.target_date?.trim() || null,
       currentEstimateLbs: exerciseBaselines[selectedPlan.exercise_name.trim()] ?? null,
     })
 
@@ -164,20 +200,20 @@ export function LiftGoalsView({ userId, initialPlans, exerciseBaselines }: LiftG
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-500/10 to-black p-4 sm:p-5">
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
         <div className="flex items-start gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-violet-500/20 border border-violet-400/30 flex items-center justify-center shrink-0">
-            <Target className="w-6 h-6 text-violet-200" />
+          <div className="w-12 h-12 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
+            <Target className="w-6 h-6 text-white/70" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Lift goals</h2>
+            <h2 className="ui-section-title">Lift goals</h2>
             <p className="text-white/60 text-sm mt-1 leading-relaxed">
-              Set a target like <span className="text-white/90">245 lb × 1 rep</span> with a target date. We show
-              progress from your logs, a week-by-week scaffold, and the AI coach in the corner for questions.
+              Set a target like <span className="text-white/90">245 lb × 1 rep</span>. Target date is optional — leave it
+              blank and ask the Coach chat to suggest a realistic meet or max-out week.
             </p>
-            <p className="text-xs text-violet-300/90 mt-2 flex items-center gap-1.5">
-              <Bot className="w-3.5 h-3.5" />
-              Open the <strong className="font-medium">Coach</strong> button (bottom-right) to chat anytime.
+            <p className="text-xs text-white/45 mt-2 flex items-center gap-1.5">
+              <Bot className="w-3.5 h-3.5 text-white/40" />
+              Open the <strong className="font-medium text-white/70">Coach</strong> button (bottom-right) to chat anytime.
             </p>
           </div>
         </div>
@@ -193,69 +229,94 @@ export function LiftGoalsView({ userId, initialPlans, exerciseBaselines }: LiftG
           <div className="grid gap-3">
             {progressCards.map(({ plan, current, target, pct, gap, daysLeft }) => {
               const isSelected = plan.id === selectedPlanId
+              const isDeleting = deletingId === plan.id
               return (
-                <button
+                <div
                   key={plan.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedPlanId(plan.id)
-                    setWeekScroll(0)
-                  }}
-                  className={`w-full text-left rounded-2xl border p-4 sm:p-5 transition-all ${
+                  className={`flex gap-1 rounded-2xl border transition-all sm:gap-2 ${
                     isSelected
-                      ? 'border-amber-400/40 bg-amber-500/[0.08] ring-1 ring-amber-400/20'
+                      ? 'border-white/20 bg-white/[0.06]'
                       : 'border-white/10 bg-white/[0.03] hover:border-white/20'
                   }`}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                    <div>
-                      <p className="text-xl sm:text-2xl font-semibold text-white tracking-tight">{plan.exercise_name}</p>
-                      <p className="text-white/55 text-sm mt-1">
-                        Target{' '}
-                        <span className="text-amber-200 font-medium">
-                          {target} lb × {plan.target_reps}
-                        </span>{' '}
-                        · by{' '}
-                        {new Date(plan.target_date).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </p>
-                    </div>
-                    <div className="sm:text-right shrink-0">
-                      {current != null ? (
-                        <>
-                          <p className="text-sm text-white/45">Current est. strength</p>
-                          <p className="text-2xl font-semibold text-white tabular-nums">{Math.round(current)} lb</p>
-                          <p className="text-xs text-white/40 mt-0.5">e1RM from your log</p>
-                        </>
-                      ) : (
-                        <p className="text-sm text-white/45">Log this lift to see progress</p>
-                      )}
-                    </div>
-                  </div>
-                  {pct != null && (
-                    <div className="mt-4">
-                      <div className="flex justify-between text-xs text-white/45 mb-1.5">
-                        <span>Progress to target</span>
-                        <span className="tabular-nums">
-                          {pct}%
-                          {gap != null && gap > 0 && <span className="text-white/35"> · {gap} lb to go</span>}
-                        </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedPlanId(plan.id)
+                      setWeekScroll(0)
+                    }}
+                    className="min-w-0 flex-1 text-left p-4 sm:p-5"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <div>
+                        <p className="ui-heading text-lg sm:text-xl text-white">{plan.exercise_name}</p>
+                        <p className="text-white/55 text-sm mt-1">
+                          Target{' '}
+                          <span className="text-white font-medium">
+                            {target} lb × {plan.target_reps}
+                          </span>
+                          {plan.target_date != null && String(plan.target_date).trim() !== '' ? (
+                            <>
+                              {' '}
+                              · by{' '}
+                              {new Date(plan.target_date as string).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })}
+                            </>
+                          ) : (
+                            <span className="text-white/40"> · no target date yet</span>
+                          )}
+                        </p>
                       </div>
-                      <div className="h-2.5 rounded-full bg-black/60 overflow-hidden border border-white/10">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-violet-500 to-amber-400 transition-all duration-500"
-                          style={{ width: `${pct}%` }}
-                        />
+                      <div className="sm:text-right shrink-0">
+                        {current != null ? (
+                          <>
+                            <p className="ui-meta">Current est. strength</p>
+                            <p className="ui-stat-value tabular-nums">{Math.round(current)} lb</p>
+                            <p className="text-xs text-white/40 mt-0.5">e1RM from your log</p>
+                          </>
+                        ) : (
+                          <p className="text-sm text-white/45">Log this lift to see progress</p>
+                        )}
                       </div>
                     </div>
-                  )}
-                  <p className="text-[11px] text-white/35 mt-3">
-                    {daysLeft >= 0 ? `${daysLeft} days until target date` : 'Target date passed — adjust or celebrate'}
-                  </p>
-                </button>
+                    {pct != null && (
+                      <div className="mt-4">
+                        <div className="flex justify-between text-xs text-white/45 mb-1.5">
+                          <span>Progress to target</span>
+                          <span className="tabular-nums">
+                            {pct}%
+                            {gap != null && gap > 0 && <span className="text-white/35"> · {gap} lb to go</span>}
+                          </span>
+                        </div>
+                        <div className="h-2.5 rounded-full bg-black/60 overflow-hidden border border-white/10">
+                          <div
+                            className="h-full rounded-full bg-white/85 transition-all duration-500"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <p className="text-[11px] text-white/35 mt-3">
+                      {daysLeft != null
+                        ? daysLeft >= 0
+                          ? `${daysLeft} days until target date`
+                          : 'Target date passed — adjust or celebrate'
+                        : 'No target date — ask Coach for a good week to peak or test'}
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isDeleting}
+                    onClick={() => void deleteGoal(plan.id)}
+                    className="shrink-0 self-stretch px-3 text-white/35 hover:bg-red-500/15 hover:text-red-300 disabled:opacity-40 sm:self-start sm:rounded-tr-2xl sm:rounded-br-2xl sm:px-3.5 sm:py-4"
+                    aria-label={`Delete goal: ${plan.exercise_name}`}
+                  >
+                    {isDeleting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 className="h-5 w-5" />}
+                  </button>
+                </div>
               )
             })}
           </div>
@@ -265,10 +326,12 @@ export function LiftGoalsView({ userId, initialPlans, exerciseBaselines }: LiftG
       {/* New goal — always visible */}
       <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 space-y-4">
         <div className="flex items-center gap-2 text-white font-medium">
-          <Plus className="w-5 h-5 text-emerald-400" />
+          <Plus className="w-5 h-5 text-white/50" />
           Add a lift goal
         </div>
-        <p className="text-xs text-white/45 -mt-2">Example: Bench press · 245 lb · 1 rep · pick your meet or test day.</p>
+        <p className="text-xs text-white/45 -mt-2">
+          Example: Bench press · 245 lb · 1 rep — add a date if you have one, or skip it and plan with Coach.
+        </p>
         <input
           className="input-field w-full text-sm"
           value={formEx}
@@ -296,15 +359,20 @@ export function LiftGoalsView({ userId, initialPlans, exerciseBaselines }: LiftG
             />
           </div>
           <div>
-            <label className="text-[11px] text-white/40 block mb-1">Target date</label>
-            <input type="date" className="input-field w-full text-sm" value={formDate} onChange={(e) => setFormDate(e.target.value)} />
+            <label className="text-[11px] text-white/40 block mb-1">Target date (optional)</label>
+            <input
+              type="date"
+              className="input-field w-full text-sm"
+              value={formDate}
+              onChange={(e) => setFormDate(e.target.value)}
+            />
           </div>
         </div>
         <button
           type="button"
           disabled={creating}
           onClick={createGoal}
-          className="w-full py-3 rounded-xl bg-white text-black text-sm font-semibold hover:bg-white/90 disabled:opacity-60 flex items-center justify-center gap-2"
+          className="btn btn-primary btn-block gap-2 disabled:opacity-60"
         >
           {creating ? 'Saving…' : 'Save goal & build program'}
         </button>
@@ -318,7 +386,7 @@ export function LiftGoalsView({ userId, initialPlans, exerciseBaselines }: LiftG
                 <Calendar className="w-4 h-4 text-white/50" />
                 Program & timeline
               </h3>
-              <p className="text-xs text-emerald-300/90 mt-2 max-w-xl">{program.summary}</p>
+              <p className="text-xs text-white/60 mt-2 max-w-xl">{program.summary}</p>
             </div>
             <button
               type="button"
@@ -340,7 +408,7 @@ export function LiftGoalsView({ userId, initialPlans, exerciseBaselines }: LiftG
                 }}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                   p.id === selectedPlanId
-                    ? 'border-violet-400/60 bg-violet-500/15 text-white'
+                    ? 'border-white/25 bg-white/[0.08] text-white'
                     : 'border-white/10 text-white/60 hover:border-white/20'
                 }`}
               >
@@ -381,7 +449,7 @@ export function LiftGoalsView({ userId, initialPlans, exerciseBaselines }: LiftG
                 onClick={() => setWeekScroll(idx)}
                 className={`shrink-0 w-[104px] sm:w-[120px] rounded-xl border px-3 py-2 text-left transition-colors ${
                   idx === visibleWeekStart
-                    ? 'border-violet-400/50 bg-violet-500/10'
+                    ? 'border-white/25 bg-white/[0.06]'
                     : 'border-white/10 bg-black/40'
                 }`}
               >
@@ -412,7 +480,7 @@ export function LiftGoalsView({ userId, initialPlans, exerciseBaselines }: LiftG
 
           <p className="text-xs text-white/40 mt-4 flex items-center gap-1">
             <Sparkles className="w-3 h-3" />
-            Questions? Tap the <span className="text-violet-300/90">Coach</span> button (bottom-right) to chat.
+            Questions? Tap the <span className="text-white/75">Coach</span> button (bottom-right) to chat.
           </p>
         </div>
       )}

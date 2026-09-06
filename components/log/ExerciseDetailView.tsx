@@ -10,9 +10,21 @@ import {
   Area,
   AreaChart,
 } from 'recharts'
-import { TrendingUp, Zap, ChevronLeft } from 'lucide-react'
+import Link from 'next/link'
+import { Target, TrendingUp, Zap, ChevronLeft } from 'lucide-react'
 import { calculateOneRepMaxWithRPE } from '@/utils/oneRepMax'
 import type { ChartPoint } from './types'
+import { StrengthPercentileCard } from '@/components/log/StrengthPercentileCard'
+import type { StrengthAssessment } from '@/lib/strengthStandards'
+
+export interface ExerciseGoalBanner {
+  targetWeight: number
+  targetReps: number
+  targetDateLabel: string | null
+  currentE1RM: number | null
+  progressPct: number | null
+  recommendation: string
+}
 
 interface ExerciseDetailViewProps {
   exerciseName: string
@@ -22,14 +34,17 @@ interface ExerciseDetailViewProps {
   progressionSummary: string
   onQuickLog: () => void
   onBack: () => void
+  /** Optional lift goal aligned with this exercise (from coach plans). */
+  exerciseGoal?: ExerciseGoalBanner | null
+  strengthAssessment?: StrengthAssessment | null
 }
 
 const statusConfig = {
-  progressing: { label: 'Progressing', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-  steady: { label: 'Holding steady', color: 'text-white/80', bg: 'bg-white/10' },
-  plateau: { label: 'Plateau', color: 'text-amber-400', bg: 'bg-amber-500/10' },
-  regression: { label: 'Regression', color: 'text-red-400', bg: 'bg-red-500/10' },
-  insufficient_data: { label: 'Need more data', color: 'text-white/50', bg: 'bg-white/5' },
+  progressing: { label: 'Progressing', color: 'text-white', bg: 'bg-white/[0.08]' },
+  steady: { label: 'Holding steady', color: 'text-white/75', bg: 'bg-white/[0.05]' },
+  plateau: { label: 'Plateau', color: 'text-white/65', bg: 'bg-white/[0.05]' },
+  regression: { label: 'Regression', color: 'text-white/85', bg: 'bg-white/[0.06]' },
+  insufficient_data: { label: 'Need more data', color: 'text-white/45', bg: 'bg-white/[0.03]' },
 }
 
 export function ExerciseDetailView({
@@ -40,6 +55,8 @@ export function ExerciseDetailView({
   progressionSummary,
   onQuickLog,
   onBack,
+  exerciseGoal,
+  strengthAssessment,
 }: ExerciseDetailViewProps) {
   const config = statusConfig[overloadStatus]
   const hasChart = chartData.length > 0
@@ -55,21 +72,76 @@ export function ExerciseDetailView({
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <h2 className="text-lg font-semibold text-white truncate flex-1">{exerciseName}</h2>
+        <h2 className="log-screen-section-title text-base truncate flex-1 normal-case">{exerciseName}</h2>
       </div>
 
       {/* Overload status callout */}
-      <div className={`rounded-xl px-4 py-3 flex items-center justify-between ${config.bg} border border-white/5`}>
+      <div className={`rounded-xl px-4 py-3 flex items-center justify-between ${config.bg} border border-white/10`}>
         <span className={`text-sm font-medium ${config.color}`}>{config.label}</span>
         <button
           type="button"
           onClick={onQuickLog}
-          className="flex items-center gap-1.5 text-sm font-medium text-white/90 hover:text-white"
+          className="action-text flex items-center gap-1.5 text-white/90 hover:text-white"
         >
           <Zap className="w-4 h-4" />
           Quick log
         </button>
       </div>
+
+      {strengthAssessment && <StrengthPercentileCard assessment={strengthAssessment} />}
+
+      {exerciseGoal && (
+        <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
+            <Target className="w-4 h-4 text-white/45" />
+            <h3 className="text-sm font-medium text-white/80">Goal</h3>
+          </div>
+          <div className="p-4 space-y-3">
+            <p className="text-sm text-white/70">
+              Target{' '}
+              <span className="text-white font-medium tabular-nums">
+                {exerciseGoal.targetWeight} lb × {exerciseGoal.targetReps}
+              </span>
+              {exerciseGoal.targetDateLabel ? (
+                <span className="text-white/45"> · {exerciseGoal.targetDateLabel}</span>
+              ) : (
+                <span className="text-white/40"> · date open — ask Coach</span>
+              )}
+            </p>
+            {exerciseGoal.currentE1RM != null && (
+              <p className="text-xs text-white/45">
+                Current est. ·{' '}
+                <span className="text-white/80 tabular-nums">{Math.round(exerciseGoal.currentE1RM)} lb</span> e1RM
+              </p>
+            )}
+            {exerciseGoal.progressPct != null && (
+              <div>
+                <div className="flex justify-between text-[11px] text-white/45 mb-1">
+                  <span>Progress</span>
+                  <span className="tabular-nums">{exerciseGoal.progressPct}%</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-black/50 border border-white/10 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-white/80"
+                    style={{ width: `${exerciseGoal.progressPct}%` }}
+                  />
+                </div>
+              </div>
+            )}
+            {exerciseGoal.recommendation ? (
+              <p className="text-xs text-white/55 leading-relaxed border-t border-white/08 pt-3">
+                {exerciseGoal.recommendation}
+              </p>
+            ) : null}
+            <Link
+              href="/log/goals"
+              className="inline-block text-xs font-medium text-white/50 hover:text-white/80"
+            >
+              Full timeline & program →
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* e1RM trend chart */}
       {hasChart && (
@@ -128,7 +200,7 @@ export function ExerciseDetailView({
       {recentTopSets.length > 0 && (
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
           <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-white/5" />
+            <TrendingUp className="w-4 h-4 text-white/40" />
             <h3 className="text-sm font-medium text-white/70">Best recent sets</h3>
           </div>
           <ul className="divide-y divide-white/5">
@@ -155,7 +227,7 @@ export function ExerciseDetailView({
       <button
         type="button"
         onClick={onQuickLog}
-        className="w-full btn-primary py-3 font-semibold flex items-center justify-center gap-2"
+        className="w-full btn btn-primary btn-block flex items-center justify-center gap-2"
       >
         <Zap className="w-4 h-4" />
         Quick log this exercise

@@ -290,19 +290,19 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
   const isLoading = loading || youtubeLoading
 
   return (
-    <div className="bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-800/60 p-2.5">
+    <div className="bg-white/[0.02] backdrop-blur-sm rounded-xl border border-white/10 p-2.5">
       <div className="flex items-center space-x-3">
         <div className="flex-1 min-w-0">
           <p className="text-white font-semibold text-xs truncate">{songTitle}</p>
-          <p className="text-gray-400 text-[10px] truncate">{songArtist}</p>
+          <p className="text-white/45 text-[10px] truncate">{songArtist}</p>
           {error && (
-            <div className="mt-1 flex items-center space-x-1.5 text-red-400 text-[10px]">
+            <div className="mt-1 flex items-center space-x-1.5 text-white/50 text-[10px]">
               <AlertCircle className="w-2.5 h-2.5 flex-shrink-0" />
               <span className="truncate">{error}</span>
             </div>
           )}
           {isLoading && !error && (
-            <p className="mt-1 text-gray-500 text-[10px]">Loading...</p>
+            <p className="mt-1 text-white/40 text-[10px]">Loading...</p>
           )}
         </div>
 
@@ -311,26 +311,26 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
             {error ? (
               <button
                 onClick={handleRetry}
-                className="w-7 h-7 rounded-lg bg-primary hover:bg-primary-dark flex items-center justify-center transition-all flex-shrink-0 active:scale-95"
+                className="w-7 h-7 rounded-lg bg-white text-black hover:bg-white/90 flex items-center justify-center transition-all flex-shrink-0 active:scale-95"
                 title="Retry playback"
                 aria-label="Retry playback"
               >
-                <RefreshCw className="w-3 h-3 text-white" />
+                <RefreshCw className="w-3 h-3 text-black" />
               </button>
             ) : (
               <button
                 onClick={togglePlay}
                 disabled={isLoading}
-                className="w-7 h-7 rounded-lg bg-primary hover:bg-primary-dark flex items-center justify-center transition-all flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-md shadow-primary/20"
+                className="w-7 h-7 rounded-lg bg-white text-black hover:bg-white/90 flex items-center justify-center transition-all flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                 aria-label={isPlaying ? 'Pause' : isLoading ? 'Loading...' : 'Play'}
                 title={isPlaying ? 'Pause' : isLoading ? 'Loading...' : 'Play'}
               >
                 {isLoading ? (
                   <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : isPlaying ? (
-                  <Pause className="w-3.5 h-3.5 text-white fill-current" />
+                  <Pause className="w-3.5 h-3.5 text-black fill-current" />
                 ) : (
-                  <Play className="w-3.5 h-3.5 text-white fill-current ml-0.5" />
+                  <Play className="w-3.5 h-3.5 text-black fill-current ml-0.5" />
                 )}
               </button>
             )}
@@ -338,14 +338,14 @@ export function ProfileMusicPlayer({ songTitle, songArtist, songUrl, spotifyId, 
             <button
               onClick={toggleMute}
               disabled={!!error}
-              className="w-7 h-7 rounded-lg bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all flex-shrink-0 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-7 h-7 rounded-lg bg-white/10 border border-white/10 hover:bg-white/15 flex items-center justify-center transition-all flex-shrink-0 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label={isMuted ? 'Unmute' : 'Mute'}
               title={isMuted ? 'Unmute' : 'Mute'}
             >
               {isMuted ? (
-                <VolumeX className="w-3.5 h-3.5 text-gray-400" />
+                <VolumeX className="w-3.5 h-3.5 text-white/50" />
               ) : (
-                <Volume2 className="w-3.5 h-3.5 text-gray-400" />
+                <Volume2 className="w-3.5 h-3.5 text-white/50" />
               )}
             </button>
           </div>

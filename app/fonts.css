@@ -1,0 +1,86 @@
+/* Self-hosted (optional) — add files to public/fonts/ */
+@font-face {
+  font-family: 'FF DIN';
+  src: url('/fonts/FFDIN-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'FF DIN';
+  src: url('/fonts/FFDIN-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'FF DIN';
+  src: url('/fonts/FFDIN-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Acumin Pro';
+  src: url('/fonts/AcuminPro-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Acumin Pro';
+  src: url('/fonts/AcuminPro-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Acumin Pro';
+  src: url('/fonts/AcuminPro-Semibold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Good Times Bold — self-hosted (Adobe kit myb2jvn); logo only */
+@font-face {
+  font-family: 'Good Times';
+  src: url('/fonts/GoodTimes-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'good-times';
+  src: url('/fonts/GoodTimes-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* FF DIN — self-hosted bold for action UI when Typekit is slow/missing */
+@font-face {
+  font-family: 'FF DIN Paneuropean';
+  src: url('/fonts/FFDINPaneuropean-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Logo only — never use serif fallbacks */
+  --font-brand: 'Good Times', 'good-times', sans-serif;
+  --font-metric:
+    'ff-din-paneuropean', 'FF DIN Paneuropean', 'ff-din-paneuropean-cond', 'FF DIN', 'Barlow Condensed',
+    sans-serif;
+  --font-ui:
+    'neue-haas-grotesk-text', 'neue-haas-grotesk-display', 'neue-haas-grotesk', var(--font-inter, 'Inter'),
+    system-ui, -apple-system, sans-serif;
+  --font-body: var(--font-ui);
+}

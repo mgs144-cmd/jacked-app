@@ -1,11 +1,17 @@
-# Deploy to Vercel on push to main
-# 1. In GitHub: Settings → Secrets and variables → Actions → add VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
-# 2. Get them from vercel.com: Project Settings → General, or run "vercel link" locally and check .vercel/project.json
+# Deploy to Vercel from GitHub Actions
+#
+# Required secrets (Repo → Settings → Secrets and variables → Actions):
+#   VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
+# From Vercel: Account Tokens, and Project Settings → General.
+#
+# If deploys stopped: confirm secrets exist, Actions tab isn’t disabled,
+# and pushes go to `main` (or adjust branches below).
 name: Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -13,10 +19,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy to Vercel
+      - name: Deploy to Vercel (production)
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: ./
+          # Default is preview — without this, GitHub pushes never update your live domain.
+          target: production

@@ -59,8 +59,10 @@ export default function DemoPage() {
           {/* Logo/Branding */}
           <div className="mb-8">
             <div className="relative inline-block">
-              <span className="text-6xl font-black bg-gradient-to-r from-primary via-red-500 to-primary bg-clip-text text-transparent animate-pulse">
-                JACKED
+              <span
+                className="font-display text-6xl font-bold bg-gradient-to-r from-white via-white/80 to-white bg-clip-text text-transparent animate-pulse"
+              >
+                J
               </span>
             </div>
           </div>
@@ -76,8 +78,8 @@ export default function DemoPage() {
           </div>
 
           {/* Status Text */}
-          <p className="text-white text-lg font-semibold mb-2">{status}</p>
-          <p className="text-gray-500 text-sm">
+          <p className="ui-body-medium text-lg text-white mb-2">{status}</p>
+          <p className="ui-subtitle">
             Welcome to the Jacked demo experience
           </p>
 

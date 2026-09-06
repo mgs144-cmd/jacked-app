@@ -96,10 +96,10 @@ export function AdminDashboard() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-800/60 p-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-black text-white">Admin Dashboard</h1>
+          <h1 className="ui-page-title">Admin Dashboard</h1>
           <button
             onClick={loadUsers}
-            className="btn-secondary px-4 py-2 text-sm font-bold"
+            className="btn btn-secondary btn-sm"
           >
             Refresh
           </button>
@@ -200,7 +200,7 @@ export function AdminDashboard() {
                     <button
                       onClick={() => approveUser(user.id)}
                       disabled={processing === user.id}
-                      className="btn-primary px-6 py-2 flex items-center space-x-2 disabled:opacity-50"
+                      className="btn btn-primary flex items-center space-x-2 disabled:opacity-50"
                     >
                       {processing === user.id ? (
                         <>

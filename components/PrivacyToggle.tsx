@@ -10,52 +10,41 @@ interface PrivacyToggleProps {
 export function PrivacyToggle({ visibility, onChange }: PrivacyToggleProps) {
   return (
     <div className="bg-white/[0.02] backdrop-blur-sm rounded-xl border border-white/10 p-4">
-      <label className="block text-sm font-bold text-white/80 mb-3 tracking-wide">
-        POST VISIBILITY
+      <label className="block text-[10px] font-metric font-semibold uppercase tracking-widest text-white/50 mb-3">
+        Post visibility
       </label>
-      
-      <div className="flex flex-col sm:flex-row gap-3">
+
+      <div className="flex flex-col sm:flex-row gap-2">
         <button
           type="button"
           onClick={() => onChange('public')}
-          className={`flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center ${
-            visibility === 'public'
-              ? 'bg-white text-black'
-              : 'bg-white/5 text-white/70 hover:text-white hover:bg-white/10'
-          }`}
+          className={`btn flex-1 ${visibility === 'public' ? 'btn-primary' : 'btn-secondary'}`}
         >
-          <span>PUBLIC</span>
+          Public
         </button>
 
         <button
           type="button"
           onClick={() => onChange('followers')}
-          className={`flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center ${
-            visibility === 'followers'
-              ? 'bg-white text-black'
-              : 'bg-white/5 text-white/70 hover:text-white hover:bg-white/10'
-          }`}
+          className={`btn flex-1 ${visibility === 'followers' ? 'btn-primary' : 'btn-secondary'}`}
         >
-          <span>FOLLOWERS ONLY</span>
+          Followers
         </button>
 
         <button
           type="button"
           onClick={() => onChange('log')}
-          className={`flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center ${
-            visibility === 'log'
-              ? 'bg-white text-black'
-              : 'bg-white/5 text-white/70 hover:text-white hover:bg-white/10'
-          }`}
+          className={`btn flex-1 ${visibility === 'log' ? 'btn-primary' : 'btn-secondary'}`}
         >
-          <span>LOG</span>
+          Log only
         </button>
       </div>
 
       <p className="text-xs text-white/50 mt-3 font-medium">
         {visibility === 'public' && 'Everyone can see this post'}
         {visibility === 'followers' && 'Only your followers can see this post'}
-        {visibility === 'log' && 'Private log - only you can see this. Track your progress without posting to feeds.'}
+        {visibility === 'log' &&
+          'Private log — only you can see this. Track your progress without posting to feeds.'}
       </p>
     </div>
   )

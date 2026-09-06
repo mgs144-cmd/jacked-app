@@ -172,12 +172,12 @@ export default async function UserProfilePage({
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <h1 className="text-3xl md:text-4xl font-black text-white">
+                        <h1 className="ui-profile-name">
                           {(profile as any)?.username || (profile as any)?.full_name || 'User'}
                         </h1>
                       </div>
                       {(profile as any)?.full_name && (profile as any).full_name !== (profile as any).username && (
-                        <p className="text-white/60 font-medium mb-3 text-base">{(profile as any).full_name}</p>
+                        <p className="ui-subtitle mb-3 text-base">{(profile as any).full_name}</p>
                       )}
                       {(profile as any)?.bio && (
                         <p className="text-white/80 leading-relaxed mb-4 max-w-2xl text-sm md:text-base">{(profile as any).bio}</p>
@@ -207,27 +207,27 @@ export default async function UserProfilePage({
                   {/* Stats */}
                   <div className="flex items-center space-x-8 pt-4 border-t border-white/5">
                     <div>
-                      <p className="text-2xl font-black text-white">{visiblePosts?.length || 0}</p>
-                      <p className="text-xs text-white/50 font-semibold tracking-wide">POSTS</p>
+                      <p className="ui-stat-value">{visiblePosts?.length || 0}</p>
+                      <p className="ui-eyebrow mt-0.5">Posts</p>
                     </div>
                     {!(profile as any)?.hide_follower_count && (
                       <>
                         <div className="h-10 w-px bg-white/10"></div>
                         <Link href={`/user/${params.id}/followers`} className="hover:opacity-80 transition-opacity">
-                          <p className="text-2xl font-black text-white">{followerCount || 0}</p>
-                          <p className="text-xs text-white/50 font-semibold tracking-wide">FOLLOWERS</p>
+                          <p className="ui-stat-value">{followerCount || 0}</p>
+                          <p className="ui-eyebrow mt-0.5">Followers</p>
                         </Link>
                         <div className="h-10 w-px bg-white/10"></div>
                         <Link href={`/user/${params.id}/following`} className="hover:opacity-80 transition-opacity">
-                          <p className="text-2xl font-black text-white">{followingCount || 0}</p>
-                          <p className="text-xs text-white/50 font-semibold tracking-wide">FOLLOWING</p>
+                          <p className="ui-stat-value">{followingCount || 0}</p>
+                          <p className="ui-eyebrow mt-0.5">Following</p>
                         </Link>
                       </>
                     )}
                     <div className="h-10 w-px bg-white/10"></div>
                     <div>
-                      <p className="text-2xl font-bold text-white">{totalLikes}</p>
-                      <p className="text-xs text-white/50 font-semibold tracking-wide">TOTAL LIKES</p>
+                      <p className="ui-stat-value">{totalLikes}</p>
+                      <p className="ui-eyebrow mt-0.5">Total likes</p>
                     </div>
                   </div>
                 </div>
@@ -239,7 +239,7 @@ export default async function UserProfilePage({
       {/* Content Below Profile Header */}
       <div className="max-w-5xl mx-auto px-4 md:px-8 pb-8">
         {/* Top Lifts Display */}
-        <div className="mb-6">
+        <div className="mb-4">
           <TopLiftsDisplay 
             topLift1={(profile as any)?.top_lift_1}
             topLift2={(profile as any)?.top_lift_2}
@@ -249,7 +249,7 @@ export default async function UserProfilePage({
 
         {/* Posts Section */}
         <div>
-          <h2 className="text-xl font-semibold text-white tracking-tight mb-6">Posts</h2>
+          <h2 className="ui-section-title mb-6">Posts</h2>
 
           {visiblePosts && visiblePosts.length === 0 ? (
             <div className="rounded-[12px] border border-white/5 bg-[#1a1a1a] p-12 text-center" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
@@ -261,7 +261,7 @@ export default async function UserProfilePage({
               )}
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="flex flex-col gap-0 sm:gap-3 max-w-[640px]">
               {visiblePosts?.map((post: any) => (
                 <PostCard key={post.id} post={post} />
               ))}

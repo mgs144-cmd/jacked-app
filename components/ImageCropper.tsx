@@ -217,14 +217,14 @@ export function ImageCropper({ image, onCropComplete, onCancel, aspectRatio = 1 
           <div className="flex space-x-3">
             <button
               onClick={handleCancel}
-              className="flex-1 btn-secondary py-3 font-bold"
+              className="flex-1 btn btn-secondary"
               type="button"
             >
               CANCEL
             </button>
             <button
               onClick={handleCropComplete}
-              className="flex-1 btn-primary py-3 font-bold flex items-center justify-center space-x-2"
+              className="flex-1 btn btn-primary flex items-center justify-center space-x-2"
               type="button"
             >
               <Check className="w-5 h-5" />

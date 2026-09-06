@@ -1,42 +1,32 @@
 'use client'
 
-/**
- * JACKED Wordmark Component
- * Custom logo with premium typography treatment
- */
-export function JackedLogo({ className = '' }: { className?: string }) {
+type LogoSize = 'default' | 'large' | 'compact' | 'hero'
+
+const sizeClasses: Record<LogoSize, string> = {
+  hero: 'text-[clamp(3.5rem,14vw,11rem)]',
+  large: 'text-4xl md:text-5xl',
+  compact: 'text-lg sm:text-xl',
+  default: 'text-2xl md:text-[1.75rem]',
+}
+
+/** Brand wordmark: JACKED in Good Times Bold (self-hosted + Adobe kit). */
+export function JackedLogo({ className = '', size = 'default' }: { className?: string; size?: LogoSize }) {
   return (
-    <div className={`flex items-center ${className}`}>
-      <div className="relative inline-flex items-baseline">
-        <span className="font-black text-2xl tracking-[0.12em] uppercase text-white" 
-              style={{ 
-                fontFamily: 'var(--font-black-ops-one, -apple-system, BlinkMacSystemFont, sans-serif)',
-                letterSpacing: '0.12em'
-              }}>
-          JACKED
-        </span>
-        <span className="absolute -bottom-1 left-0 w-10 h-[2px] bg-white" />
-      </div>
-    </div>
+    <span
+      className={`font-logo tk-good-times inline-block text-white ${sizeClasses[size]} ${className}`}
+      style={{
+        fontFamily: "'Good Times', 'good-times', sans-serif",
+        fontWeight: 700,
+        fontStyle: 'normal',
+      }}
+      aria-label="JACKED"
+    >
+      JACKED
+    </span>
   )
 }
 
-/**
- * Compact version for mobile/small spaces
- */
+/** Tighter mark for small headers */
 export function JackedLogoCompact({ className = '' }: { className?: string }) {
-  return (
-    <div className={`flex items-center ${className}`}>
-      <div className="relative inline-flex items-baseline">
-        <span className="font-black text-base tracking-[0.12em] uppercase text-white" 
-              style={{ 
-                fontFamily: 'var(--font-black-ops-one, -apple-system, BlinkMacSystemFont, sans-serif)',
-                letterSpacing: '0.12em'
-              }}>
-          JACKED
-        </span>
-        <span className="absolute -bottom-0.5 left-0 w-6 h-[2px] bg-white" />
-      </div>
-    </div>
-  )
+  return <JackedLogo className={className} size="compact" />
 }

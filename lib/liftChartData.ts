@@ -6,6 +6,7 @@ export type LiftRow = {
   reps: number
   rpe: number | null
   date: string
+  range_spot?: 'beginning' | 'middle' | 'end' | null
 }
 
 export function collectAllLiftsFromSources(liftLogs: any[], logPosts: any[]): LiftRow[] {
@@ -16,6 +17,7 @@ export function collectAllLiftsFromSources(liftLogs: any[], logPosts: any[]): Li
       reps: Number(l.reps),
       rpe: l.rpe ? Number(l.rpe) : null,
       date: l.logged_at?.split('T')[0] || l.logged_at,
+      range_spot: l.range_spot ?? null,
     })),
     ...(logPosts || [])
       .filter((p: any) => p.is_pr_post && p.pr_exercise && p.pr_weight != null && p.pr_reps != null)
