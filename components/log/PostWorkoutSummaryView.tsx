@@ -118,7 +118,7 @@ export function PostWorkoutSummaryView({
   }, [strain])
 
   const canShare =
-    strain?.provider === 'whoop' &&
+    (strain?.provider === 'whoop' || strain?.provider === 'oura') &&
     strainStatus === 'done' &&
     (totalLbs > 0 || strain.score != null || durationMs != null)
 
@@ -195,7 +195,7 @@ export function PostWorkoutSummaryView({
             <p className="text-sm font-medium text-white">Share card</p>
             <p className="text-xs text-white/45 mt-1">
               Download a Story-ready PNG with volume, strain, time, and a simplified heart-rate chart
-              from WHOOP.
+              from your wearable.
             </p>
           </div>
           <button
