@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { deleteConnection, listConnections } from '@/lib/wearables'
 import type { WearableProvider } from '@/lib/wearables/types'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const supabase = await createClient()

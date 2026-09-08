@@ -8,6 +8,8 @@ import {
 } from '@/lib/wearables/oauthState'
 import { buildWhoopAuthorizeUrl, getWhoopClientConfig } from '@/lib/wearables/providers/whoop'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const supabase = await createClient()

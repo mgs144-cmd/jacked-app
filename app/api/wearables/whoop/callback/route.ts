@@ -8,6 +8,8 @@ import {
 import { exchangeWhoopAuthCode } from '@/lib/wearables/providers/whoop'
 import { saveTokens } from '@/lib/wearables'
 
+export const dynamic = 'force-dynamic'
+
 function appOrigin(req: NextRequest) {
   const env = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '')
   if (env) return env

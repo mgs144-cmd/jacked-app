@@ -8,6 +8,8 @@ import {
 } from '@/lib/wearables/oauthState'
 import { buildOuraAuthorizeUrl, getOuraClientConfig } from '@/lib/wearables/providers/oura'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const supabase = await createClient()

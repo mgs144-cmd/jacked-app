@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { syncStrainForWindow, listConnections } from '@/lib/wearables'
 import type { WearableProvider } from '@/lib/wearables/types'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * POST { provider?: 'whoop' | 'oura', start?: ISO, end?: ISO, sessionDate?: YYYY-MM-DD }
  * Fetches strain for the time window and upserts into workout_strain.
