@@ -86,6 +86,15 @@ export async function exchangeWhoopAuthCode(code: string): Promise<WearableToken
   })
 }
 
+type WhoopZoneDurations = {
+  zone_zero_milli?: number
+  zone_one_milli?: number
+  zone_two_milli?: number
+  zone_three_milli?: number
+  zone_four_milli?: number
+  zone_five_milli?: number
+}
+
 type WhoopWorkout = {
   id: string
   start: string
@@ -96,7 +105,20 @@ type WhoopWorkout = {
     strain?: number
     average_heart_rate?: number
     max_heart_rate?: number
+    zone_durations?: WhoopZoneDurations | null
   } | null
+}
+
+function mapZoneDurations(z?: WhoopZoneDurations | null) {
+  if (!z) return null
+  return {
+    zone0: z.zone_zero_milli ?? 0,
+    zone1: z.zone_one_milli ?? 0,
+    zone2: z.zone_two_milli ?? 0,
+    zone3: z.zone_three_milli ?? 0,
+    zone4: z.zone_four_milli ?? 0,
+    zone5: z.zone_five_milli ?? 0,
+  }
 }
 
 async function whoopGet<T>(accessToken: string, path: string): Promise<T> {
@@ -148,7 +170,8 @@ export const whoopProvider: WearableDataProvider = {
           maxHeartRate: w.score?.max_heart_rate ?? null,
           startedAt: w.start,
           endedAt: w.end,
-          externalId: w.id,
+          externalId: typeof w.id === 'string' ? w.id : String(w.id),
+          zoneDurations: mapZoneDurations(w.score?.zone_durations),
           raw: w,
         })
       )

@@ -75,6 +75,7 @@ export async function POST(req: NextRequest) {
             averageHeartRate: s.averageHeartRate,
             maxHeartRate: s.maxHeartRate,
             externalId: s.externalId,
+            zoneDurations: s.zoneDurations ?? null,
           })),
         }
       } catch (e: any) {

@@ -1,8 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Activity, CheckCircle2, TrendingUp } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Activity, CheckCircle2, Download, Loader2, TrendingUp } from 'lucide-react'
 import { calculateOneRepMaxWithRPE } from '@/utils/oneRepMax'
+import type { ZoneDurationsMs } from '@/lib/wearables/types'
+import { downloadWorkoutSharePng } from '@/lib/workoutSharePng'
 
 interface SummarySet {
   exercise_name: string
@@ -17,6 +19,9 @@ type StrainSnippet = {
   scaleMax: number
   averageHeartRate?: number | null
   maxHeartRate?: number | null
+  startedAt?: string | null
+  endedAt?: string | null
+  zoneDurations?: ZoneDurationsMs | null
 }
 
 interface PostWorkoutSummaryViewProps {
@@ -37,6 +42,8 @@ export function PostWorkoutSummaryView({
 }: PostWorkoutSummaryViewProps) {
   const [strain, setStrain] = useState<StrainSnippet | null>(null)
   const [strainStatus, setStrainStatus] = useState<'idle' | 'loading' | 'done' | 'none'>('idle')
+  const [sharing, setSharing] = useState(false)
+  const [shareError, setShareError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!sessionDate) return
@@ -65,6 +72,9 @@ export function PostWorkoutSummaryView({
               scaleMax: s.scaleMax,
               averageHeartRate: s.averageHeartRate,
               maxHeartRate: s.maxHeartRate,
+              startedAt: s.startedAt,
+              endedAt: s.endedAt,
+              zoneDurations: s.zoneDurations ?? null,
             })
           }
         }
@@ -92,6 +102,51 @@ export function PostWorkoutSummaryView({
     return acc
   }, {})
 
+  const totalLbs = useMemo(() => {
+    return summarySets.reduce((sum, s) => {
+      const w = Number(s.weight)
+      const r = Number(s.reps)
+      if (!Number.isFinite(w) || !Number.isFinite(r) || w <= 0 || r <= 0) return sum
+      return sum + w * r
+    }, 0)
+  }, [summarySets])
+
+  const durationMs = useMemo(() => {
+    if (!strain?.startedAt || !strain?.endedAt) return null
+    const ms = new Date(strain.endedAt).getTime() - new Date(strain.startedAt).getTime()
+    return Number.isFinite(ms) && ms > 0 ? ms : null
+  }, [strain])
+
+  const canShare =
+    strain?.provider === 'whoop' &&
+    strainStatus === 'done' &&
+    (totalLbs > 0 || strain.score != null || durationMs != null)
+
+  const onDownloadShare = async () => {
+    if (!strain || sharing) return
+    setSharing(true)
+    setShareError(null)
+    try {
+      await downloadWorkoutSharePng(
+        {
+          totalLbs: totalLbs > 0 ? totalLbs : null,
+          strain: strain.score,
+          strainScaleMax: strain.scaleMax,
+          durationMs,
+          averageHeartRate: strain.averageHeartRate,
+          maxHeartRate: strain.maxHeartRate,
+          zoneDurations: strain.zoneDurations,
+          dateLabel: loggedDateLabel && loggedDateLabel !== 'Today' ? loggedDateLabel : null,
+        },
+        `jacked-workout-${sessionDate || 'today'}.png`
+      )
+    } catch (e: any) {
+      setShareError(e?.message || 'Could not create share image')
+    } finally {
+      setSharing(false)
+    }
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 text-center">
@@ -100,7 +155,8 @@ export function PostWorkoutSummaryView({
         </div>
         <h2 className="log-screen-section-title text-base">Workout logged</h2>
         <p className="log-screen-support text-sm mt-2">
-          {summarySets.length} set{summarySets.length !== 1 ? 's' : ''} across {Object.keys(byExercise).length} exercise{Object.keys(byExercise).length !== 1 ? 's' : ''}
+          {summarySets.length} set{summarySets.length !== 1 ? 's' : ''} across{' '}
+          {Object.keys(byExercise).length} exercise{Object.keys(byExercise).length !== 1 ? 's' : ''}
           {loggedDateLabel && loggedDateLabel !== 'Today' ? (
             <span className="block mt-1 text-white/50">Logged for {loggedDateLabel}</span>
           ) : null}
@@ -117,7 +173,9 @@ export function PostWorkoutSummaryView({
               <p className="text-sm text-white font-medium">
                 Strain {strain.score}
                 <span className="text-white/40 font-normal"> / {strain.scaleMax}</span>
-                <span className="text-white/35 text-xs ml-2 uppercase tracking-wider">{strain.provider}</span>
+                <span className="text-white/35 text-xs ml-2 uppercase tracking-wider">
+                  {strain.provider}
+                </span>
               </p>
               {(strain.averageHeartRate || strain.maxHeartRate) && (
                 <p className="text-xs text-white/45 mt-0.5">
@@ -128,6 +186,32 @@ export function PostWorkoutSummaryView({
               )}
             </div>
           ) : null}
+        </div>
+      )}
+
+      {canShare && (
+        <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-3">
+          <div>
+            <p className="text-sm font-medium text-white">Share card</p>
+            <p className="text-xs text-white/45 mt-1">
+              Download a Story-ready PNG with volume, strain, time, and a simplified heart-rate chart
+              from WHOOP.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={sharing}
+            onClick={() => void onDownloadShare()}
+            className="w-full btn btn-primary gap-2"
+          >
+            {sharing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            {sharing ? 'Creating…' : 'Download PNG'}
+          </button>
+          {shareError && <p className="text-sm text-red-400">{shareError}</p>}
         </div>
       )}
 
@@ -143,7 +227,9 @@ export function PostWorkoutSummaryView({
               return e1 > bestE ? s : best
             }, sets[0])
             const e1RM = calculateOneRepMaxWithRPE(best.weight, best.reps, best.rpe ?? 10)
-            const setsDisplay = sets.map((s) => `${s.weight}×${s.reps}${s.rpe ? `@${s.rpe}` : ''}`).join(' · ')
+            const setsDisplay = sets
+              .map((s) => `${s.weight}×${s.reps}${s.rpe ? `@${s.rpe}` : ''}`)
+              .join(' · ')
             return (
               <li key={name} className="px-4 py-3 flex items-center justify-between gap-4">
                 <div className="min-w-0">
@@ -160,19 +246,11 @@ export function PostWorkoutSummaryView({
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <button
-          type="button"
-          onClick={onViewInsights}
-          className="flex-1 btn btn-secondary gap-2"
-        >
+        <button type="button" onClick={onViewInsights} className="flex-1 btn btn-secondary gap-2">
           <TrendingUp className="w-4 h-4" />
           View insights
         </button>
-        <button
-          type="button"
-          onClick={onLogAgain}
-          className="flex-1 btn btn-primary"
-        >
+        <button type="button" onClick={onLogAgain} className="flex-1 btn btn-primary">
           Log again
         </button>
       </div>

@@ -9,6 +9,16 @@ export type HeartRateSample = {
   recordedAt: string // ISO
 }
 
+/** Whoop-style zone time buckets (ms). Used to build a simplified HR chart. */
+export type ZoneDurationsMs = {
+  zone0: number
+  zone1: number
+  zone2: number
+  zone3: number
+  zone4: number
+  zone5: number
+}
+
 /** Normalized strain result used by Story templates and UI */
 export type StrainScore = {
   provider: StrainProvider
@@ -21,6 +31,7 @@ export type StrainScore = {
   startedAt: string
   endedAt: string
   externalId?: string | null
+  zoneDurations?: ZoneDurationsMs | null
   /** Optional 0–1 for UI bars */
   normalized01: number
   raw?: unknown
