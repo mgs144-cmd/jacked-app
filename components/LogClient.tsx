@@ -881,6 +881,7 @@ export function LogClient({
               loggedDateLabel={
                 lastSummarySessionDate ? formatWorkoutDate(lastSummarySessionDate) : undefined
               }
+              sessionDate={lastSummarySessionDate}
               onViewInsights={() => {
                 setSegment('insights')
                 setQuickLogSubView('default')

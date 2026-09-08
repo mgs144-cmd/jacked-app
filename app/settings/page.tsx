@@ -12,6 +12,7 @@ import { MusicSelector } from '@/components/MusicSelector'
 import { ImageCropper } from '@/components/ImageCropper'
 import { SongPreviewPlayer } from '@/components/SongPreviewPlayer'
 import { PRSelector } from '@/components/PRSelector'
+import { WearablesPanel } from '@/components/settings/WearablesPanel'
 
 export default function SettingsPage() {
   const [username, setUsername] = useState('')
@@ -883,6 +884,8 @@ export default function SettingsPage() {
               <span>Privacy settings</span>
             </Link>
           </div>
+
+          <WearablesPanel />
 
           {/* Sign Out Section */}
           <div className="border-t border-white/10 p-8">

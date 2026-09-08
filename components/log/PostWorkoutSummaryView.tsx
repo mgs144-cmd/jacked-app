@@ -1,6 +1,7 @@
 'use client'
 
-import { CheckCircle2, TrendingUp } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Activity, CheckCircle2, TrendingUp } from 'lucide-react'
 import { calculateOneRepMaxWithRPE } from '@/utils/oneRepMax'
 
 interface SummarySet {
@@ -10,9 +11,19 @@ interface SummarySet {
   rpe?: number | null
 }
 
+type StrainSnippet = {
+  provider: string
+  score: number
+  scaleMax: number
+  averageHeartRate?: number | null
+  maxHeartRate?: number | null
+}
+
 interface PostWorkoutSummaryViewProps {
   summarySets: SummarySet[]
   loggedDateLabel?: string
+  /** YYYY-MM-DD — used to pull wearable strain for this session */
+  sessionDate?: string | null
   onViewInsights: () => void
   onLogAgain: () => void
 }
@@ -20,9 +31,60 @@ interface PostWorkoutSummaryViewProps {
 export function PostWorkoutSummaryView({
   summarySets,
   loggedDateLabel,
+  sessionDate,
   onViewInsights,
   onLogAgain,
 }: PostWorkoutSummaryViewProps) {
+  const [strain, setStrain] = useState<StrainSnippet | null>(null)
+  const [strainStatus, setStrainStatus] = useState<'idle' | 'loading' | 'done' | 'none'>('idle')
+
+  useEffect(() => {
+    if (!sessionDate) return
+    let cancelled = false
+    setStrainStatus('loading')
+    ;(async () => {
+      try {
+        const res = await fetch('/api/wearables/sync-strain', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionDate }),
+        })
+        const json = await res.json()
+        if (cancelled) return
+        if (!res.ok) {
+          setStrainStatus('none')
+          return
+        }
+        const all: StrainSnippet[] = []
+        for (const [provider, result] of Object.entries(json.results || {})) {
+          const scores = (result as any)?.scores || []
+          for (const s of scores) {
+            all.push({
+              provider,
+              score: s.score,
+              scaleMax: s.scaleMax,
+              averageHeartRate: s.averageHeartRate,
+              maxHeartRate: s.maxHeartRate,
+            })
+          }
+        }
+        if (all.length) {
+          // Prefer Whoop when both exist
+          const preferred = all.find((s) => s.provider === 'whoop') || all[0]
+          setStrain(preferred)
+          setStrainStatus('done')
+        } else {
+          setStrainStatus('none')
+        }
+      } catch {
+        if (!cancelled) setStrainStatus('none')
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [sessionDate])
+
   const byExercise = summarySets.reduce<Record<string, SummarySet[]>>((acc, s) => {
     const name = s.exercise_name || 'Unknown'
     if (!acc[name]) acc[name] = []
@@ -44,6 +106,30 @@ export function PostWorkoutSummaryView({
           ) : null}
         </p>
       </div>
+
+      {(strainStatus === 'loading' || strain) && (
+        <div className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 flex items-center gap-3">
+          <Activity className="w-4 h-4 text-white/50 shrink-0" />
+          {strainStatus === 'loading' ? (
+            <p className="text-sm text-white/50">Checking wearables for strain…</p>
+          ) : strain ? (
+            <div className="min-w-0">
+              <p className="text-sm text-white font-medium">
+                Strain {strain.score}
+                <span className="text-white/40 font-normal"> / {strain.scaleMax}</span>
+                <span className="text-white/35 text-xs ml-2 uppercase tracking-wider">{strain.provider}</span>
+              </p>
+              {(strain.averageHeartRate || strain.maxHeartRate) && (
+                <p className="text-xs text-white/45 mt-0.5">
+                  {strain.averageHeartRate ? `Avg HR ${strain.averageHeartRate}` : ''}
+                  {strain.averageHeartRate && strain.maxHeartRate ? ' · ' : ''}
+                  {strain.maxHeartRate ? `Max HR ${strain.maxHeartRate}` : ''}
+                </p>
+              )}
+            </div>
+          ) : null}
+        </div>
+      )}
 
       <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
         <div className="px-4 py-3 border-b border-white/5">
