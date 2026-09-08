@@ -14,9 +14,9 @@ export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient()
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    if (!session?.user?.id) {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       start = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
     }
 
-    const connected = await listConnections(session.user.id)
+    const connected = await listConnections(user.id)
     const requested = body.provider as WearableProvider | undefined
     const providers: WearableProvider[] =
       requested === 'whoop' || requested === 'oura'
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     for (const provider of providers) {
       try {
         const { scores, saved } = await syncStrainForWindow({
-          userId: session.user.id,
+          userId: user.id,
           provider,
           start,
           end,

@@ -44,14 +44,14 @@ export async function GET(req: NextRequest) {
 
     const supabase = await createClient()
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    if (!session?.user?.id || session.user.id !== parsed.userId) {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user?.id || user.id !== parsed.userId) {
       return NextResponse.redirect(`${origin}/auth/login`)
     }
 
     const tokens = await exchangeOuraAuthCode(code)
-    await saveTokens(session.user.id, 'oura', tokens)
+    await saveTokens(user.id, 'oura', tokens)
 
     const res = NextResponse.redirect(`${settingsUrl}&connected=1`)
     res.cookies.set(oauthStateCookieName(), '', { httpOnly: true, path: '/', maxAge: 0 })

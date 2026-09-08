@@ -14,9 +14,9 @@ export async function GET() {
   try {
     const supabase = await createClient()
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    if (!session?.user?.id) {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user?.id) {
       return NextResponse.redirect(new URL('/auth/login', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'))
     }
 
@@ -32,7 +32,7 @@ export async function GET() {
     }
 
     const state = createShortOAuthNonce()
-    const payload = createOAuthPayload('whoop', session.user.id)
+    const payload = createOAuthPayload('whoop', user.id)
     const url = buildWhoopAuthorizeUrl(state)
     const res = NextResponse.redirect(url)
     const cookieOpts = {

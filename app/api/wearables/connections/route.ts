@@ -9,12 +9,12 @@ export async function GET() {
   try {
     const supabase = await createClient()
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    if (!session?.user?.id) {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    const connections = await listConnections(session.user.id)
+    const connections = await listConnections(user.id)
     return NextResponse.json({ connections })
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Failed' }, { status: 500 })
@@ -25,9 +25,9 @@ export async function DELETE(req: NextRequest) {
   try {
     const supabase = await createClient()
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    if (!session?.user?.id) {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const body = await req.json().catch(() => ({}))
@@ -35,7 +35,7 @@ export async function DELETE(req: NextRequest) {
     if (provider !== 'whoop' && provider !== 'oura') {
       return NextResponse.json({ error: 'Invalid provider' }, { status: 400 })
     }
-    await deleteConnection(session.user.id, provider)
+    await deleteConnection(user.id, provider)
     return NextResponse.json({ ok: true })
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Failed' }, { status: 500 })
