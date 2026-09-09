@@ -177,9 +177,6 @@ export function PostWearableAttach({
             <Activity className="w-4 h-4 text-white/70" />
             Include wearable metrics
           </div>
-          <p className="text-xs text-white/45 mt-1">
-            Adds today&apos;s {strain.provider.toUpperCase()} strain to your caption.
-          </p>
         </div>
       </label>
 

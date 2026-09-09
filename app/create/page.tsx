@@ -253,7 +253,6 @@ function CreatePage() {
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-8">
           <BrandHeading variant="page" className="mb-1">Create Post</BrandHeading>
-          <p className="ui-subtitle mt-2">Share your progress with the community</p>
         </div>
 
         <div className="mb-8">
@@ -306,9 +305,8 @@ function CreatePage() {
           )}
 
           {!mediaPreview && (
-            <label className="flex cursor-pointer flex-col items-center py-6">
-              <Upload className="h-10 w-10 text-white/70" strokeWidth={1.5} />
-              <p className="mt-3 ui-body-medium text-white">Upload photo or video</p>
+            <label className="flex cursor-pointer items-center justify-center aspect-square w-full max-w-[220px] mx-auto rounded-2xl border-2 border-white bg-transparent hover:bg-white/[0.04] transition-colors">
+              <span className="label-caps text-white text-center px-4">Upload media</span>
               <input
                 type="file"
                 accept="image/*,video/*"
@@ -361,7 +359,6 @@ function CreatePage() {
                 <span className="text-white font-semibold">This is a Personal Record (PR) Post</span>
               </div>
             </label>
-            <p className="text-xs text-white/70 mt-2 ml-8">PR posts will be highlighted in the feed</p>
           </div>
 
           {isPRPost && (
