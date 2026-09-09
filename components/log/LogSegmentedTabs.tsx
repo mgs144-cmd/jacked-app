@@ -1,6 +1,6 @@
 'use client'
 
-import { ClipboardList, BarChart3, Sparkles } from 'lucide-react'
+import { ClipboardList, BarChart3, CalendarDays } from 'lucide-react'
 import type { LogSegment } from './types'
 
 interface LogSegmentedTabsProps {
@@ -11,7 +11,7 @@ interface LogSegmentedTabsProps {
 const segments: { id: LogSegment; label: string; icon: typeof ClipboardList }[] = [
   { id: 'workout', label: 'Workout', icon: ClipboardList },
   { id: 'exercises', label: 'Exercises', icon: BarChart3 },
-  { id: 'insights', label: 'Insights', icon: Sparkles },
+  { id: 'tracking', label: 'Tracking', icon: CalendarDays },
 ]
 
 export function LogSegmentedTabs({ active, onChange }: LogSegmentedTabsProps) {

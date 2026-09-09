@@ -1,6 +1,6 @@
 /** Shared types for Log tab views */
 
-export type LogSegment = 'workout' | 'exercises' | 'insights'
+export type LogSegment = 'workout' | 'exercises' | 'tracking'
 
 export interface SetEntry {
   weight: string

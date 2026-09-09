@@ -28,7 +28,6 @@ export default function SettingsPage() {
   const [profileSong, setProfileSong] = useState<{ title: string; artist: string; url?: string; spotifyId?: string; albumArt?: string } | null>(null)
   const [songStartTime, setSongStartTime] = useState<number | null>(null)
   const [previewStartTime, setPreviewStartTime] = useState<number | null>(null) // Debounced value for preview
-  const [fitnessGoal, setFitnessGoal] = useState<'bulk' | 'cut' | 'maintenance' | null>(null)
   const [topLift1, setTopLift1] = useState<{ exercise: string; weight: string; reps: string }>({ exercise: '', weight: '', reps: '' })
   const [topLift2, setTopLift2] = useState<{ exercise: string; weight: string; reps: string }>({ exercise: '', weight: '', reps: '' })
   const [topLift3, setTopLift3] = useState<{ exercise: string; weight: string; reps: string }>({ exercise: '', weight: '', reps: '' })
@@ -72,7 +71,6 @@ export default function SettingsPage() {
             albumArt: data.profile_song_album_art_url || undefined,
           })
         }
-        setFitnessGoal(data.fitness_goal || null)
         setSongStartTime(data.profile_song_start_time || null)
         
         // Load top lifts
@@ -256,7 +254,6 @@ export default function SettingsPage() {
         profile_song_title: profileSong?.title || null,
         profile_song_artist: profileSong?.artist || null,
         profile_song_url: profileSong?.url || null,
-        fitness_goal: fitnessGoal || null,
         profile_song_start_time: songStartTime || null,
       }
 
@@ -647,44 +644,6 @@ export default function SettingsPage() {
                     />
                   </div>
                 )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-white/70 mb-2 tracking-wide">
-                  FITNESS GOAL
-                </label>
-                <p className="text-xs text-white/40 mb-3">Display your current fitness phase</p>
-                <div className="btn-tab-wrap">
-                  <button
-                    type="button"
-                    onClick={() => setFitnessGoal('bulk')}
-                    className={`btn btn-tab font-metric text-[10px] md:text-xs tracking-widest uppercase ${fitnessGoal === 'bulk' ? 'btn-tab-active' : ''}`}
-                  >
-                    Bulk
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFitnessGoal('cut')}
-                    className={`btn btn-tab font-metric text-[10px] md:text-xs tracking-widest uppercase ${fitnessGoal === 'cut' ? 'btn-tab-active' : ''}`}
-                  >
-                    Cut
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFitnessGoal('maintenance')}
-                    className={`btn btn-tab font-metric text-[9px] sm:text-[10px] md:text-xs tracking-widest uppercase ${fitnessGoal === 'maintenance' ? 'btn-tab-active' : ''}`}
-                  >
-                    <span className="hidden sm:inline">Maintenance</span>
-                    <span className="sm:hidden">Maint</span>
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setFitnessGoal(null)}
-                  className="mt-2 btn btn-link text-xs"
-                >
-                  Clear selection
-                </button>
               </div>
 
               {/* Top 3 Lifts Section */}

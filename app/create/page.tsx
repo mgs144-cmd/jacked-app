@@ -9,6 +9,7 @@ import { MusicSelector } from '@/components/MusicSelector'
 import { SongPreviewPlayer } from '@/components/SongPreviewPlayer'
 import { PrivacyToggle } from '@/components/PrivacyToggle'
 import { WorkoutForm } from '@/components/WorkoutForm'
+import { PostWearableAttach, formatStrainCaptionLine, type WearableStrainAttach } from '@/components/PostWearableAttach'
 import { buildWorkoutExerciseRows, type WorkoutLogTier, type WorkoutExerciseDraft } from '@/lib/workoutPost'
 import { ExerciseAutocomplete } from '@/components/ExerciseAutocomplete'
 import { ImageCropModal } from '@/components/ImageCropModal'
@@ -47,6 +48,8 @@ function CreatePage() {
   const [prRpe, setPrRpe] = useState('')
   const [workoutTier, setWorkoutTier] = useState<WorkoutLogTier>('none')
   const [workoutExercises, setWorkoutExercises] = useState<WorkoutExerciseDraft[]>([])
+  const [includeWearable, setIncludeWearable] = useState(false)
+  const [wearableStrain, setWearableStrain] = useState<WearableStrainAttach | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [cropOpen, setCropOpen] = useState(false)
@@ -123,8 +126,8 @@ function CreatePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!user || (!content.trim() && !mediaFile && !mediaPreview)) {
-      setError('Please add some content or media')
+    if (!user || (!content.trim() && !mediaFile && !mediaPreview && !(includeWearable && wearableStrain))) {
+      setError('Please add some content, media, or wearable metrics')
       return
     }
 
@@ -156,10 +159,16 @@ function CreatePage() {
         mediaUrl = publicUrl
       }
 
+      let finalContent = content.trim() || ''
+      if (includeWearable && wearableStrain) {
+        const line = formatStrainCaptionLine(wearableStrain)
+        finalContent = finalContent ? `${finalContent}\n\n${line}` : line
+      }
+
       // Build post data conditionally to avoid errors if columns don't exist
       const postInsertData: any = {
         user_id: user.id,
-        content: content.trim() || null,
+        content: finalContent || null,
         media_url: mediaUrl,
         media_type: mediaType,
         song_title: selectedSong?.title || null,
@@ -309,6 +318,36 @@ function CreatePage() {
             </label>
           )}
 
+          {/* Caption */}
+          <div>
+            <label htmlFor="content" className="block text-sm font-bold text-gray-300 mb-3 tracking-wide">
+              CAPTION
+            </label>
+            <textarea
+              id="content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={3}
+              className="input-field w-full min-h-[4.5rem] resize-y text-base"
+              placeholder=""
+            />
+            <p className="text-sm text-gray-600 mt-2 font-medium">
+              {content.length}/500 characters
+            </p>
+          </div>
+
+          {/* Privacy Toggle */}
+          <PrivacyToggle visibility={visibility} onChange={setVisibility} />
+
+          {/* Workout Details */}
+          <WorkoutForm
+            tier={workoutTier}
+            onTierChange={setWorkoutTier}
+            exercises={workoutExercises}
+            onChange={setWorkoutExercises}
+            userId={user?.id}
+          />
+
           <div className="rounded-[12px] border border-white/5 p-6 bg-white/[0.02]" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
             <label className="flex items-center space-x-3 cursor-pointer">
               <input
@@ -325,7 +364,6 @@ function CreatePage() {
             <p className="text-xs text-white/70 mt-2 ml-8">PR posts will be highlighted in the feed</p>
           </div>
 
-          {/* PR Details - Only show if PR post */}
           {isPRPost && (
             <div className="rounded-[12px] border border-white/20 p-6 space-y-4 bg-white/5">
               <div className="flex items-center space-x-2 mb-4">
@@ -383,36 +421,26 @@ function CreatePage() {
             </div>
           )}
 
-          {/* Workout Details */}
-          <WorkoutForm
-            tier={workoutTier}
-            onTierChange={setWorkoutTier}
-            exercises={workoutExercises}
-            onChange={setWorkoutExercises}
-            userId={user?.id}
-          />
-
-          {/* Music Selector - Removed for presentation (not working yet) */}
-
-          {/* Privacy Toggle */}
-          <PrivacyToggle visibility={visibility} onChange={setVisibility} />
-
-          {/* Caption */}
           <div>
-            <label htmlFor="content" className="block text-sm font-bold text-gray-300 mb-3 tracking-wide">
-              CAPTION
+            <label className="block text-sm font-bold text-gray-300 mb-3 tracking-wide">
+              WEARABLE METRICS
             </label>
-            <textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={3}
-              className="input-field w-full min-h-[4.5rem] resize-y text-base"
-              placeholder=""
+            <PostWearableAttach
+              include={includeWearable}
+              onIncludeChange={setIncludeWearable}
+              strain={wearableStrain}
+              onStrainChange={setWearableStrain}
+              totalLbs={workoutExercises.reduce((sum, ex) => {
+                return (
+                  sum +
+                  (ex.sets_data || []).reduce((s, set) => {
+                    const w = Number(set.weight)
+                    const r = Number(set.reps)
+                    return Number.isFinite(w) && Number.isFinite(r) && w > 0 && r > 0 ? s + w * r : s
+                  }, 0)
+                )
+              }, 0)}
             />
-            <p className="text-sm text-gray-600 mt-2 font-medium">
-              {content.length}/500 characters
-            </p>
           </div>
 
           {/* Submit Button */}
@@ -426,7 +454,7 @@ function CreatePage() {
             </button>
             <button
               type="submit"
-              disabled={loading || (!content.trim() && !mediaFile && !mediaPreview)}
+              disabled={loading || (!content.trim() && !mediaFile && !mediaPreview && !(includeWearable && wearableStrain))}
               className="flex-1 btn btn-primary gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (

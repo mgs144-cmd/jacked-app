@@ -6,7 +6,6 @@ import { Navbar } from '@/components/Navbar'
 import { PostCard } from '@/components/PostCard'
 import { Crown, Settings, TrendingUp } from 'lucide-react'
 import { BadgeDisplay } from '@/components/BadgeDisplay'
-import { FitnessGoalIndicator } from '@/components/FitnessGoalIndicator'
 import { TopLiftsDisplay } from '@/components/TopLiftsDisplay'
 import { BrandHeading } from '@/components/BrandHeading'
 
@@ -160,13 +159,6 @@ export default async function ProfilePage() {
               </>
             )}
           </div>
-          
-          {/* Fitness Goal */}
-          {(profile as any)?.fitness_goal && (
-            <div className="inline-block">
-              <FitnessGoalIndicator goal={(profile as any).fitness_goal} size="sm" />
-            </div>
-          )}
           
           {/* Profile Song */}
           {(profile as any)?.profile_song_title && (profile as any)?.profile_song_artist && (

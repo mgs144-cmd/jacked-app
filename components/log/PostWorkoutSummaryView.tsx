@@ -248,7 +248,7 @@ export function PostWorkoutSummaryView({
       <div className="flex flex-col sm:flex-row gap-3">
         <button type="button" onClick={onViewInsights} className="flex-1 btn btn-secondary gap-2">
           <TrendingUp className="w-4 h-4" />
-          View insights
+          View tracking
         </button>
         <button type="button" onClick={onLogAgain} className="flex-1 btn btn-primary">
           Log again

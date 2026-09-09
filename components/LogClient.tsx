@@ -10,13 +10,14 @@ import type { LogSegment, WorkoutExerciseEntry, SetEntry } from '@/components/lo
 import { LogSegmentedTabs } from '@/components/log/LogSegmentedTabs'
 import { BrandHeading } from '@/components/BrandHeading'
 import { TodaysWorkoutView } from '@/components/log/TodaysWorkoutView'
+import { TrackingView } from '@/components/log/TrackingView'
 import { ActiveWorkoutView } from '@/components/log/ActiveWorkoutView'
 import { QuickSingleExerciseView } from '@/components/log/QuickSingleExerciseView'
 import { PostWorkoutSummaryView } from '@/components/log/PostWorkoutSummaryView'
 import { EditPastWorkoutView } from '@/components/log/EditPastWorkoutView'
 import { ExercisesListView } from '@/components/log/ExercisesListView'
 import { ExerciseDetailView } from '@/components/log/ExerciseDetailView'
-import { InsightsView, type InsightsChatMessage } from '@/components/log/InsightsView'
+import type { InsightsChatMessage } from '@/components/log/InsightsView'
 import Link from 'next/link'
 import { ChevronRight, Target } from 'lucide-react'
 import type { CoachPlanRow } from '@/components/log/LiftGoalsView'
@@ -748,7 +749,7 @@ export function LogClient({
       <div className="text-left mb-6">
         <BrandHeading variant="page">Log</BrandHeading>
         <p className="log-screen-support mt-2 max-w-md">
-          Today&apos;s workout, programs, and progress in one place.
+          Log today&apos;s session, then use Tracking for history, programs, and templates.
         </p>
         <Link
           href="/log/goals"
@@ -766,45 +767,11 @@ export function LogClient({
         <>
           {quickLogSubView === 'default' && (
             <TodaysWorkoutView
-              programs={programs}
-              templates={workoutTemplates}
-              dayTemplates={dayTemplates}
-              allLifts={allLifts}
-              logPosts={logPosts}
-              liftLogs={liftLogRecords}
               resumeBanner={resumeBanner}
               onResumeWorkout={resumeInProgressWorkout}
               onDiscardWorkout={discardInProgressWorkout}
               onStartWorkout={(date) => startWorkout(undefined, undefined, date)}
-              onEditPastWorkout={openEditPastWorkout}
-              onStartProgramDay={startProgramDay}
-              onStartTemplate={startFromTemplate}
-              onStartDayTemplate={startDayTemplate}
               onQuickAddExercise={() => openQuickSingle()}
-              onSaveProgram={async (payload) => {
-                try {
-                  await saveProgram(payload)
-                } catch (err: unknown) {
-                  const msg =
-                    err && typeof err === 'object' && 'message' in err
-                      ? String((err as { message: unknown }).message)
-                      : 'Could not save program'
-                  alert(`${msg}\n\nRun ADD_TRAINING_PROGRAMS.sql in Supabase if needed.`)
-                }
-              }}
-              onDeleteProgram={deleteProgram}
-              onSaveDayTemplate={async (payload) => {
-                try {
-                  await saveDayTemplate(payload)
-                } catch (err: unknown) {
-                  const msg =
-                    err && typeof err === 'object' && 'message' in err
-                      ? String((err as { message: unknown }).message)
-                      : 'Could not save template'
-                  alert(`${msg}\n\nRun ADD_WORKOUT_DAY_TEMPLATES.sql in Supabase if needed.`)
-                }
-              }}
-              onDeleteDayTemplate={deleteDayTemplate}
             />
           )}
           {quickLogSubView === 'edit-past-workout' && editWorkoutOriginalDate && (
@@ -883,7 +850,7 @@ export function LogClient({
               }
               sessionDate={lastSummarySessionDate}
               onViewInsights={() => {
-                setSegment('insights')
+                setSegment('tracking')
                 setQuickLogSubView('default')
                 setPostSummarySets(null)
               }}
@@ -953,22 +920,43 @@ export function LogClient({
         </>
       )}
 
-      {/* Insights segment */}
-      {segment === 'insights' && (
-        <InsightsView
-          progressStatus={insightStrings.progressStatus}
-          volumeQuality={insightStrings.volumeQuality}
-          goalAlignment={insightStrings.goalAlignment}
-          suggestedAdjustment={insightStrings.suggestedAdjustment}
-          maintainOnCutCheck={insightStrings.maintainOnCutCheck}
-          initialInsightsMessages={initialInsightsMessages}
-          insightsContext={{
-            progressStatus: insightStrings.progressStatus,
-            volumeQuality: insightStrings.volumeQuality,
-            goalAlignment: insightStrings.goalAlignment,
-            suggestedAdjustment: insightStrings.suggestedAdjustment,
-            maintainOnCutCheck: insightStrings.maintainOnCutCheck,
+      {/* Tracking segment */}
+      {segment === 'tracking' && (
+        <TrackingView
+          programs={programs}
+          templates={workoutTemplates}
+          dayTemplates={dayTemplates}
+          allLifts={allLifts}
+          logPosts={logPosts}
+          liftLogs={liftLogRecords}
+          onEditPastWorkout={openEditPastWorkout}
+          onStartProgramDay={startProgramDay}
+          onStartTemplate={startFromTemplate}
+          onStartDayTemplate={startDayTemplate}
+          onSaveProgram={async (payload) => {
+            try {
+              await saveProgram(payload)
+            } catch (err: unknown) {
+              const msg =
+                err && typeof err === 'object' && 'message' in err
+                  ? String((err as { message: unknown }).message)
+                  : 'Could not save program'
+              alert(`${msg}\n\nRun ADD_TRAINING_PROGRAMS.sql in Supabase if needed.`)
+            }
           }}
+          onDeleteProgram={deleteProgram}
+          onSaveDayTemplate={async (payload) => {
+            try {
+              await saveDayTemplate(payload)
+            } catch (err: unknown) {
+              const msg =
+                err && typeof err === 'object' && 'message' in err
+                  ? String((err as { message: unknown }).message)
+                  : 'Could not save template'
+              alert(`${msg}\n\nRun ADD_WORKOUT_DAY_TEMPLATES.sql in Supabase if needed.`)
+            }
+          }}
+          onDeleteDayTemplate={deleteDayTemplate}
         />
       )}
     </div>
