@@ -48,7 +48,6 @@ function CreatePage() {
   const [prRpe, setPrRpe] = useState('')
   const [workoutTier, setWorkoutTier] = useState<WorkoutLogTier>('none')
   const [workoutExercises, setWorkoutExercises] = useState<WorkoutExerciseDraft[]>([])
-  const [includeWearable, setIncludeWearable] = useState(false)
   const [wearableStrain, setWearableStrain] = useState<WearableStrainAttach | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -126,7 +125,7 @@ function CreatePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!user || (!content.trim() && !mediaFile && !mediaPreview && !(includeWearable && wearableStrain))) {
+    if (!user || (!content.trim() && !mediaFile && !mediaPreview && !wearableStrain)) {
       setError('Please add some content, media, or wearable metrics')
       return
     }
@@ -160,7 +159,7 @@ function CreatePage() {
       }
 
       let finalContent = content.trim() || ''
-      if (includeWearable && wearableStrain) {
+      if (wearableStrain) {
         const line = formatStrainCaptionLine(wearableStrain)
         finalContent = finalContent ? `${finalContent}\n\n${line}` : line
       }
@@ -305,8 +304,10 @@ function CreatePage() {
           )}
 
           {!mediaPreview && (
-            <label className="flex cursor-pointer items-center justify-center aspect-square w-full max-w-[220px] mx-auto rounded-2xl border-2 border-white bg-transparent hover:bg-white/[0.04] transition-colors">
-              <span className="label-caps text-white text-center px-4">Upload media</span>
+            <label className="flex cursor-pointer items-center justify-center h-28 w-full max-w-[160px] mx-auto rounded-xl border-2 border-white bg-black hover:bg-white/[0.06] transition-colors">
+              <span className="label-caps text-white text-sm tracking-[0.16em] text-center px-3 leading-tight">
+                Upload media
+              </span>
               <input
                 type="file"
                 accept="image/*,video/*"
@@ -356,7 +357,7 @@ function CreatePage() {
               />
               <div className="flex items-center space-x-2">
                 <Trophy className="w-5 h-5 text-white" />
-                <span className="text-white font-semibold">This is a Personal Record (PR) Post</span>
+                <span className="text-white font-semibold">PR Post</span>
               </div>
             </label>
           </div>
@@ -423,8 +424,6 @@ function CreatePage() {
               WEARABLE METRICS
             </label>
             <PostWearableAttach
-              include={includeWearable}
-              onIncludeChange={setIncludeWearable}
               strain={wearableStrain}
               onStrainChange={setWearableStrain}
               totalLbs={workoutExercises.reduce((sum, ex) => {
@@ -451,7 +450,7 @@ function CreatePage() {
             </button>
             <button
               type="submit"
-              disabled={loading || (!content.trim() && !mediaFile && !mediaPreview && !(includeWearable && wearableStrain))}
+              disabled={loading || (!content.trim() && !mediaFile && !mediaPreview && !wearableStrain)}
               className="flex-1 btn btn-primary gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (

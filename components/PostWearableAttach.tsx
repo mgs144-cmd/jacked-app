@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Activity, Download, Loader2 } from 'lucide-react'
+import { Download, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import type { ZoneDurationsMs } from '@/lib/wearables/types'
 import { downloadWorkoutSharePng, formatShareDuration } from '@/lib/workoutSharePng'
 import { todayISO } from '@/lib/workoutSessions'
 
 export type WearableStrainAttach = {
+  id: string
   provider: string
   score: number
   scaleMax: number
@@ -19,21 +20,36 @@ export type WearableStrainAttach = {
 }
 
 interface PostWearableAttachProps {
-  include: boolean
-  onIncludeChange: (include: boolean) => void
   strain: WearableStrainAttach | null
   onStrainChange: (strain: WearableStrainAttach | null) => void
   totalLbs?: number
 }
 
-export function PostWearableAttach({
-  include,
-  onIncludeChange,
-  strain,
-  onStrainChange,
-  totalLbs = 0,
-}: PostWearableAttachProps) {
+function durationFor(s: WearableStrainAttach): number | null {
+  if (!s.startedAt || !s.endedAt) return null
+  const ms = new Date(s.endedAt).getTime() - new Date(s.startedAt).getTime()
+  return Number.isFinite(ms) && ms > 0 ? ms : null
+}
+
+function workoutLabel(s: WearableStrainAttach): string {
+  const dur = durationFor(s)
+  const time =
+    s.startedAt != null
+      ? new Date(s.startedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+      : null
+  const bits = [
+    s.provider.toUpperCase(),
+    `Strain ${Number(s.score).toFixed(1)}/${s.scaleMax}`,
+    time,
+    dur ? formatShareDuration(dur) : null,
+  ].filter(Boolean)
+  return bits.join(' · ')
+}
+
+export function PostWearableAttach({ strain, onStrainChange, totalLbs = 0 }: PostWearableAttachProps) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'none' | 'error'>('idle')
+  const [workouts, setWorkouts] = useState<WearableStrainAttach[]>([])
+  const [connected, setConnected] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [sharing, setSharing] = useState(false)
 
@@ -52,11 +68,14 @@ export function PostWearableAttach({
         const connections = connJson.connections || []
         if (!connections.length) {
           if (!cancelled) {
+            setConnected(false)
             onStrainChange(null)
+            setWorkouts([])
             setStatus('none')
           }
           return
         }
+        if (!cancelled) setConnected(true)
 
         const res = await fetch('/api/wearables/sync-strain', {
           method: 'POST',
@@ -73,8 +92,10 @@ export function PostWearableAttach({
 
         const all: WearableStrainAttach[] = []
         for (const [provider, result] of Object.entries(json.results || {})) {
+          let i = 0
           for (const s of (result as any)?.scores || []) {
             all.push({
+              id: String(s.externalId || `${provider}-${s.startedAt || i}`),
               provider,
               score: s.score,
               scaleMax: s.scaleMax,
@@ -84,11 +105,22 @@ export function PostWearableAttach({
               endedAt: s.endedAt,
               zoneDurations: s.zoneDurations ?? null,
             })
+            i += 1
           }
         }
+
+        all.sort((a, b) => {
+          if (a.provider === b.provider) {
+            return String(b.startedAt || '').localeCompare(String(a.startedAt || ''))
+          }
+          if (a.provider === 'whoop') return -1
+          if (b.provider === 'whoop') return 1
+          return a.provider.localeCompare(b.provider)
+        })
+
+        setWorkouts(all)
         if (all.length) {
-          const preferred = all.find((s) => s.provider === 'whoop') || all[0]
-          onStrainChange(preferred)
+          onStrainChange(all[0])
           setStatus('done')
         } else {
           onStrainChange(null)
@@ -104,29 +136,26 @@ export function PostWearableAttach({
     return () => {
       cancelled = true
     }
-  }, []) // load once on mount
-
-
-  const durationMs =
-    strain?.startedAt && strain?.endedAt
-      ? new Date(strain.endedAt).getTime() - new Date(strain.startedAt).getTime()
-      : null
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const download = async () => {
     if (!strain) return
     setSharing(true)
+    setError(null)
     try {
+      const durationMs = durationFor(strain)
       await downloadWorkoutSharePng({
         totalLbs: totalLbs > 0 ? totalLbs : null,
         strain: strain.score,
         strainScaleMax: strain.scaleMax,
-        durationMs: durationMs && durationMs > 0 ? durationMs : null,
+        durationMs,
         averageHeartRate: strain.averageHeartRate,
         maxHeartRate: strain.maxHeartRate,
         zoneDurations: strain.zoneDurations,
       })
     } catch (e: any) {
-      setError(e?.message || 'Download failed')
+      setError(e?.message || 'Share failed')
     } finally {
       setSharing(false)
     }
@@ -144,16 +173,22 @@ export function PostWearableAttach({
   if (status === 'none') {
     return (
       <div className="rounded-[12px] border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white/50">
-        Connect WHOOP or Oura in{' '}
-        <Link href="/settings" className="text-white/80 underline underline-offset-2">
-          Settings
-        </Link>{' '}
-        to attach strain metrics.
+        {connected ? (
+          'No wearable workouts found for today. Finish a session on your device, then refresh.'
+        ) : (
+          <>
+            Connect WHOOP or Oura in{' '}
+            <Link href="/settings" className="text-white/80 underline underline-offset-2">
+              Settings
+            </Link>{' '}
+            to link workouts.
+          </>
+        )}
       </div>
     )
   }
 
-  if (status === 'error' && !strain) {
+  if (status === 'error' && !workouts.length) {
     return (
       <div className="rounded-[12px] border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-300/90">
         {error || 'Wearables unavailable'}
@@ -161,50 +196,49 @@ export function PostWearableAttach({
     )
   }
 
-  if (!strain) return null
+  if (!workouts.length) return null
 
   return (
-    <div className="rounded-[12px] border border-white/10 bg-white/[0.02] p-4 space-y-3">
-      <label className="flex items-start gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={include}
-          onChange={(e) => onIncludeChange(e.target.checked)}
-          className="mt-1 w-5 h-5 rounded border-white/20 bg-white/5 text-white focus:ring-white focus:ring-offset-0"
-        />
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 text-white font-semibold">
-            <Activity className="w-4 h-4 text-white/70" />
-            Include wearable metrics
-          </div>
-        </div>
-      </label>
-
-      <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white/80">
-        <p>
-          Strain {Number(strain.score).toFixed(1)}
-          <span className="text-white/40"> / {strain.scaleMax}</span>
-          <span className="text-white/35 text-xs ml-2 uppercase tracking-wider">{strain.provider}</span>
-        </p>
-        <p className="text-xs text-white/45 mt-1">
-          {[
-            durationMs && durationMs > 0 ? formatShareDuration(durationMs) : null,
-            strain.averageHeartRate ? `Avg HR ${strain.averageHeartRate}` : null,
-            strain.maxHeartRate ? `Max ${strain.maxHeartRate}` : null,
-          ]
-            .filter(Boolean)
-            .join(' · ') || 'Synced for today'}
-        </p>
-      </div>
+    <div className="space-y-3">
+      <ul className="space-y-2">
+        {workouts.map((w) => {
+          const selected = strain?.id === w.id
+          const dur = durationFor(w)
+          return (
+            <li key={w.id}>
+              <button
+                type="button"
+                onClick={() => onStrainChange(selected ? null : w)}
+                className={`w-full text-left rounded-xl border px-4 py-3 transition-colors ${
+                  selected
+                    ? 'border-white bg-white/[0.08] text-white'
+                    : 'border-white/10 bg-white/[0.02] text-white/75 hover:border-white/25'
+                }`}
+              >
+                <p className="text-sm font-medium">{workoutLabel(w)}</p>
+                <p className="text-xs text-white/45 mt-1">
+                  {[
+                    w.averageHeartRate ? `Avg HR ${w.averageHeartRate}` : null,
+                    w.maxHeartRate ? `Max ${w.maxHeartRate}` : null,
+                    dur ? formatShareDuration(dur) : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ') || 'Tap to link'}
+                </p>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
 
       <button
         type="button"
-        disabled={sharing}
+        disabled={sharing || !strain}
         onClick={() => void download()}
-        className="btn btn-secondary btn-sm gap-1.5 w-full sm:w-auto"
+        className="btn btn-secondary btn-sm gap-1.5 w-full sm:w-auto disabled:opacity-40"
       >
         {sharing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-        Download share PNG
+        Share workout
       </button>
       {error && <p className="text-xs text-red-400">{error}</p>}
     </div>
