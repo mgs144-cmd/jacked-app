@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/app/providers'
@@ -11,11 +11,18 @@ import { ExerciseAutocomplete } from '@/components/ExerciseAutocomplete'
 import { ImageCropModal } from '@/components/ImageCropModal'
 import { PostDraftPreview } from '@/components/PostDraftPreview'
 import {
+  PostWearableAttach,
+  wearableMetricsToAttach,
+  type WearableStrainAttach,
+} from '@/components/PostWearableAttach'
+import { parsePostWearableMetrics } from '@/components/PostStrainBlock'
+import {
   buildWorkoutExerciseRows,
   exercisesFromDbRows,
   type WorkoutLogTier,
   type WorkoutExerciseDraft,
 } from '@/lib/workoutPost'
+import { todayISO } from '@/lib/workoutSessions'
 import { Loader2, Pencil, Upload, X, Image as ImageIcon, Video, Trophy } from 'lucide-react'
 
 type InitialPost = {
@@ -31,8 +38,20 @@ type InitialPost = {
   pr_weight: number | null
   pr_reps: number | null
   pr_rpe: number | null
+  created_at?: string | null
+  wearable_metrics?: unknown
   workout_exercises?: any[] | null
   profiles?: { username?: string; avatar_url?: string | null } | null
+}
+
+function localDateFromIso(iso?: string | null): string {
+  if (!iso) return todayISO()
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return todayISO()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 function storageObjectPathFromUrl(url: string, bucket: 'images' | 'videos'): string | null {
@@ -72,8 +91,30 @@ function EditPostInner({ initialPost }: { initialPost: InitialPost }) {
   const [workoutTier, setWorkoutTier] = useState<WorkoutLogTier>(loadedTier)
   const [workoutExercises, setWorkoutExercises] = useState<WorkoutExerciseDraft[]>(loadedExercises)
 
+  const [wearableStrain, setWearableStrain] = useState<WearableStrainAttach | null>(() =>
+    wearableMetricsToAttach(parsePostWearableMetrics(initialPost.wearable_metrics))
+  )
+  const [wearableSessionDate, setWearableSessionDate] = useState(() =>
+    localDateFromIso(initialPost.created_at)
+  )
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const wearableVolume = useMemo(
+    () =>
+      workoutExercises.reduce((sum, ex) => {
+        return (
+          sum +
+          (ex.sets_data || []).reduce((s, set) => {
+            const w = Number(set.weight)
+            const r = Number(set.reps)
+            return Number.isFinite(w) && Number.isFinite(r) && w > 0 && r > 0 ? s + w * r : s
+          }, 0)
+        )
+      }, 0),
+    [workoutExercises]
+  )
 
   let profile: { username?: string; avatar_url?: string | null } | null = initialPost.profiles as any
   if (Array.isArray(profile)) profile = profile[0] || null
@@ -177,12 +218,41 @@ function EditPostInner({ initialPost }: { initialPost: InitialPost }) {
         pr_weight: isPRPost && prWeight ? parseFloat(prWeight) : null,
         pr_reps: isPRPost && prReps ? parseInt(prReps, 10) : null,
         pr_rpe: isPRPost && prRpe ? parseFloat(prRpe) : null,
+        wearable_metrics: wearableStrain
+          ? {
+              provider: wearableStrain.provider,
+              score: wearableStrain.score,
+              scaleMax: wearableStrain.scaleMax,
+              averageHeartRate: wearableStrain.averageHeartRate ?? null,
+              maxHeartRate: wearableStrain.maxHeartRate ?? null,
+              startedAt: wearableStrain.startedAt ?? null,
+              endedAt: wearableStrain.endedAt ?? null,
+              zoneDurations: wearableStrain.zoneDurations ?? null,
+              externalId: wearableStrain.id || null,
+            }
+          : null,
       }
 
-      const { error: updErr } = await (supabase.from('posts') as any)
+      let { error: updErr } = await (supabase.from('posts') as any)
         .update(updatePayload)
         .eq('id', initialPost.id)
         .eq('user_id', user.id)
+
+      if (updErr && updatePayload.wearable_metrics !== undefined && /wearable_metrics|column/i.test(updErr.message || '')) {
+        delete updatePayload.wearable_metrics
+        const retry = await (supabase.from('posts') as any)
+          .update(updatePayload)
+          .eq('id', initialPost.id)
+          .eq('user_id', user.id)
+        updErr = retry.error
+        if (!updErr) {
+          setError(
+            'Saved other changes, but wearable metrics need the wearable_metrics column (run ADD_POST_WEARABLE_METRICS.sql in Supabase).'
+          )
+          setLoading(false)
+          return
+        }
+      }
 
       if (updErr) throw updErr
 
@@ -226,6 +296,7 @@ function EditPostInner({ initialPost }: { initialPost: InitialPost }) {
           prExercise={prExercise}
           prWeight={prWeight}
           prReps={prReps}
+          wearableStrain={wearableStrain}
         />
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -325,6 +396,21 @@ function EditPostInner({ initialPost }: { initialPost: InitialPost }) {
           )}
 
           <WorkoutForm tier={workoutTier} onTierChange={setWorkoutTier} exercises={workoutExercises} onChange={setWorkoutExercises} />
+
+          <div>
+            <label className="block text-sm font-bold text-gray-300 mb-3 tracking-wide">
+              WEARABLE METRICS
+            </label>
+            <PostWearableAttach
+              strain={wearableStrain}
+              onStrainChange={setWearableStrain}
+              totalLbs={wearableVolume}
+              sessionDate={wearableSessionDate}
+              onSessionDateChange={setWearableSessionDate}
+              autoSelectFirst={false}
+              allowDatePick
+            />
+          </div>
 
           <PrivacyToggle visibility={visibility} onChange={setVisibility} />
 
