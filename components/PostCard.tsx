@@ -17,6 +17,11 @@ import { PostImageWithLightbox } from '@/components/PostImageWithLightbox'
 import { POST_MEDIA_FRAME, POST_MEDIA_IMAGE_CONTAIN, POST_MEDIA_IMG } from '@/components/postMediaClasses'
 import { CommentGif } from '@/components/CommentGif'
 import { isGifComment } from '@/lib/commentContent'
+import {
+  PostStrainBlock,
+  parsePostWearableMetrics,
+  totalLbsFromWorkoutExercises,
+} from '@/components/PostStrainBlock'
 
 interface PostCardProps {
   post: any
@@ -240,10 +245,17 @@ export function PostCard({ post }: PostCardProps) {
     </div>
   )
 
+  const wearableMetrics = parsePostWearableMetrics(post.wearable_metrics)
+  const strainVolume = totalLbsFromWorkoutExercises(post.workout_exercises)
+
+  const strainBlock = wearableMetrics ? (
+    <PostStrainBlock metrics={wearableMetrics} totalLbs={strainVolume} showShare />
+  ) : null
+
   const captionBlock = post.content ? (
     <p
       className={`text-[15px] md:text-[17px] leading-snug text-white/90 ${
-        hasPRStats ? 'mt-2' : hasMedia ? 'mt-1' : 'mt-2'
+        hasPRStats || wearableMetrics ? 'mt-2' : hasMedia ? 'mt-1' : 'mt-2'
       }`}
     >
       {hasMedia ? (
@@ -290,6 +302,7 @@ export function PostCard({ post }: PostCardProps) {
 
   const captionAndMeta = (
     <>
+      {strainBlock}
       {hasPRStats ? (
         <>
           {prBlock}

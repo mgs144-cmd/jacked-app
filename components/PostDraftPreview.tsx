@@ -3,6 +3,8 @@
 import Image from 'next/image'
 import { PostImageWithLightbox } from '@/components/PostImageWithLightbox'
 import { POST_MEDIA_FRAME, POST_MEDIA_IMAGE_CONTAIN, POST_MEDIA_IMG } from '@/components/postMediaClasses'
+import { PostStrainBlock } from '@/components/PostStrainBlock'
+import type { WearableStrainAttach } from '@/components/PostWearableAttach'
 
 export type PostDraftPreviewProps = {
   username: string
@@ -14,6 +16,7 @@ export type PostDraftPreviewProps = {
   prExercise: string
   prWeight: string
   prReps: string
+  wearableStrain?: WearableStrainAttach | null
 }
 
 export function PostDraftPreview({
@@ -26,13 +29,16 @@ export function PostDraftPreview({
   prExercise,
   prWeight,
   prReps,
+  wearableStrain = null,
 }: PostDraftPreviewProps) {
   const hasMedia = Boolean(mediaPreview && mediaType)
   const hasPr = isPRPost && (prExercise.trim() || prWeight || prReps)
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden max-w-[390px] mx-auto shadow-lg">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40 px-3 pt-3 pb-1">Feed preview</p>
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40 px-3 pt-3 pb-1">
+        Feed preview
+      </p>
       <div className="px-3 py-2 flex items-center gap-2 border-b border-white/10">
         <div className="w-9 h-9 rounded-full bg-white/10 overflow-hidden shrink-0 ring-1 ring-white/10">
           {avatarUrl ? (
@@ -65,10 +71,28 @@ export function PostDraftPreview({
       )}
 
       <div className="px-3 py-2.5 space-y-2">
+        {wearableStrain && (
+          <PostStrainBlock
+            compact
+            metrics={{
+              provider: wearableStrain.provider,
+              score: wearableStrain.score,
+              scaleMax: wearableStrain.scaleMax,
+              averageHeartRate: wearableStrain.averageHeartRate,
+              maxHeartRate: wearableStrain.maxHeartRate,
+              startedAt: wearableStrain.startedAt,
+              endedAt: wearableStrain.endedAt,
+              zoneDurations: wearableStrain.zoneDurations,
+            }}
+          />
+        )}
+
         {hasPr && (
           <div className="text-center py-1">
             {prExercise.trim() && (
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-white/45 mb-1">{prExercise}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-white/45 mb-1">
+                {prExercise}
+              </p>
             )}
             <div className="flex justify-center gap-6">
               {prWeight && <span className="ui-stat-value tabular-nums">{prWeight}</span>}
@@ -81,12 +105,12 @@ export function PostDraftPreview({
         )}
 
         {content.trim() && (
-          <p className={`text-[13px] text-white/90 leading-snug ${hasPr ? 'mt-2' : ''}`}>
+          <p className={`text-[13px] text-white/90 leading-snug ${hasPr || wearableStrain ? 'mt-2' : ''}`}>
             <span className="font-semibold text-white">{username}</span> {content}
           </p>
         )}
 
-        {!hasMedia && !content.trim() && !hasPr && (
+        {!hasMedia && !content.trim() && !hasPr && !wearableStrain && (
           <p className="text-xs text-white/40 text-center py-4">Add a photo, caption, or PR to see preview</p>
         )}
       </div>

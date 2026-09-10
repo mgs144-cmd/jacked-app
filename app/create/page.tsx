@@ -9,7 +9,7 @@ import { MusicSelector } from '@/components/MusicSelector'
 import { SongPreviewPlayer } from '@/components/SongPreviewPlayer'
 import { PrivacyToggle } from '@/components/PrivacyToggle'
 import { WorkoutForm } from '@/components/WorkoutForm'
-import { PostWearableAttach, formatStrainCaptionLine, type WearableStrainAttach } from '@/components/PostWearableAttach'
+import { PostWearableAttach, type WearableStrainAttach } from '@/components/PostWearableAttach'
 import { buildWorkoutExerciseRows, type WorkoutLogTier, type WorkoutExerciseDraft } from '@/lib/workoutPost'
 import { ExerciseAutocomplete } from '@/components/ExerciseAutocomplete'
 import { ImageCropModal } from '@/components/ImageCropModal'
@@ -159,10 +159,6 @@ function CreatePage() {
       }
 
       let finalContent = content.trim() || ''
-      if (wearableStrain) {
-        const line = formatStrainCaptionLine(wearableStrain)
-        finalContent = finalContent ? `${finalContent}\n\n${line}` : line
-      }
 
       // Build post data conditionally to avoid errors if columns don't exist
       const postInsertData: any = {
@@ -184,6 +180,20 @@ function CreatePage() {
         pr_rpe: isPRPost && prRpe ? parseFloat(prRpe) : null,
       }
 
+      if (wearableStrain) {
+        postInsertData.wearable_metrics = {
+          provider: wearableStrain.provider,
+          score: wearableStrain.score,
+          scaleMax: wearableStrain.scaleMax,
+          averageHeartRate: wearableStrain.averageHeartRate ?? null,
+          maxHeartRate: wearableStrain.maxHeartRate ?? null,
+          startedAt: wearableStrain.startedAt ?? null,
+          endedAt: wearableStrain.endedAt ?? null,
+          zoneDurations: wearableStrain.zoneDurations ?? null,
+          externalId: wearableStrain.id || null,
+        }
+      }
+
       // Only include spotify_id if it exists and column exists in database
       // (This column may not exist if Spotify migration wasn't run)
       if (selectedSong?.spotifyId) {
@@ -195,23 +205,42 @@ function CreatePage() {
         }
       }
 
-      const { data: postData, error: insertError } = await (supabase.from('posts') as any).insert(postInsertData).select().single()
+      let savedPost: any = null
+      {
+        const { data: postData, error: insertError } = await (supabase.from('posts') as any)
+          .insert(postInsertData)
+          .select()
+          .single()
 
-      if (insertError) throw insertError
+        if (insertError) {
+          if (postInsertData.wearable_metrics && /wearable_metrics|column/i.test(insertError.message || '')) {
+            delete postInsertData.wearable_metrics
+            const retry = await (supabase.from('posts') as any).insert(postInsertData).select().single()
+            if (retry.error) throw retry.error
+            savedPost = retry.data
+          } else {
+            throw insertError
+          }
+        } else {
+          savedPost = postData
+        }
+      }
+
+      if (!savedPost) throw new Error('Failed to create post')
 
       // Create PR record if this is a PR post
-      if (isPRPost && postData && prExercise.trim()) {
+      if (isPRPost && prExercise.trim()) {
         await (supabase.from('personal_records') as any).insert({
           user_id: user.id,
           exercise_name: prExercise.trim(),
           weight: prWeight ? parseFloat(prWeight) : null,
           reps: prReps ? parseInt(prReps) : null,
           video_url: mediaUrl || null, // Video is optional now
-          post_id: postData.id,
+          post_id: savedPost.id,
         })
       }
 
-      const workoutRows = buildWorkoutExerciseRows(workoutTier, workoutExercises, postData.id)
+      const workoutRows = buildWorkoutExerciseRows(workoutTier, workoutExercises, savedPost.id)
       if (workoutRows.length > 0) {
         await (supabase.from('workout_exercises') as any).insert(workoutRows)
         void ensureExercisesInCatalog(
@@ -265,6 +294,7 @@ function CreatePage() {
             prExercise={prExercise}
             prWeight={prWeight}
             prReps={prReps}
+            wearableStrain={wearableStrain}
           />
         </div>
 
