@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Activity, CheckCircle2, Download, Loader2, TrendingUp } from 'lucide-react'
+import { Activity, CheckCircle2, Copy, Check, Download, Loader2, TrendingUp } from 'lucide-react'
 import { calculateOneRepMaxWithRPE } from '@/utils/oneRepMax'
 import type { ZoneDurationsMs } from '@/lib/wearables/types'
 import { downloadWorkoutSharePng } from '@/lib/workoutSharePng'
@@ -33,6 +33,53 @@ interface PostWorkoutSummaryViewProps {
   onLogAgain: () => void
 }
 
+/** Compact paste-ready summary for external AI trackers. */
+export function formatWorkoutForAiExport(params: {
+  summarySets: SummarySet[]
+  sessionDate?: string | null
+  loggedDateLabel?: string
+  strain?: StrainSnippet | null
+}): string {
+  const { summarySets, sessionDate, loggedDateLabel, strain } = params
+  const byExercise = summarySets.reduce<Record<string, SummarySet[]>>((acc, s) => {
+    const name = (s.exercise_name || 'Unknown').trim() || 'Unknown'
+    if (!acc[name]) acc[name] = []
+    acc[name].push(s)
+    return acc
+  }, {})
+
+  const dateLine =
+    sessionDate ||
+    (loggedDateLabel && loggedDateLabel !== 'Today' ? loggedDateLabel : null) ||
+    new Date().toISOString().slice(0, 10)
+
+  const lines: string[] = [`Workout ${dateLine}`]
+
+  for (const [name, sets] of Object.entries(byExercise)) {
+    const setParts = sets.map((s) => {
+      const w = Number(s.weight)
+      const r = Number(s.reps)
+      const base =
+        Number.isFinite(w) && Number.isFinite(r) ? `${w}x${r}` : `${s.weight}x${s.reps}`
+      return s.rpe != null && s.rpe !== undefined && String(s.rpe) !== ''
+        ? `${base}@${s.rpe}`
+        : base
+    })
+    lines.push(`${name}: ${setParts.join(', ')}`)
+  }
+
+  if (strain) {
+    const bits = [
+      `${strain.provider} strain ${Number(strain.score).toFixed(1)}/${strain.scaleMax}`,
+      strain.averageHeartRate ? `avg HR ${strain.averageHeartRate}` : null,
+      strain.maxHeartRate ? `max HR ${strain.maxHeartRate}` : null,
+    ].filter(Boolean)
+    lines.push(bits.join(', '))
+  }
+
+  return lines.join('\n')
+}
+
 export function PostWorkoutSummaryView({
   summarySets,
   loggedDateLabel,
@@ -44,6 +91,8 @@ export function PostWorkoutSummaryView({
   const [strainStatus, setStrainStatus] = useState<'idle' | 'loading' | 'done' | 'none'>('idle')
   const [sharing, setSharing] = useState(false)
   const [shareError, setShareError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+  const [copyError, setCopyError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!sessionDate) return
@@ -79,7 +128,6 @@ export function PostWorkoutSummaryView({
           }
         }
         if (all.length) {
-          // Prefer Whoop when both exist
           const preferred = all.find((s) => s.provider === 'whoop') || all[0]
           setStrain(preferred)
           setStrainStatus('done')
@@ -122,6 +170,17 @@ export function PostWorkoutSummaryView({
     strainStatus === 'done' &&
     (totalLbs > 0 || strain.score != null || durationMs != null)
 
+  const aiExportText = useMemo(
+    () =>
+      formatWorkoutForAiExport({
+        summarySets,
+        sessionDate,
+        loggedDateLabel,
+        strain,
+      }),
+    [summarySets, sessionDate, loggedDateLabel, strain]
+  )
+
   const onDownloadShare = async () => {
     if (!strain || sharing) return
     setSharing(true)
@@ -144,6 +203,17 @@ export function PostWorkoutSummaryView({
       setShareError(e?.message || 'Could not create share image')
     } finally {
       setSharing(false)
+    }
+  }
+
+  const onExportToAi = async () => {
+    setCopyError(null)
+    try {
+      await navigator.clipboard.writeText(aiExportText)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setCopyError('Could not copy — select the text below and copy manually.')
     }
   }
 
@@ -243,6 +313,27 @@ export function PostWorkoutSummaryView({
             )
           })}
         </ul>
+      </div>
+
+      <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-3">
+        <div>
+          <p className="text-sm font-medium text-white">Export to AI</p>
+          <p className="text-xs text-white/45 mt-1">
+            Copy a short sets summary to paste into your tracker.
+          </p>
+        </div>
+        <pre className="rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-xs text-white/70 whitespace-pre-wrap font-mono leading-relaxed max-h-40 overflow-y-auto">
+          {aiExportText}
+        </pre>
+        <button
+          type="button"
+          onClick={() => void onExportToAi()}
+          className="w-full btn btn-secondary gap-2"
+        >
+          {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+          {copied ? 'Copied' : 'Copy for AI'}
+        </button>
+        {copyError && <p className="text-sm text-red-400">{copyError}</p>}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
